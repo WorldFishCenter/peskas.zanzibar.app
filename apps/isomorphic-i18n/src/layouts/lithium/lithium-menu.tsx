@@ -237,13 +237,13 @@ export default function HeaderMenuLeft({ lang }: { lang?: string }) {
       >
         <NavMenu.Item>
           <NavMenu.Trigger className="flex items-center gap-1 duration-200 ">
-            <MenuTriggerButton name="overview" />
+            <MenuTriggerButton name="catch" />
           </NavMenu.Trigger>
           <NavMenu.Content className="border border-[red] bg-white dark:bg-gray-100">
             <div className="w-[172px]">
               <LinkMenu
                 className="flex flex-col p-3 dark:bg-gray-100"
-                items={lithiumMenuItems.overview.dropdownItems ?? []}
+                items={lithiumMenuItems.catch.dropdownItems ?? []}
                 lang={lang}
               />
             </div>

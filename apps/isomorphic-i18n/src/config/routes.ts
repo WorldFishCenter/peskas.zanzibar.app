@@ -86,6 +86,10 @@ export const routes = {
     maps: '/widgets/maps',
     banners: '/widgets/banners',
   },
+  catch: {
+    aggregated: '/catch/aggregated',
+    composition: '/catch/composition',
+  },
   tables: {
     basic: '/tables/basic',
     collapsible: '/tables/collapsible',

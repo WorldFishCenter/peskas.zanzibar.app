@@ -23,14 +23,19 @@ export type LithiumMenuItem = {
 };
 
 export const lithiumMenuItems: LithiumMenuItem = {
-  overview: {
+  catch: {
     name: 'sidebar-menu-overview',
     type: 'link',
     dropdownItems: [
       {
-        name: 'sidebar-menu-file-manager',
-        href: '/',
-        icon: 'FilesIcon',
+        name: 'Aggregated',
+        href: routes.catch.aggregated,
+        icon: 'FishIcon',
+      },
+      {
+        name: 'Composition',
+        href: routes.catch.composition,
+        icon: 'PieIcon',
       },
     ],
   },
@@ -46,6 +51,32 @@ export const lithiumMenuItems: LithiumMenuItem = {
       {
         name: 'sidebar-menu-charts',
         href: routes.widgets.charts,
+        icon: 'PieChartCurrencyIcon',
+      },
+      {
+        name: 'sidebar-menu-charts',
+        href: routes.forms.personalInformation,
+        icon: 'PieChartCurrencyIcon',
+      },
+    ],
+  },
+  mental: {
+    name: 'mental',
+    type: 'link',
+    dropdownItems: [
+      {
+        name: 'sidebar-menu-cards',
+        href: routes.widgets.cards,
+        icon: 'DicesIcon',
+      },
+      {
+        name: 'sidebar-menu-charts',
+        href: routes.widgets.charts,
+        icon: 'PieChartCurrencyIcon',
+      },
+      {
+        name: 'Gianni',
+        href: routes.forms.personalInformation,
         icon: 'PieChartCurrencyIcon',
       },
     ],

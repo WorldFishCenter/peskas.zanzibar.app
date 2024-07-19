@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const pageHeader = {
-  title: "Peppe",
+  title: "Aggregated",
   breadcrumb: [
     {
       href: "/",
