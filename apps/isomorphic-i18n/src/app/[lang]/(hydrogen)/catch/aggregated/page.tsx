@@ -1,10 +1,6 @@
-import { Metadata } from "next";
 import PageHeader from "@/app/shared/page-header";
-
-// SEO metadata
-export const metadata: Metadata = {
-  title: "New Page | Isomorphic",
-};
+import DeckGL from "@/app/shared/file/dashboard/deck-map";
+import AggregatedCatch from "@/app/shared/file/catch/aggregated-catch";
 
 const pageHeader = {
   title: "Aggregated",
@@ -14,18 +10,24 @@ const pageHeader = {
       name: "Home",
     },
     {
-      name: "NewPage",
+      name: "Aggregated catch",
     },
   ],
 };
 
-export default function NewPage() {
+export default function NewPage({ lang }: { lang?: string }) {
   return (
-    <>
-      <PageHeader
-        title={pageHeader.title}
-        breadcrumb={pageHeader.breadcrumb}
-      />
-    </>
+    <div className="flex flex-col h-screen">
+      <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />
+      <div className="flex-grow relative">
+        <DeckGL />
+      </div>
+      <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
+        <AggregatedCatch
+          className="@container @4xl:col-span-8 @[96.937rem]:col-span-9"
+          lang={lang}
+        />
+      </div>
+    </div>
   );
 }
