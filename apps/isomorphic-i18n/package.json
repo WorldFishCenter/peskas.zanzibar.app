@@ -48,6 +48,7 @@
     "clsx": "^2.1.1",
     "d3-dsv": "^3.0.1",
     "date-arithmetic": "^4.1.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.11",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3",

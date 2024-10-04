@@ -5,26 +5,33 @@ export async function GET(req: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db('app');
-    const collection = db.collection('legacy-metrics_monthly');
+    const collection = db.collection('legacy-metrics_gear');
     
-    // Filter data for BMU "Kenyatta" and project necessary fields
+    // Aggregate data to get gear type counts for each landing site
     const data = await collection.aggregate([
       {
-        $match: {
-          BMU: "Kenyatta"
+        $group: {
+          _id: { landing_site: "$landing_site", gear_new: "$gear_new" },
+          count: { $sum: "$n" }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.landing_site",
+          children: {
+            $push: {
+              name: "$_id.gear_new",
+              size: "$count"
+            }
+          }
         }
       },
       {
         $project: {
-          date: 1,
-          mean_trip_catch: 1,
-          mean_trip_price: 1,
-          mean_effort: 1,
-          mean_cpue: 1
+          _id: 0,
+          name: "$_id",
+          children: 1
         }
-      },
-      {
-        $sort: { date: 1 }
       }
     ]).toArray();
 
