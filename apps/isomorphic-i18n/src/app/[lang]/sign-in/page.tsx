@@ -1,6 +1,7 @@
-import SignInForm from '@/app/[lang]/signin/sign-in-form';
-import AuthWrapperOne from '@/app/shared/auth-layout/auth-wrapper-one';
 import Image from 'next/image';
+
+import SignInForm from '@/app/[lang]/sign-in/sign-in-form';
+import AuthWrapperOne from '@/app/shared/auth-layout/auth-wrapper-one';
 import UnderlineShape from '@components/shape/underline';
 import { metaObject } from '@/config/site.config';
 
