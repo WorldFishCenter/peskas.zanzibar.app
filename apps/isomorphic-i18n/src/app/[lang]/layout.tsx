@@ -11,6 +11,8 @@ import { inter, lexendDeca } from "@/app/fonts";
 import cn from "@utils/class-names";
 import { dir } from "i18next";
 import { languages } from "../i18n/settings";
+import { GlobalFilterProvider } from "../components/global-filter-provider";
+import { TRPCReactProvider } from "@/trpc/react";
 
 const NextProgress = dynamic(() => import("@components/next-progress"), {
   ssr: false,
@@ -34,24 +36,24 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
   return (
-    <html
-      lang={lang}
-      dir={dir(lang)}
-      suppressHydrationWarning
-    >
+    <html lang={lang} dir={dir(lang)} suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, "font-inter")}
       >
-        <AuthProvider session={session}>
-          <ThemeProvider>
-            <NextProgress />
-            {children}
-            <Toaster />
-            <GlobalDrawer />
-            <GlobalModal />
-          </ThemeProvider>
-        </AuthProvider>
+        <GlobalFilterProvider>
+          <TRPCReactProvider>
+            <AuthProvider session={session}>
+              <ThemeProvider>
+                <NextProgress />
+                {children}
+                <Toaster />
+                <GlobalDrawer />
+                <GlobalModal />
+              </ThemeProvider>
+            </AuthProvider>
+          </TRPCReactProvider>
+        </GlobalFilterProvider>
       </body>
     </html>
   );

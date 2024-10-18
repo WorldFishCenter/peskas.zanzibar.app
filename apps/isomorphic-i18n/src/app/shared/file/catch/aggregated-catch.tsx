@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import WidgetCard from "@components/cards/widget-card";
 import { Title, Text, Badge } from "rizzui";
 import cn from "@utils/class-names";
@@ -12,13 +12,15 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts";
 import { useMedia } from "@hooks/use-media";
 import { CustomTooltip } from "@components/charts/custom-tooltip";
 import TrendingUpIcon from "@components/icons/trending-up";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
+import { api } from "@/trpc/react";
+import { useGlobalFilter } from "@/app/components/global-filter-provider";
 
 function CustomYAxisTick({ x, y, payload }: any) {
   return (
@@ -42,6 +44,7 @@ export default function AggregatedCatch({
   className?: string;
   lang?: string;
 }) {
+  const { bmuFilter } = useGlobalFilter();
   const [data, setData] = useState<DataItem[]>([]);
   const isMobile = useMedia("(max-width: 768px)", false);
   const isDesktop = useMedia("(max-width: 1440px)", false);
@@ -49,42 +52,57 @@ export default function AggregatedCatch({
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation(lang!, "common");
 
+  const { refetch } = api.test.sayHello.useQuery({
+    name: "World",
+  });
+
+  useEffect(() => {
+    refetch();
+  }, [bmuFilter, refetch]);
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/aggregated-catch');
+        const response = await fetch("/api/aggregated-catch");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
         // Transform data to fit the format for Recharts
         const formattedData = result.reduce((acc: DataItem[], item: any) => {
-          const dateKey = new Date(item._id.landing_date).toISOString().split('T')[0];
+          const dateKey = new Date(item._id.landing_date)
+            .toISOString()
+            .split("T")[0];
           const existingEntry = acc.find((entry) => entry.date === dateKey);
           if (existingEntry) {
             existingEntry[item._id.fish_category] = item.catch_kg;
           } else {
             acc.push({
               date: dateKey,
-              [item._id.fish_category]: item.catch_kg
+              [item._id.fish_category]: item.catch_kg,
             });
           }
           return acc;
         }, []);
         setData(formattedData);
       } catch (error) {
-        console.error('Failed to fetch data:', (error as Error).message);
+        console.error("Failed to fetch data:", (error as Error).message);
       }
     }
     fetchData();
   }, []);
 
-  const fishCategories = ['Rest of catch', 'Scavengers', 'Rabbitfish', 'Parrotfish'];
-  const colors = ['#282ECA', '#4052F6', '#96C0FF', '#DEEAFC'];
+  const fishCategories = [
+    "Rest of catch",
+    "Scavengers",
+    "Rabbitfish",
+    "Parrotfish",
+  ];
+  const colors = ["#282ECA", "#4052F6", "#96C0FF", "#DEEAFC"];
 
   const totalCatch = data.reduce((sum, item) => {
     const itemTotal = Object.entries(item).reduce((acc, [key, value]) => {
-      if (key !== 'date' && typeof value === 'number') {
+      if (key !== "date" && typeof value === "number") {
         return acc + value;
       }
       return acc;
@@ -111,7 +129,7 @@ export default function AggregatedCatch({
               <TrendingUpIcon className="me-1 h-4 w-4" />
               32.40%
             </Text>
-            {t('text-last-year')}
+            {t("text-last-year")}
           </Text>
         </div>
       }
@@ -120,10 +138,7 @@ export default function AggregatedCatch({
         <div className="hidden @2xl:block">
           {fishCategories.map((category, index) => (
             <span key={category} className="mr-4">
-              <Badge 
-                renderAsDot 
-                className={`me-0.5 bg-[${colors[index]}]`}
-              /> 
+              <Badge renderAsDot className={`me-0.5 bg-[${colors[index]}]`} />
               {category}
             </span>
           ))}
@@ -156,7 +171,12 @@ export default function AggregatedCatch({
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               {fishCategories.map((category, index) => (
-                <Bar key={category} dataKey={category} stackId="a" fill={colors[index]} />
+                <Bar
+                  key={category}
+                  dataKey={category}
+                  stackId="a"
+                  fill={colors[index]}
+                />
               ))}
             </BarChart>
           </ResponsiveContainer>

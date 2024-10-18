@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["NEXTAUTH_SECRET", "NEXTAUTH_URL"]
+      "env": ["NEXTAUTH_SECRET", "NEXTAUTH_URL", "MONGODB_URI"]
     },
     "lint": {},
     "start": {
@@ -19,5 +19,6 @@
       "dependsOn": ["^clean"]
     }
   },
-  "ui": "stream"
+  "ui": "stream",
+  "globalEnv": ["NEXTAUTH_SECRET", "NEXTAUTH_URL", "MONGODB_URI"]
 }

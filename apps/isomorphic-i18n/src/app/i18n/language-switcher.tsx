@@ -67,11 +67,15 @@ export default function LanguageSwitcher({
   const { t } = useTranslation(lang!);
   const router = useRouter();
   const pathname = usePathname();
-  const pathnameSplit = pathname.split("/");
-  const newPathname: string = pathnameSplit.slice(2, pathnameSplit.length).join("/");
+  const pathnameSplit = pathname?.split("/") ?? [];
+  const newPathname: string = pathnameSplit
+    .slice(2, pathnameSplit.length)
+    .join("/");
   const { query } = useQueryParams(pathname ?? "/");
   const options = languageMenu;
-  const currentSelectedItem = lang ? options.find((o) => o.value === lang)! : options[0];
+  const currentSelectedItem = lang
+    ? options.find((o) => o.value === lang)!
+    : options[0];
   const [selectedItem, setSelectedItem] = useState(currentSelectedItem);
 
   function handleItemClick(values: any) {
@@ -82,10 +86,7 @@ export default function LanguageSwitcher({
 
   return (
     <>
-      <Listbox
-        value={selectedItem}
-        onChange={handleItemClick}
-      >
+      <Listbox value={selectedItem} onChange={handleItemClick}>
         {({ open }) => (
           <div className="relative z-10 lg:top-[1px]">
             <Listbox.Button
@@ -100,7 +101,12 @@ export default function LanguageSwitcher({
                 </span>
               ) : (
                 <div className="flex items-center justify-center gap-2 uppercase">
-                  <span className={cn("h-4 w-5 shrink-0 overflow-hidden", iconClassName)}>
+                  <span
+                    className={cn(
+                      "h-4 w-5 shrink-0 overflow-hidden",
+                      iconClassName
+                    )}
+                  >
                     {selectedItem?.icon}
                   </span>
                   <PiCaretDownBold className="size-3.5" />

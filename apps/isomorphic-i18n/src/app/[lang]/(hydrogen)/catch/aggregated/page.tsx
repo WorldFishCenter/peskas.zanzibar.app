@@ -15,7 +15,11 @@ const pageHeader = {
   ],
 };
 
-export default function NewPage({ lang }: { lang?: string }) {
+export default function NewPage({
+  params: { lang },
+}: {
+  params: { lang?: string };
+}) {
   return (
     <div className="flex flex-col h-screen">
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />

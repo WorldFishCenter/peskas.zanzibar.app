@@ -20,10 +20,12 @@ import Sidebar from "@/layouts/hydrogen/sidebar";
 import StickyHeader from "@/layouts/sticky-header";
 import LanguageSwitcher from "@/app/i18n/language-switcher";
 import SearchWidget from "@/app/shared/search/search";
+import { FilterSelector } from "@/app/components/filter-selector";
 
 function HeaderMenuRight() {
   return (
     <div className="ms-auto flex shrink-0 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
+      <FilterSelector />
       <MessagesDropdown>
         <ActionIcon
           aria-label="Messages"
