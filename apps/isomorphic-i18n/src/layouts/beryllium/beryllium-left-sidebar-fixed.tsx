@@ -42,7 +42,7 @@ function MenuItem({ menu, lang }: { menu: MenuItemsType; lang?: string }) {
       <span
         className={cn(
           "rounded-3xl bg-gray-0/0 px-4 py-2 text-white transition-colors duration-200 group-hover:bg-gray-0 group-hover:text-gray-900 dark:group-hover:bg-gray-100",
-          isActive && "bg-gray-0 text-gray-900 dark:bg-gray-100 "
+          { "bg-gray-0 text-gray-900 dark:bg-gray-100": isActive }
         )}
       >
         <Icon className="h-auto w-6" />

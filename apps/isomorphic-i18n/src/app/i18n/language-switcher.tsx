@@ -74,7 +74,7 @@ export default function LanguageSwitcher({
   const { query } = useQueryParams(pathname ?? "/");
   const options = languageMenu;
   const currentSelectedItem = lang
-    ? options.find((o) => o.value === lang)!
+    ? options.find((o) => o.value === lang) ?? options[0]
     : options[0];
   const [selectedItem, setSelectedItem] = useState(currentSelectedItem);
 

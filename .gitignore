@@ -38,3 +38,7 @@ dist/
 
 .vercel
 .vscode
+
+# local env files
+.env*
+!.env.example
