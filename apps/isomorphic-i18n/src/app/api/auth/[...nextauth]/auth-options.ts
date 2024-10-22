@@ -1,45 +1,53 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import isEqual from 'lodash/isEqual';
-import { pagesOptions } from './pages-options';
+import get from 'lodash/get';
+import pick from 'lodash/pick';
+import bcryptjs from "bcryptjs";
+
+import getDb from "@repo/nosql";
+import { UserModel } from "@repo/nosql/schema/auth";
+import { loginSchema } from '@/validators/login.schema';
 import { env } from '@/env.mjs';
+import InvalidPayloadError from "@/app/shared/error/InvalidPayloadError";
+import UserNotFoundError from "@/app/shared/error/UserNotFoundError";
+import { MDMongooseAdapter } from "./mongoose-adapter";
 
 export const authOptions: NextAuthOptions = {
-  // debug: true,
-  pages: {
-    ...pagesOptions,
-  },
+  adapter: MDMongooseAdapter(),
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.idToken as string,
-        },
-      };
-    },
     async jwt({ token, user }) {
       if (user) {
-        // return user as JWT
-        token.user = user;
+        token.id = user.id
+        token.email = user.email
+        token.maxAge = get(user, 'maxAge')
+        token.groups = get(user, 'groups')
       }
       return token;
     },
-    async redirect({ url, baseUrl }) {
-      const parsedUrl = new URL(url, baseUrl);
-      if (parsedUrl.searchParams.has('callbackUrl')) {
-        return `${baseUrl}${parsedUrl.searchParams.get('callbackUrl')}`;
-      }
-      if (parsedUrl.origin === baseUrl) {
-        return url;
-      }
-      return baseUrl;
+    async session({ session, token, user }) {
+      const expiry = get(token, 'maxAge')
+        ? {
+            maxAge: token.maxAge as number,
+            expires: new Date(Date.now() + ((token.maxAge as number) * 1000)).toISOString(),
+          }
+        : {}
+
+      return {
+        ...session,
+        ...expiry,
+        user: {
+          ...session.user,
+          id: token.id as string | undefined,
+          email: token.email,
+        },
+      };
+    },
+    async redirect({ baseUrl }) {
+      return baseUrl
     },
   },
   providers: [
@@ -47,24 +55,45 @@ export const authOptions: NextAuthOptions = {
       id: 'credentials',
       name: 'Credentials',
       credentials: {},
-      async authorize(credentials: any) {
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid
-        const user = {
-          email: 'admin@admin.com',
-          password: 'admin',
-        };
-
-        if (
-          isEqual(user, {
-            email: credentials?.email,
-            password: credentials?.password,
+      async authorize(credentials) {
+        const rememberMe = get(credentials, 'rememberMe') === 'true'
+        const parsedCredentials =
+          loginSchema.safeParse({
+            ...credentials,
+            rememberMe
           })
-        ) {
-          return user as any;
+
+        if (parsedCredentials.success) {          
+          const { email, password } = parsedCredentials.data
+          await getDb()
+          const user = await UserModel.findOne({ email: email })
+            .populate({ 
+              path: 'groups',
+              populate: {
+                path: 'permission_id',
+                model: 'Permission'
+              } 
+            })
+            .lean()
+          if (!user) throw new UserNotFoundError()
+
+          const passwordsMatch = !user.password
+            ? false
+            : await bcryptjs.compare(password, user.password);
+
+          if (passwordsMatch) {
+            /**
+             * If remember me is enabled, maxAge is 1 month.
+             * Otherwise 1 day only.
+             */ 
+            const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+            return {
+              ...pick(user, ['id', 'email', 'groups']),
+              maxAge
+            }
+          }
         }
-        return null;
+        throw new InvalidPayloadError()
       },
     }),
     GoogleProvider({

@@ -26,10 +26,11 @@
     "i18n:clean": "turbo clean --filter=i18n"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
-    "@repo/typescript-config": "workspace:*",
     "rimraf": "^5.0.5",
     "turbo": "2.0.1"
   },

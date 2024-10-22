@@ -1,0 +1,25 @@
+{
+  "name": "@repo/nosql",
+  "version": "1.0.0",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema/auth": "./src/schema/auth.ts"
+  },
+  "scripts": {
+    "format": "prettier . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "generate": "migrate -f src/migrate.ts create",
+    "migrate": "migrate -f src/migrate.ts"
+  },
+  "devDependencies": {
+    "eslint": "8.57.0",
+    "prettier": "3.2.5",
+    "ts-migrate-mongoose": "^3.8.4",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "mongoose": "^8.7.1"
+  }
+}

@@ -1,30 +1,45 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { signIn } from 'next-auth/react';
 import { SubmitHandler } from 'react-hook-form';
 import { PiArrowRightBold } from 'react-icons/pi';
-import { Checkbox, Password, Button, Input, Text } from 'rizzui';
+import { Checkbox, Password, Button, Input, Text, Loader } from 'rizzui';
+import { useRouter } from 'next/navigation'
+
 import { Form } from '@ui/form';
 import { routes } from '@/config/routes';
 import { loginSchema, LoginSchema } from '@/validators/login.schema';
+import Alert from '@/app/_components/alert';
 
 const initialValues: LoginSchema = {
-  email: 'admin@admin.com',
-  password: 'admin',
+  email: 'anthony@mountaindev.com',
+  password: '1234qwer',
   rememberMe: true,
 };
 
 export default function SignInForm() {
   //TODO: why we need to reset it here
-  const [reset, setReset] = useState({});
+  const [loading, setLoading] = useState(false)
+  const [loginErr, setLoginErr] = useState('')
+  const [reset, setReset] = useState({})
+  const router = useRouter()
 
-  const onSubmit: SubmitHandler<LoginSchema> = (data) => {
-    console.log(data);
-    signIn('credentials', {
+  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
+    setLoading(true)
+    setLoginErr('')
+    const resp = await signIn('credentials', {
       ...data,
-    });
+      redirect: false
+    })
+
+    if (resp?.ok) {
+      router.push('/')
+    } else if (!resp?.ok && resp?.error) {
+      setLoginErr(resp?.error)
+    }
+    setLoading(false)
   };
 
   return (
@@ -39,6 +54,7 @@ export default function SignInForm() {
       >
         {({ register, formState: { errors } }) => (
           <div className="space-y-5">
+            {loginErr && <Alert color="danger" message={loginErr} className="mb-[16px]" />}
             <Input
               type="email"
               size="lg"
@@ -72,8 +88,11 @@ export default function SignInForm() {
               </Link>
             </div>
             <Button className="w-full" type="submit" size="lg">
-              <span>Sign in</span>{' '}
-              <PiArrowRightBold className="ms-2 mt-0.5 h-5 w-5" />
+              {loading 
+                ? <Loader variant="spinner" color="current"/> 
+                : <Fragment><span>Sign in</span>{' '}<PiArrowRightBold className="ms-2 mt-0.5 h-5 w-5" /></Fragment>
+              }
+              
             </Button>
           </div>
         )}

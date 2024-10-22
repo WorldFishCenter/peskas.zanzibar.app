@@ -29,7 +29,7 @@ export default function NewPage({
       <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
         <AggregatedCatch
           className="@container @4xl:col-span-8 @[96.937rem]:col-span-9"
-          lang={lang}
+          //lang={lang}
         />
       </div>
     </div>

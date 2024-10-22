@@ -90,6 +90,13 @@ export const routes = {
     aggregated: '/catch/aggregated',
     composition: '/catch/composition',
   },
+  groups: {
+    control: '/groups/control',
+    iia: '/groups/iia',
+    cia: '/groups/cia',
+    wbcia: '/groups/wbcia',
+    aia: '/groups/aia',
+  },  
   tables: {
     basic: '/tables/basic',
     collapsible: '/tables/collapsible',

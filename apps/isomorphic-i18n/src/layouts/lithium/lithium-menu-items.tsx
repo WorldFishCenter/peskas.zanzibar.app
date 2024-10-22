@@ -107,6 +107,37 @@ export const lithiumMenuItems: LithiumMenuItem = {
       },
     ],
   },
+  groups: {
+    name: 'sidebar-menu-groups',
+    type: 'link',
+    dropdownItems: [
+      {
+        name: 'Control',
+        href: routes.groups.control,
+        icon: 'PageBlankIcon',
+      },
+      {
+        name: 'IIA',
+        href: routes.groups.iia,
+        icon: 'PageBlankIcon',
+      },
+      {
+        name: 'CIA',
+        href: routes.groups.cia,
+        icon: 'PageBlankIcon',
+      },
+      {
+        name: 'WBCIA',
+        href: routes.groups.wbcia,
+        icon: 'PageBlankIcon',
+      },
+      {
+        name: 'AIA',
+        href: routes.groups.aia,
+        icon: 'PageBlankIcon',
+      },      
+    ],
+  },  
 };
 
 export type LithiumMenuItemsKeys = keyof typeof lithiumMenuItems;
