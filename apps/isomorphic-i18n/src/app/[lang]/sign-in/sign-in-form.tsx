@@ -35,7 +35,7 @@ export default function SignInForm() {
     })
 
     if (resp?.ok) {
-      router.push('/')
+      router.refresh()
     } else if (!resp?.ok && resp?.error) {
       setLoginErr(resp?.error)
     }
