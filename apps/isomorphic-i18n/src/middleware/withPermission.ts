@@ -24,7 +24,12 @@ const withPermission: MiddlewareFactory = (next: NextMiddleware) => {
     if (!secret) {
       throw new Error('Secret is not set.')
     }
-  
+    
+    if (!cookieToken) {
+      return NextResponse.redirect(
+        new URL(`/?error=10001`, request.url),
+      )
+    }
     const payload = await getToken({
       req: request,
       secret,
@@ -32,12 +37,18 @@ const withPermission: MiddlewareFactory = (next: NextMiddleware) => {
     })
 
     const groups: TPermission[] = payload?.groups as TPermission[]
+    if (groups.length === 0) {
+      return NextResponse.redirect(
+        new URL(`/?error=10002`, request.url),
+      )
+    }
+
     const hasGroup = groups
       .filter(item => (item.name).toLowerCase() === (groupPageMatches?.groups?.group ?? '').toLowerCase())
 
     if (hasGroup.length === 0) {
       return NextResponse.redirect(
-        new URL(`/?error=10001`, request.url),
+        new URL(`/?error=10003`, request.url),
       )
     }
 
