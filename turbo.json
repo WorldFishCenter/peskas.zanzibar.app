@@ -5,7 +5,13 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["NEXTAUTH_SECRET", "NEXTAUTH_URL", "MONGODB_URI"]
+      "env": [
+        "NEXTAUTH_SECRET",
+        "NEXTAUTH_URL",
+        "MONGODB_URI",
+        "VERCEL_URL",
+        "VERCEL"
+      ]
     },
     "lint": {},
     "start": {
@@ -20,5 +26,11 @@
     }
   },
   "ui": "stream",
-  "globalEnv": ["NEXTAUTH_SECRET", "NEXTAUTH_URL", "MONGODB_URI"]
+  "globalEnv": [
+    "NEXTAUTH_SECRET",
+    "NEXTAUTH_URL",
+    "MONGODB_URI",
+    "VERCEL_URL",
+    "VERCEL"
+  ]
 }
