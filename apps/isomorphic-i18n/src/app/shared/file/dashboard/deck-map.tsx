@@ -62,23 +62,23 @@ const colorRange: Color[] = [
   [209, 55, 78],
 ];
 
-function getTooltip({object}: PickingInfo) {
+function getTooltip({ object }: PickingInfo) {
   if (!object) return null;
   const lat = object.position[1];
   const lng = object.position[0];
   const count = object.points.length;
 
   return {
-    text: `Latitude: ${Number.isFinite(lat) ? lat.toFixed(6) : ''}
-Longitude: ${Number.isFinite(lng) ? lng.toFixed(6) : ''}
+    text: `Latitude: ${Number.isFinite(lat) ? lat.toFixed(6) : ""}
+Longitude: ${Number.isFinite(lng) ? lng.toFixed(6) : ""}
 N. Surveys: ${count}`,
     style: {
-      color: '#fff',
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      padding: '1rem',
-      borderRadius: '4px',
-      marginTop: '0'
-    }
+      color: "#fff",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      padding: "1rem",
+      borderRadius: "4px",
+      marginTop: "0",
+    },
   };
 }
 
@@ -87,21 +87,21 @@ export default function DeckMap() {
   const [radius, setRadius] = useState(1000);
 
   useEffect(() => {
-    fetch('/api/map-distribution')
-      .then(res => res.json())
-      .then(jsonData => {
+    fetch("/api/map-distribution")
+      .then((res) => res.json())
+      .then((jsonData) => {
         const points = jsonData.map((d: any) => ({
           longitude: d.lon,
-          latitude: d.lat
+          latitude: d.lat,
         }));
         setData(points);
       })
-      .catch(err => console.error('Failed to load data:', err));
+      .catch((err) => console.error("Failed to load data:", err));
   }, []);
 
   const layers = [
     new HexagonLayer<DataPoint>({
-      id: 'hexagons',
+      id: "hexagons",
       data,
       pickable: true,
       extruded: true,
@@ -110,17 +110,17 @@ export default function DeckMap() {
       elevationScale: 30,
       coverage: 0.8,
       colorRange,
-      getPosition: d => [d.longitude, d.latitude],
+      getPosition: (d) => [d.longitude, d.latitude],
       material: {
         ambient: 0.8,
         diffuse: 0.7,
         shininess: 40,
-        specularColor: [51, 51, 51]
+        specularColor: [51, 51, 51],
       },
       transitions: {
-        elevationScale: 3000
-      }
-    })
+        elevationScale: 3000,
+      },
+    }),
   ];
 
   return (
@@ -132,31 +132,34 @@ export default function DeckMap() {
         controller={true}
         getTooltip={getTooltip}
       >
-        <Map 
-          reuseMaps 
-          mapStyle={MAP_STYLE}
-          attributionControl={false}
-        />
+        <Map reuseMaps mapStyle={MAP_STYLE} attributionControl={false} />
       </DeckGL>
       <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg w-72">
         <h2 className="text-xl font-bold mb-2">Surveys Distribution</h2>
-        <p className="mb-4">The layer aggregates survey data within the boundary of each hexagon cell</p>
-        
+        <p className="mb-4">
+          The layer aggregates survey data within the boundary of each hexagon
+          cell
+        </p>
+
         <div className="flex items-center mb-2">
           <div className="w-full bg-gradient-to-r from-[#0198BD] via-[#D8FEB5] to-[#D1374E] h-4 rounded"></div>
         </div>
-        <p className="mb-4 text-sm">Fewer surveys <span className="float-right">More surveys</span></p>
-        
+        <p className="mb-4 text-sm">
+          Fewer surveys <span className="float-right">More surveys</span>
+        </p>
+
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Radius (meters)</label>
-          <input 
-            type="range" 
-            min={500} 
-            max={2000} 
-            step={500} 
-            value={radius} 
-            onChange={(e) => setRadius(parseInt(e.target.value))} 
-            className="w-full" 
+          <label className="block text-sm font-medium text-gray-700">
+            Radius (meters)
+          </label>
+          <input
+            type="range"
+            min={500}
+            max={2000}
+            step={500}
+            value={radius}
+            onChange={(e) => setRadius(parseInt(e.target.value))}
+            className="w-full"
           />
           <div className="flex justify-between text-xs text-gray-600">
             <span>500</span>
