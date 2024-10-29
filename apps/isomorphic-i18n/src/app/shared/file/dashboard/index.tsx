@@ -23,11 +23,11 @@ export default function FileDashboard({ lang }: { lang?: string }) {
       {/* Charts Row */}
       <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
         <CatchMonthly
-          className="@container @4xl:col-span-9 @[96.937rem]:col-span-10"
+          className="@container @4xl:col-span-8 @[96.937rem]:col-span-9"
           lang={lang}
         />
         <CatchRadarChart
-          className="@4xl:col-span-3 @[96.937rem]:col-span-2"
+          className="@4xl:col-span-4 @[96.937rem]:col-span-3"
           lang={lang}
         />
       </div>

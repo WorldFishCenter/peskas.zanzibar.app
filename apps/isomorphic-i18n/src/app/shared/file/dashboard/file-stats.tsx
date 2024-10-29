@@ -9,11 +9,39 @@ import TrendingUpIcon from "@components/icons/trending-up";
 import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
 import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
+import { useState, useEffect } from "react";
 
 type FileStatsType = {
   className?: string;
   lang?: string;
 };
+
+interface StatData {
+  id: string;
+  title: string;
+  metric: string;
+  increased: boolean;
+  decreased: boolean;
+  percentage: string;
+  fill: string;
+  chart: Array<{
+    day: string;
+    sale: number;
+  }>;
+}
+
+interface StatsData {
+  current: number;
+  percentage: number;
+  trend: Array<{ day: string; sale: number }>;
+}
+
+interface MonthlyStats {
+  submissions: StatsData;
+  fishers: StatsData;
+  catches: StatsData;
+  weight: StatsData;
+}
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -28,81 +56,6 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const filesStatData = [
-  {
-    id: "1",
-    title: "Total surveys",
-    metric: "36,476",
-    increased: true,
-    decreased: false,
-    percentage: "+32.40",
-    fill: "#015DE1",
-    chart: [
-      { day: "Jan", sale: 2000 },
-      { day: "Feb", sale: 2800 },
-      { day: "Mar", sale: 3200 },
-      { day: "Apr", sale: 2780 },
-      { day: "May", sale: 3900 },
-      { day: "Jun", sale: 3490 },
-      { day: "Jul", sale: 4200 },
-    ],
-  },
-  {
-    id: "2",
-    title: "Total fishers",
-    metric: "53,406",
-    increased: false,
-    decreased: true,
-    percentage: "-18.45",
-    fill: "#048848",
-    chart: [
-      { day: "Jan", sale: 3500 },
-      { day: "Feb", sale: 3000 },
-      { day: "Mar", sale: 2800 },
-      { day: "Apr", sale: 2600 },
-      { day: "May", sale: 2400 },
-      { day: "Jun", sale: 2200 },
-      { day: "Jul", sale: 2000 },
-    ],
-  },
-  {
-    id: "3",
-    title: "Total landings",
-    metric: "90,875",
-    increased: true,
-    decreased: false,
-    percentage: "+20.34",
-    fill: "#B92E5D",
-    chart: [
-      { day: "Jan", sale: 4500 },
-      { day: "Feb", sale: 5000 },
-      { day: "Mar", sale: 5500 },
-      { day: "Apr", sale: 6000 },
-      { day: "May", sale: 6500 },
-      { day: "Jun", sale: 7000 },
-      { day: "Jul", sale: 7500 },
-    ],
-  },
-  {
-    id: "4",
-    title: "Monthly tonnes",
-    metric: "63,076",
-    increased: true,
-    decreased: false,
-    percentage: "+14.45",
-    fill: "#8200E9",
-    chart: [
-      { day: "Jan", sale: 3000 },
-      { day: "Feb", sale: 3300 },
-      { day: "Mar", sale: 3600 },
-      { day: "Apr", sale: 3900 },
-      { day: "May", sale: 4200 },
-      { day: "Jun", sale: 4500 },
-      { day: "Jul", sale: 4800 },
-    ],
-  },
-];
-
 export function FileStatGrid({
   className,
   lang,
@@ -111,10 +64,82 @@ export function FileStatGrid({
   lang?: string;
 }) {
   const { t } = useTranslation(lang!, "common");
+  const [statsData, setStatsData] = useState<StatData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/monthly-stats")
+      .then((res) => res.json())
+      .then((data: MonthlyStats) => {
+        const transformedStats: StatData[] = [
+          {
+            id: "1",
+            title: "Total surveys",
+            metric: data.submissions.current.toString(),
+            increased: data.submissions.percentage > 0,
+            decreased: data.submissions.percentage < 0,
+            percentage:
+              data.submissions.percentage > 0
+                ? `+${data.submissions.percentage.toFixed(2)}`
+                : data.submissions.percentage.toFixed(2),
+            fill: "#015DE1",
+            chart: data.submissions.trend,
+          },
+          {
+            id: "2",
+            title: "Total fishers",
+            metric: data.fishers.current.toString(),
+            increased: data.fishers.percentage > 0,
+            decreased: data.fishers.percentage < 0,
+            percentage:
+              data.fishers.percentage > 0
+                ? `+${data.fishers.percentage.toFixed(2)}`
+                : data.fishers.percentage.toFixed(2),
+            fill: "#048848",
+            chart: data.fishers.trend,
+          },
+          {
+            id: "3",
+            title: "Total catches",
+            metric: data.catches.current.toString(),
+            increased: data.catches.percentage > 0,
+            decreased: data.catches.percentage < 0,
+            percentage:
+              data.catches.percentage > 0
+                ? `+${data.catches.percentage.toFixed(2)}`
+                : data.catches.percentage.toFixed(2),
+            fill: "#B92E5D",
+            chart: data.catches.trend,
+          },
+          {
+            id: "4",
+            title: "Monthly tonnes",
+            metric: data.weight.current.toFixed(1),
+            increased: data.weight.percentage > 0,
+            decreased: data.weight.percentage < 0,
+            percentage:
+              data.weight.percentage > 0
+                ? `+${data.weight.percentage.toFixed(2)}`
+                : data.weight.percentage.toFixed(2),
+            fill: "#8200E9",
+            chart: data.weight.trend,
+          },
+        ];
+        setStatsData(transformedStats);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching stats:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading stats...</div>;
+  if (!statsData.length) return <div>No data available</div>;
 
   return (
     <>
-      {filesStatData.map((stat) => (
+      {statsData.map((stat) => (
         <MetricCard
           key={stat.title + stat.id}
           title={t(stat.title)}
@@ -164,7 +189,6 @@ export function FileStatGrid({
     </>
   );
 }
-
 export default function FileStats({ className, lang }: FileStatsType) {
   const {
     sliderEl,
