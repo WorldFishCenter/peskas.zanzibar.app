@@ -5,39 +5,32 @@ export async function GET(req: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db('app');
-    const collection = db.collection('legacy-metrics_gear');
+    const collection = db.collection('gear_distribution');
     
-    // Aggregate data to get gear type counts for each landing site
-    const data = await collection.aggregate([
-      {
-        $group: {
-          _id: { landing_site: "$landing_site", gear_new: "$gear_new" },
-          count: { $sum: "$n" }
-        }
-      },
-      {
-        $group: {
-          _id: "$_id.landing_site",
-          children: {
-            $push: {
-              name: "$_id.gear_new",
-              size: "$count"
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          name: "$_id",
-          children: 1
-        }
-      }
-    ]).toArray();
+    // Get data for Bureni and filter out zero counts
+    const gearData = await collection
+      .find({ 
+        landing_site: "Kenyatta",
+        gear_n: { $gt: 0 }  // Only get gears with counts greater than 0
+      })
+      .project({
+        _id: 0,
+        name: "$gear",
+        size: "$gear_n"
+      })
+      .toArray();
 
-    return NextResponse.json(data);
+    // Sort by size in descending order
+    const sortedData = gearData.sort((a, b) => b.size - a.size);
+
+    const transformedData = [{
+      name: "Bureni",
+      children: sortedData
+    }];
+
+    return NextResponse.json(transformedData);
   } catch (error) {
-    console.error('Error fetching data:', (error as Error).message);
-    return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
+    console.error('Error fetching data:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

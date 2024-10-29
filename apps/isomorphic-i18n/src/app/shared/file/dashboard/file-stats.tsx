@@ -5,56 +5,101 @@ import cn from "@utils/class-names";
 import { useScrollableSlider } from "@hooks/use-scrollable-slider";
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
 import MetricCard from "@components/cards/metric-card";
-import CircleProgressBar from "@components/charts/circle-progressbar";
 import TrendingUpIcon from "@components/icons/trending-up";
 import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
+import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
 
 type FileStatsType = {
   className?: string;
   lang?: string;
 };
 
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-2 border border-gray-200 shadow-lg rounded-lg">
+        <p className="text-sm font-medium">
+          <span>{payload[0].value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const filesStatData = [
   {
-    id: 1,
-    title: "text-total-Images",
-    metric: "36,476 GB",
-    fill: "#3872FA",
-    percentage: 32,
+    id: "1",
+    title: "Total surveys",
+    metric: "36,476",
     increased: true,
     decreased: false,
-    value: "+32.40",
+    percentage: "+32.40",
+    fill: "#015DE1",
+    chart: [
+      { day: "Jan", sale: 2000 },
+      { day: "Feb", sale: 2800 },
+      { day: "Mar", sale: 3200 },
+      { day: "Apr", sale: 2780 },
+      { day: "May", sale: 3900 },
+      { day: "Jun", sale: 3490 },
+      { day: "Jul", sale: 4200 },
+    ],
   },
   {
-    id: 2,
-    title: "text-total-videos",
-    metric: "53,406 GB",
-    fill: "#3872FA",
-    percentage: 48,
+    id: "2",
+    title: "Total fishers",
+    metric: "53,406",
     increased: false,
     decreased: true,
-    value: "-18.45",
+    percentage: "-18.45",
+    fill: "#048848",
+    chart: [
+      { day: "Jan", sale: 3500 },
+      { day: "Feb", sale: 3000 },
+      { day: "Mar", sale: 2800 },
+      { day: "Apr", sale: 2600 },
+      { day: "May", sale: 2400 },
+      { day: "Jun", sale: 2200 },
+      { day: "Jul", sale: 2000 },
+    ],
   },
   {
-    id: 3,
-    title: "text-total-documents",
-    metric: "90,875 GB",
-    fill: "#EE0000",
-    percentage: 89,
+    id: "3",
+    title: "Total landings",
+    metric: "90,875",
     increased: true,
     decreased: false,
-    value: "+20.34",
+    percentage: "+20.34",
+    fill: "#B92E5D",
+    chart: [
+      { day: "Jan", sale: 4500 },
+      { day: "Feb", sale: 5000 },
+      { day: "Mar", sale: 5500 },
+      { day: "Apr", sale: 6000 },
+      { day: "May", sale: 6500 },
+      { day: "Jun", sale: 7000 },
+      { day: "Jul", sale: 7500 },
+    ],
   },
   {
-    id: 4,
-    title: "text-total-musics",
-    metric: "63,076 GB",
-    fill: "#3872FA",
-    percentage: 54,
+    id: "4",
+    title: "Monthly tonnes",
+    metric: "63,076",
     increased: true,
     decreased: false,
-    value: "+14.45",
+    percentage: "+14.45",
+    fill: "#8200E9",
+    chart: [
+      { day: "Jan", sale: 3000 },
+      { day: "Feb", sale: 3300 },
+      { day: "Mar", sale: 3600 },
+      { day: "Apr", sale: 3900 },
+      { day: "May", sale: 4200 },
+      { day: "Jun", sale: 4500 },
+      { day: "Jul", sale: 4800 },
+    ],
   },
 ];
 
@@ -65,44 +110,24 @@ export function FileStatGrid({
   className?: string;
   lang?: string;
 }) {
-  const { t } = useTranslation(lang!, 'common');
+  const { t } = useTranslation(lang!, "common");
 
   return (
     <>
-      {filesStatData.map((stat: any) => {
-        return (
-          <MetricCard
-            key={stat.id}
-            title={t(stat.title)}
-            metric={stat.metric}
-            metricClassName="3xl:text-[22px]"
-            className={cn("w-full max-w-full justify-between", className)}
-            chart={
-              <CircleProgressBar
-                percentage={stat.percentage}
-                size={80}
-                stroke="#D7E3FE"
-                strokeWidth={7}
-                progressColor={stat.fill}
-                useParentResponsive={true}
-                label={
-                  <Text
-                    as="span"
-                    className="font-lexend text-base font-medium text-gray-700"
-                  >
-                    {stat.percentage}%
-                  </Text>
-                }
-                strokeClassName="dark:stroke-gray-300"
-              />
-            }
-          >
-            <Text className="mt-3 flex items-center leading-none text-gray-500">
+      {filesStatData.map((stat) => (
+        <MetricCard
+          key={stat.title + stat.id}
+          title={t(stat.title)}
+          metric={stat.metric}
+          rounded="lg"
+          metricClassName="text-2xl mt-1"
+          info={
+            <Text className="mt-4 flex items-center text-sm">
               <Text
                 as="span"
                 className={cn(
                   "me-2 inline-flex items-center font-medium",
-                  stat.increased ? "text-green" : "text-red"
+                  stat.increased ? "text-green-500" : "text-red-500"
                 )}
               >
                 {stat.increased ? (
@@ -110,13 +135,32 @@ export function FileStatGrid({
                 ) : (
                   <TrendingDownIcon className="me-1 h-4 w-4" />
                 )}
-                {stat.value}%
+                {stat.percentage}%
               </Text>
-              {t('text-last-month')}
+              {t("text-last-month")}
             </Text>
-          </MetricCard>
-        );
-      })}
+          }
+          chart={
+            <div className="h-12 w-20 @[16.25rem]:h-16 @[16.25rem]:w-24 @xs:h-20 @xs:w-28">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart barSize={6} barGap={5} data={stat.chart}>
+                  <Bar dataKey="sale" fill={stat.fill} radius={[2, 2, 0, 0]} />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "transparent" }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          }
+          chartClassName="flex flex-col w-auto h-auto text-center"
+          className={cn(
+            "@container @7xl:text-[15px] [&>div]:items-end",
+            "w-full max-w-full",
+            className
+          )}
+        />
+      ))}
     </>
   );
 }
@@ -151,7 +195,7 @@ export default function FileStats({ className, lang }: FileStatsType) {
           ref={sliderEl}
           className="custom-scrollbar-x grid grid-flow-col gap-5 overflow-x-auto scroll-smooth 2xl:gap-6 3xl:gap-8"
         >
-          <FileStatGrid className="min-w-[292px]" />
+          <FileStatGrid className="min-w-[292px]" lang={lang} />
         </div>
       </div>
       <Button
