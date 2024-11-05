@@ -5,58 +5,56 @@ import cn from "@utils/class-names";
 import { useScrollableSlider } from "@hooks/use-scrollable-slider";
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
 import MetricCard from "@components/cards/metric-card";
-import CircleProgressBar from "@components/charts/circle-progressbar";
 import TrendingUpIcon from "@components/icons/trending-up";
 import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
+import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
+import { useState, useEffect } from "react";
 
 type FileStatsType = {
   className?: string;
   lang?: string;
 };
 
-const filesStatData = [
-  {
-    id: 1,
-    title: "text-total-Images",
-    metric: "36,476 GB",
-    fill: "#3872FA",
-    percentage: 32,
-    increased: true,
-    decreased: false,
-    value: "+32.40",
-  },
-  {
-    id: 2,
-    title: "text-total-videos",
-    metric: "53,406 GB",
-    fill: "#3872FA",
-    percentage: 48,
-    increased: false,
-    decreased: true,
-    value: "-18.45",
-  },
-  {
-    id: 3,
-    title: "text-total-documents",
-    metric: "90,875 GB",
-    fill: "#EE0000",
-    percentage: 89,
-    increased: true,
-    decreased: false,
-    value: "+20.34",
-  },
-  {
-    id: 4,
-    title: "text-total-musics",
-    metric: "63,076 GB",
-    fill: "#3872FA",
-    percentage: 54,
-    increased: true,
-    decreased: false,
-    value: "+14.45",
-  },
-];
+interface StatData {
+  id: string;
+  title: string;
+  metric: string;
+  increased: boolean;
+  decreased: boolean;
+  percentage: string;
+  fill: string;
+  chart: Array<{
+    day: string;
+    sale: number;
+  }>;
+}
+
+interface StatsData {
+  current: number;
+  percentage: number;
+  trend: Array<{ day: string; sale: number }>;
+}
+
+interface MonthlyStats {
+  submissions: StatsData;
+  fishers: StatsData;
+  catches: StatsData;
+  weight: StatsData;
+}
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-2 border border-gray-200 shadow-lg rounded-lg">
+        <p className="text-sm font-medium">
+          <span>{payload[0].value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export function FileStatGrid({
   className,
@@ -65,44 +63,96 @@ export function FileStatGrid({
   className?: string;
   lang?: string;
 }) {
-  const { t } = useTranslation(lang!, 'common');
+  const { t } = useTranslation(lang!, "common");
+  const [statsData, setStatsData] = useState<StatData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/monthly-stats")
+      .then((res) => res.json())
+      .then((data: MonthlyStats) => {
+        const transformedStats: StatData[] = [
+          {
+            id: "1",
+            title: "Total surveys",
+            metric: data.submissions.current.toString(),
+            increased: data.submissions.percentage > 0,
+            decreased: data.submissions.percentage < 0,
+            percentage:
+              data.submissions.percentage > 0
+                ? `+${data.submissions.percentage.toFixed(2)}`
+                : data.submissions.percentage.toFixed(2),
+            fill: "#015DE1",
+            chart: data.submissions.trend,
+          },
+          {
+            id: "2",
+            title: "Total fishers",
+            metric: data.fishers.current.toString(),
+            increased: data.fishers.percentage > 0,
+            decreased: data.fishers.percentage < 0,
+            percentage:
+              data.fishers.percentage > 0
+                ? `+${data.fishers.percentage.toFixed(2)}`
+                : data.fishers.percentage.toFixed(2),
+            fill: "#048848",
+            chart: data.fishers.trend,
+          },
+          {
+            id: "3",
+            title: "Total catches",
+            metric: data.catches.current.toString(),
+            increased: data.catches.percentage > 0,
+            decreased: data.catches.percentage < 0,
+            percentage:
+              data.catches.percentage > 0
+                ? `+${data.catches.percentage.toFixed(2)}`
+                : data.catches.percentage.toFixed(2),
+            fill: "#B92E5D",
+            chart: data.catches.trend,
+          },
+          {
+            id: "4",
+            title: "Monthly tonnes",
+            metric: data.weight.current.toFixed(1),
+            increased: data.weight.percentage > 0,
+            decreased: data.weight.percentage < 0,
+            percentage:
+              data.weight.percentage > 0
+                ? `+${data.weight.percentage.toFixed(2)}`
+                : data.weight.percentage.toFixed(2),
+            fill: "#8200E9",
+            chart: data.weight.trend,
+          },
+        ];
+        setStatsData(transformedStats);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching stats:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading stats...</div>;
+  if (!statsData.length) return <div>No data available</div>;
 
   return (
     <>
-      {filesStatData.map((stat: any) => {
-        return (
-          <MetricCard
-            key={stat.id}
-            title={t(stat.title)}
-            metric={stat.metric}
-            metricClassName="3xl:text-[22px]"
-            className={cn("w-full max-w-full justify-between", className)}
-            chart={
-              <CircleProgressBar
-                percentage={stat.percentage}
-                size={80}
-                stroke="#D7E3FE"
-                strokeWidth={7}
-                progressColor={stat.fill}
-                useParentResponsive={true}
-                label={
-                  <Text
-                    as="span"
-                    className="font-lexend text-base font-medium text-gray-700"
-                  >
-                    {stat.percentage}%
-                  </Text>
-                }
-                strokeClassName="dark:stroke-gray-300"
-              />
-            }
-          >
-            <Text className="mt-3 flex items-center leading-none text-gray-500">
+      {statsData.map((stat) => (
+        <MetricCard
+          key={stat.title + stat.id}
+          title={t(stat.title)}
+          metric={stat.metric}
+          rounded="lg"
+          metricClassName="text-2xl mt-1"
+          info={
+            <Text className="mt-4 flex items-center text-sm">
               <Text
                 as="span"
                 className={cn(
                   "me-2 inline-flex items-center font-medium",
-                  stat.increased ? "text-green" : "text-red"
+                  stat.increased ? "text-green-500" : "text-red-500"
                 )}
               >
                 {stat.increased ? (
@@ -110,17 +160,35 @@ export function FileStatGrid({
                 ) : (
                   <TrendingDownIcon className="me-1 h-4 w-4" />
                 )}
-                {stat.value}%
+                {stat.percentage}%
               </Text>
-              {t('text-last-month')}
+              {t("text-last-month")}
             </Text>
-          </MetricCard>
-        );
-      })}
+          }
+          chart={
+            <div className="h-12 w-20 @[16.25rem]:h-16 @[16.25rem]:w-24 @xs:h-20 @xs:w-28">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart barSize={6} barGap={5} data={stat.chart}>
+                  <Bar dataKey="sale" fill={stat.fill} radius={[2, 2, 0, 0]} />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "transparent" }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          }
+          chartClassName="flex flex-col w-auto h-auto text-center"
+          className={cn(
+            "@container @7xl:text-[15px] [&>div]:items-end",
+            "w-full max-w-full",
+            className
+          )}
+        />
+      ))}
     </>
   );
 }
-
 export default function FileStats({ className, lang }: FileStatsType) {
   const {
     sliderEl,
@@ -151,7 +219,7 @@ export default function FileStats({ className, lang }: FileStatsType) {
           ref={sliderEl}
           className="custom-scrollbar-x grid grid-flow-col gap-5 overflow-x-auto scroll-smooth 2xl:gap-6 3xl:gap-8"
         >
-          <FileStatGrid className="min-w-[292px]" />
+          <FileStatGrid className="min-w-[292px]" lang={lang} />
         </div>
       </div>
       <Button

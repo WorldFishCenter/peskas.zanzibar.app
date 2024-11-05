@@ -1,52 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-/**
- * TODO: migrate to mongoose
- */
+import getDb from "@repo/nosql";
+import { CatchMonthlyModel } from "@repo/nosql/schema/catch-monthly";
 
 export async function GET(req: NextRequest) {
-  // try {
-  //   const client = await clientPromise;
-  //   const db = client.db('kenya');
-  //   const collection = db.collection('legacy_data');
+  try {
+    await getDb()    
+    // Log basic collection info
+    const count = await CatchMonthlyModel.countDocuments();
+    console.log(`Total documents in catch_monthly: ${count}`);
     
-  //   // Filter and aggregate data
-  //   const data = await collection.aggregate([
-  //     {
-  //       $match: {
-  //         landing_site: "Kenyatta"
-  //       }
-  //     },
-  //     {
-  //       $project: {
-  //         landing_date: {
-  //           $dateTrunc: {
-  //             date: "$landing_date",
-  //             unit: "month"
-  //           }
-  //         },
-  //         fish_category: 1,
-  //         catch_kg: 1
-  //       }
-  //     },
-  //     {
-  //       $group: {
-  //         _id: {
-  //           landing_date: "$landing_date",
-  //           fish_category: "$fish_category"
-  //         },
-  //         catch_kg: { $sum: "$catch_kg" }
-  //       }
-  //     },
-  //     {
-  //       $sort: { "_id.landing_date": 1, "_id.fish_category": 1 }
-  //     }
-  //   ]).toArray();
+    // Try to get a sample document to verify structure    
+    const sampleDoc = await CatchMonthlyModel.findOne({}).exec();
+    console.log('Sample document:', sampleDoc);
 
-  //   return NextResponse.json(data);
-  // } catch (error) {
-  //   console.error('Error fetching data:', (error as Error).message);
-  //   return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
-  // }
-  return NextResponse.json({});
+    // First let's check what BMUs we have
+    const bmuList = await CatchMonthlyModel.distinct('BMU');
+    console.log('Available BMUs:', bmuList);
+    
+    const data = await CatchMonthlyModel.aggregate([
+      {
+        $match: {
+          BMU: "Kenyatta"  // We'll verify if this is the correct BMU name from the logs
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          date: 1,
+          mean_trip_catch: 1
+        }
+      },
+      {
+        $sort: { date: 1 }
+      }
+    ]).exec();
+    console.log('Query results:', data);
+    console.log('Number of records:', data.length);
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Detailed Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
+  }
 }

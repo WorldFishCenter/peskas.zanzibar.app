@@ -4,7 +4,7 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./schema/auth": "./src/schema/auth.ts"
+    "./schema/*": "./src/schema/*.ts"
   },
   "scripts": {
     "format": "prettier . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",

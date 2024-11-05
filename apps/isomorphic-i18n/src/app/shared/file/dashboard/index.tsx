@@ -1,44 +1,51 @@
 "use client";
-
-import StorageReport from "@/app/shared/file/dashboard/storage-report";
 import FileStats from "@/app/shared/file/dashboard/file-stats";
-import StorageSummary from "@/app/shared/file/dashboard/storage-summary";
-import RecentFiles from "@/app/shared/file/dashboard/recent-files";
-import QuickAccess from "@/app/shared/file/dashboard/quick-access";
-import ActivityReport from "@/app/shared/file/dashboard/activity-report";
-import Members from "@/app/shared/file/dashboard/members";
+import CatchMonthly from "@/app/shared/file/dashboard/catch-ts";
 import FileListTable from "@/app/shared/file/dashboard/file-list/table";
-import UpgradeStorage from "@/app/shared/file/dashboard/upgrade-storage";
-import RecentActivities from "@/app/shared/file/dashboard/recent-activities";
+import GearTreemap from '@/app/shared/file/dashboard/gear-treemap';
+import CatchRadarChart from '@/app/shared/file/dashboard/catch-radar';
 import DeckGL from "@/app/shared/file/dashboard/deck-map";
+
 
 export default function FileDashboard({ lang }: { lang?: string }) {
   return (
     <div className="@container">
+      {/* General Stats Row */}
       <FileStats className="mb-5 2xl:mb-8" lang={lang} />
-      <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
-        <div className="@container @4xl:col-span-8 @[96.937rem]:col-span-9 mb-8 h-[535px]">
+
+      {/* Map Row - Full Width */}
+      <div className="mb-6 2xl:mb-8">
+        <div className="h-[500px] w-full relative @4xl:col-span-12 @[96.937rem]:col-span-12">
           <DeckGL />
         </div>
-        <StorageSummary
-          className="@4xl:col-span-4 @[96.937rem]:col-span-3 mb-8"
+      </div>
+
+      {/* Charts Row */}
+      <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
+        <CatchMonthly
+          className="@container @4xl:col-span-8 @[96.937rem]:col-span-9"
+          lang={lang}
+        />
+        <CatchRadarChart
+          className="@4xl:col-span-4 @[96.937rem]:col-span-3"
           lang={lang}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 @container lg:grid-cols-12 2xl:gap-8 ">
-        <div className="col-span-full flex flex-col gap-6 @5xl:col-span-8 2xl:gap-8 3xl:col-span-9">
-          <QuickAccess lang={lang} />
-          <RecentFiles lang={lang} />
-          <ActivityReport lang={lang} />
-          <FileListTable lang={lang} />
-        </div>
+      {/* Treemap Row */}
+      <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
+        <GearTreemap
+          className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
+          lang={lang}
+        />
+      </div>
 
-        <div className="col-span-full flex flex-col gap-6 @5xl:col-span-4 2xl:gap-8 3xl:col-span-3">
-          <RecentActivities lang={lang} />
-          <Members lang={lang} />
-          <UpgradeStorage lang={lang} />
-        </div>
+      {/* Table Row Full Width */}
+      <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
+        <FileListTable
+          className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
+          lang={lang}
+        />
       </div>
     </div>
   );
