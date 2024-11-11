@@ -15,6 +15,7 @@ import {
 import SimpleBar from "@ui/simplebar";
 import { useMedia } from "@hooks/use-media";
 import { useTranslation } from "@/app/i18n/client";
+import { api } from "@/trpc/react";
 
 interface ChartDataPoint {
   date: number;
@@ -67,39 +68,36 @@ export default function CatchMonthly({ className, lang }: { className?: string; 
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation(lang!, "common");
 
+  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery();
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("/api/aggregated-catch");
-        const jsonData = await response.json();
+    if (!monthlyData) return
 
-        const processedData = jsonData.map((item: ApiDataPoint) => ({
-          date: new Date(item.date).getTime(),
-          mean_catch: item.mean_trip_catch,
-        }));
-        
-        // Find 5-year interval marks
-        const allYears = processedData.map((item: ChartDataPoint) => new Date(item.date).getFullYear());
-        const minYear = Math.min(...allYears);
-        const maxYear = Math.max(...allYears);
-        const startYear = Math.floor(minYear / 5) * 5;
-        const marks: number[] = [];
-        
-        for (let year = startYear; year <= maxYear; year += 5) {
-          marks.push(new Date(`${year}-01-01`).getTime());
-        }
-        
-        setFiveYearMarks(marks);
-        setChartData(processedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+    try {
+      const processedData = monthlyData.map((item: ApiDataPoint) => ({
+        date: new Date(item.date).getTime(),
+        mean_catch: item.mean_trip_catch,
+      }));
+      
+      // Find 5-year interval marks
+      const allYears = processedData.map((item: ChartDataPoint) => new Date(item.date).getFullYear());
+      const minYear = Math.min(...allYears);
+      const maxYear = Math.max(...allYears);
+      const startYear = Math.floor(minYear / 5) * 5;
+      const marks: number[] = [];
+      
+      for (let year = startYear; year <= maxYear; year += 5) {
+        marks.push(new Date(`${year}-01-01`).getTime());
       }
-    }
-
-    fetchData();
-  }, []);
+      
+      setFiveYearMarks(marks);
+      setChartData(processedData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }    
+  }, [ monthlyData ]);
 
   if (loading) return <div>Loading chart...</div>;
   if (!chartData || chartData.length === 0) return <div>No data available.</div>;

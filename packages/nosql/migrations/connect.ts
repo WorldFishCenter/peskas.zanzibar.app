@@ -5,6 +5,7 @@ import {
   PermissionModel,
   UserModel,
 } from "@repo/nosql/schema/auth";
+import { BmuModel } from "@repo/nosql/schema/bmu";
 
 const getModels = async () => {
   await mongoose.connect(
@@ -15,6 +16,7 @@ const getModels = async () => {
     UserModel,
     PermissionModel,
     GroupModel,
+    BmuModel,
   };
 };
 

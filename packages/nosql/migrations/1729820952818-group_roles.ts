@@ -1,62 +1,108 @@
-import find from "lodash/find";
-import mongoose from "mongoose";
-
 import getModels from "./connect";
 
 export async function up (): Promise<void> {
-  const { UserModel, PermissionModel, GroupModel } = await getModels();
+  const { BmuModel } = await getModels();
 
-  const users = await UserModel.create([
+  const permissions = await BmuModel.insertMany([
     {
-      name: "test+control",
-      email: "test+control@mountaindev.com",
-      password: "$2a$10$KSPht5iRaWqfWrdwQGQeBeGs9/qk2v0XBjqvldWGP7bKYE8TWPmAu",
+      BMU: "Bureni",
+      size_km: 1.27,
     },
     {
-      name: "test+iia",
-      email: "test+iia@mountaindev.com",
-      password: "$2a$10$KSPht5iRaWqfWrdwQGQeBeGs9/qk2v0XBjqvldWGP7bKYE8TWPmAu",
+      BMU: "Chale",
+      size_km: 2.65,
     },
     {
-      name: "test+cia",
-      email: "test+cia@mountaindev.com",
-      password: "$2a$10$KSPht5iRaWqfWrdwQGQeBeGs9/qk2v0XBjqvldWGP7bKYE8TWPmAu",
+      BMU: "Gazi",
+      size_km: 6.55,
     },
     {
-      name: "test+wbcia",
-      email: "test+wbcia@mountaindev.com",
-      password: "$2a$10$KSPht5iRaWqfWrdwQGQeBeGs9/qk2v0XBjqvldWGP7bKYE8TWPmAu",
+      BMU: "Jimbo",
+      size_km: 14,
     },
     {
-      name: "test+aia",
-      email: "test+aia@mountaindev.com",
-      password: "$2a$10$KSPht5iRaWqfWrdwQGQeBeGs9/qk2v0XBjqvldWGP7bKYE8TWPmAu",
+      BMU: "Kanamai",
+      size_km: 5.53,
+    },
+    {
+      BMU: "Kenyatta",
+      size_km: 3.6,
+    },
+    {
+      BMU: "Kibuyuni",
+      size_km: 8.2,
+    },
+    {
+      BMU: "Kijangwani",
+      size_km: 0.88,
+    },
+    {
+      BMU: "Kuruwitu",
+      size_km: 1.42,
+    },
+    {
+      BMU: "Marina",
+      size_km: 4,
+    },
+    {
+      BMU: "Mgwani",
+      size_km: 5.4,
+    },
+    {
+      BMU: "Mkwiro",
+      size_km: 6.56,
+    },
+    {
+      BMU: "Msumarini",
+      size_km: 1.6,
+    },
+    {
+      BMU: "Mtwapa",
+      size_km: 4.96,
+    },
+    {
+      BMU: "Mvuleni",
+      size_km: 2.45,
+    },
+    {
+      BMU: "Mwaepe",
+      size_km: 4.22,
+    },
+    {
+      BMU: "Mwanyaza",
+      size_km: 2.45,
+    },
+    {
+      BMU: "Nyali",
+      size_km: 4,
+    },
+    {
+      BMU: "Reef",
+      size_km: 5.02,
+    },
+    {
+      BMU: "Shimoni",
+      size_km: 14.85,
+    },
+    {
+      BMU: "Tradewinds",
+      size_km: 3.07,
+    },
+    {
+      BMU: "Vanga",
+      size_km: 21.89,
+    },{
+      BMU: "Vipingo",
+      size_km: 1.49,
+    },{
+      BMU: "Wasini",
+      size_km: 5.89,
     },
   ]);
-
-  const groups = GroupModel.find()
-  const perms = PermissionModel.find()
-  
-  users.map((user: typeof UserModel) => {
-
-    console.log('TONTEST', user)
-    // await PermissionModel.findByIdAndUpdate(user?._id, {
-    //   group_id: user?._id,
-    // });  
-
-  })
-
-  console.log('TONTEST', users)
 
 }
 
 export async function down (): Promise<void> {
-  const { UserModel, PermissionModel, GroupModel } = await getModels();
-  await UserModel.deleteMany({email: { $in: [
-    'test+control@mountaindev.com',
-    'test+iia@mountaindev.com',
-    'test+cia@mountaindev.com',
-    'test+wbcia@mountaindev.com',
-    'test+aia@mountaindev.com',
-  ]}});
+  const { BmuModel } = await getModels();
+  await BmuModel.deleteMany();
 }

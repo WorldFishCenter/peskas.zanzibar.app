@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from 'recharts';
 import cn from '@utils/class-names';
+import { api } from "@/trpc/react";
 
 interface RadarData {
   month: string;
@@ -48,34 +49,27 @@ export default function CatchRadarChart({
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation(lang!);
 
+  const { data: meanCatch } = api.aggregatedCatch.meanCatchRadar.useQuery();
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        console.log('Fetching radar data...');
-        const response = await fetch('/api/mean-catch-radar');
-        console.log('Response status:', response.status);
-        
-        const jsonData = await response.json();
-        console.log('Received data:', jsonData);
+    if (!meanCatch) return
 
-        if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) {
-          setError('No data available');
-          return;
-        }
-
-        setData(jsonData);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Error fetching data');
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      if (!meanCatch || !Array.isArray(meanCatch) || meanCatch.length === 0) {
+        setError('No data available');
+        return;
       }
-    }
 
-    fetchData();
-  }, []);
+      setData(meanCatch);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Error fetching data');
+    } finally {
+      setLoading(false);
+    }
+  }, [ meanCatch ]);
 
   if (loading) return <div>Loading chart...</div>;
   if (error) return <div>Error: {error}</div>;

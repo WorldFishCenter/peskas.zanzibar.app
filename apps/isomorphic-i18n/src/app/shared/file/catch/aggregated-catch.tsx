@@ -52,45 +52,33 @@ export default function AggregatedCatch({
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation(lang!, "common");
 
-  const { refetch } = api.test.sayHello.useQuery({
-    name: "World",
-  });
+  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery();
 
   useEffect(() => {
-    refetch();
-  }, [bmuFilter, refetch]);
+    if (!monthlyData) return
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("/api/aggregated-catch");
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+    try {
+      // Transform data to fit the format for Recharts
+      const formattedData = monthlyData.reduce((acc: DataItem[], item: any) => {
+        const dateKey = new Date(item._id.landing_date)
+          .toISOString()
+          .split("T")[0];
+        const existingEntry = acc.find((entry) => entry.date === dateKey);
+        if (existingEntry) {
+          existingEntry[item._id.fish_category] = item.catch_kg;
+        } else {
+          acc.push({
+            date: dateKey,
+            [item._id.fish_category]: item.catch_kg,
+          });
         }
-        const result = await response.json();
-        // Transform data to fit the format for Recharts
-        const formattedData = result.reduce((acc: DataItem[], item: any) => {
-          const dateKey = new Date(item._id.landing_date)
-            .toISOString()
-            .split("T")[0];
-          const existingEntry = acc.find((entry) => entry.date === dateKey);
-          if (existingEntry) {
-            existingEntry[item._id.fish_category] = item.catch_kg;
-          } else {
-            acc.push({
-              date: dateKey,
-              [item._id.fish_category]: item.catch_kg,
-            });
-          }
-          return acc;
-        }, []);
-        setData(formattedData);
-      } catch (error) {
-        console.error("Failed to fetch data:", (error as Error).message);
-      }
+        return acc;
+      }, []);
+      setData(formattedData);
+    } catch (error) {
+      console.error("Failed to fetch data:", (error as Error).message);
     }
-    fetchData();
-  }, []);
+  }, [ monthlyData ]);
 
   const fishCategories = [
     "Rest of catch",

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Map from "react-map-gl/maplibre";
+import { VscSettings, VscChromeClose } from "react-icons/vsc";
+
 import {
   AmbientLight,
   PointLight,
@@ -12,6 +14,9 @@ import {
 } from "@deck.gl/core";
 import { HexagonLayer } from "@deck.gl/aggregation-layers";
 import DeckGL from "@deck.gl/react";
+import { api } from "@/trpc/react";
+import cn from "@utils/class-names";''
+
 
 interface DataPoint {
   longitude: number;
@@ -85,19 +90,18 @@ N. Surveys: ${count}`,
 export default function DeckMap() {
   const [data, setData] = useState<DataPoint[]>([]);
   const [radius, setRadius] = useState(1000);
+  const [open, setOpen] = useState(false);
+  const { data: mapData } = api.mapDistribution.all.useQuery();
 
   useEffect(() => {
-    fetch("/api/map-distribution")
-      .then((res) => res.json())
-      .then((jsonData) => {
-        const points = jsonData.map((d: any) => ({
-          longitude: d.lon,
-          latitude: d.lat,
-        }));
-        setData(points);
-      })
-      .catch((err) => console.error("Failed to load data:", err));
-  }, []);
+    if (!mapData) return
+
+    const points = mapData.map((d: any) => ({
+      longitude: d.lon,
+      latitude: d.lat,
+    }));
+    setData(points);
+  }, [ mapData ]);
 
   const layers = [
     new HexagonLayer<DataPoint>({
@@ -134,7 +138,31 @@ export default function DeckMap() {
       >
         <Map reuseMaps mapStyle={MAP_STYLE} attributionControl={false} />
       </DeckGL>
-      <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg w-72">
+      <div
+        className={cn(
+          "absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg w-72 h-[calc(100%-10%)] transition-[height,width] duration-200 overflow-hidden",
+          { "h-14 w-[57px] ": !open }
+        )}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        <div
+          className={cn("flex flex-wrap justify-end flex-row", {
+            "flex-row-reverse": !open,
+          })}
+        >
+          <VscSettings
+            className={cn(
+              "h-[25px] w-[25px] transition-all duration-400 ease-in opacity-100",
+              {
+                "opacity-0 hidden": open,
+              }
+            )}
+          />
+          <h2 className="text-xl font-bold mb-2 mt-3">
+            Timor-Leste Fishing Tracks
+          </h2>
+        </div>
         <h2 className="text-xl font-bold mb-2">Surveys Distribution</h2>
         <p className="mb-4">
           The layer aggregates survey data within the boundary of each hexagon

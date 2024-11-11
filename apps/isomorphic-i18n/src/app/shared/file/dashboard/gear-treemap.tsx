@@ -6,6 +6,7 @@ import WidgetCard from '@components/cards/widget-card';
 import SimpleBar from '@ui/simplebar';
 import { useMedia } from '@hooks/use-media';
 import { useTranslation } from '@/app/i18n/client';
+import { api } from "@/trpc/react";
 
 // Tableau10 qualitative palette
 const COLORS = [
@@ -105,31 +106,32 @@ export default function GearTreemap({ className, lang }: { className?: string; l
   const isTablet = useMedia('(max-width: 800px)', false);
   const { t } = useTranslation(lang!, 'common');
 
+  const { data: treeData } = api.gear.tree.useQuery();
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/gear-tree');
-        const jsonData = await response.json();
-        const processedData = jsonData[0]?.children || [];
-        
-        if (processedData.length === 0) {
-          setError('No gear data available');
-          return;
-        }
+    if (!treeData) return
 
-        setData(processedData);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Error fetching data');
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const transformedData = [{
+        name: "Bureni",
+        children: treeData.map(({gear, gear_n}: {gear: string, gear_n: number}) => ({ name: gear, size: gear_n }))
+      }];
+
+      if (transformedData.length === 0) {
+        setError('No gear data available');
+        return;
       }
-    }
 
-    fetchData();
-  }, []);
+      setData(transformedData as []);
+      setError(null); 
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Error fetching data');
+    } finally {
+      setLoading(false);
+    }
+  }, [ treeData ]);
 
   if (loading) return <div>Loading chart...</div>;
   if (error) return <div>Error: {error}</div>;

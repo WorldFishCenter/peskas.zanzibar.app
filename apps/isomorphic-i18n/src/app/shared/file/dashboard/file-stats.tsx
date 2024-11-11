@@ -1,5 +1,8 @@
 "use client";
 
+import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
+import { useState, useEffect } from "react";
+
 import { Button, Text } from "rizzui";
 import cn from "@utils/class-names";
 import { useScrollableSlider } from "@hooks/use-scrollable-slider";
@@ -8,8 +11,7 @@ import MetricCard from "@components/cards/metric-card";
 import TrendingUpIcon from "@components/icons/trending-up";
 import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
-import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
-import { useState, useEffect } from "react";
+import { api } from "@/trpc/react";
 
 type FileStatsType = {
   className?: string;
@@ -67,72 +69,70 @@ export function FileStatGrid({
   const [statsData, setStatsData] = useState<StatData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { data: monthlyData } = api.monthlyStats.allStats.useQuery();
+
   useEffect(() => {
-    fetch("/api/monthly-stats")
-      .then((res) => res.json())
-      .then((data: MonthlyStats) => {
-        const transformedStats: StatData[] = [
-          {
-            id: "1",
-            title: "Total surveys",
-            metric: data.submissions.current.toString(),
-            increased: data.submissions.percentage > 0,
-            decreased: data.submissions.percentage < 0,
-            percentage:
-              data.submissions.percentage > 0
-                ? `+${data.submissions.percentage.toFixed(2)}`
-                : data.submissions.percentage.toFixed(2),
-            fill: "#015DE1",
-            chart: data.submissions.trend,
-          },
-          {
-            id: "2",
-            title: "Total fishers",
-            metric: data.fishers.current.toString(),
-            increased: data.fishers.percentage > 0,
-            decreased: data.fishers.percentage < 0,
-            percentage:
-              data.fishers.percentage > 0
-                ? `+${data.fishers.percentage.toFixed(2)}`
-                : data.fishers.percentage.toFixed(2),
-            fill: "#048848",
-            chart: data.fishers.trend,
-          },
-          {
-            id: "3",
-            title: "Total catches",
-            metric: data.catches.current.toString(),
-            increased: data.catches.percentage > 0,
-            decreased: data.catches.percentage < 0,
-            percentage:
-              data.catches.percentage > 0
-                ? `+${data.catches.percentage.toFixed(2)}`
-                : data.catches.percentage.toFixed(2),
-            fill: "#B92E5D",
-            chart: data.catches.trend,
-          },
-          {
-            id: "4",
-            title: "Monthly tonnes",
-            metric: data.weight.current.toFixed(1),
-            increased: data.weight.percentage > 0,
-            decreased: data.weight.percentage < 0,
-            percentage:
-              data.weight.percentage > 0
-                ? `+${data.weight.percentage.toFixed(2)}`
-                : data.weight.percentage.toFixed(2),
-            fill: "#8200E9",
-            chart: data.weight.trend,
-          },
-        ];
-        setStatsData(transformedStats);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching stats:", err);
-        setLoading(false);
-      });
-  }, []);
+    if (!monthlyData) return
+
+    const data: MonthlyStats = monthlyData
+    const transformedStats: StatData[] = [
+      {
+        id: "1",
+        title: "Total surveys",
+        metric: data.submissions.current.toString(),
+        increased: data.submissions.percentage > 0,
+        decreased: data.submissions.percentage < 0,
+        percentage:
+          data.submissions.percentage > 0
+            ? `+${data.submissions.percentage.toFixed(2)}`
+            : data.submissions.percentage.toFixed(2),
+        fill: "#015DE1",
+        chart: data.submissions.trend,
+      },
+      {
+        id: "2",
+        title: "Total fishers",
+        metric: data.fishers.current.toString(),
+        increased: data.fishers.percentage > 0,
+        decreased: data.fishers.percentage < 0,
+        percentage:
+          data.fishers.percentage > 0
+            ? `+${data.fishers.percentage.toFixed(2)}`
+            : data.fishers.percentage.toFixed(2),
+        fill: "#048848",
+        chart: data.fishers.trend,
+      },
+      {
+        id: "3",
+        title: "Total catches",
+        metric: data.catches.current.toString(),
+        increased: data.catches.percentage > 0,
+        decreased: data.catches.percentage < 0,
+        percentage:
+          data.catches.percentage > 0
+            ? `+${data.catches.percentage.toFixed(2)}`
+            : data.catches.percentage.toFixed(2),
+        fill: "#B92E5D",
+        chart: data.catches.trend,
+      },
+      {
+        id: "4",
+        title: "Monthly tonnes",
+        metric: data.weight.current.toFixed(1),
+        increased: data.weight.percentage > 0,
+        decreased: data.weight.percentage < 0,
+        percentage:
+          data.weight.percentage > 0
+            ? `+${data.weight.percentage.toFixed(2)}`
+            : data.weight.percentage.toFixed(2),
+        fill: "#8200E9",
+        chart: data.weight.trend,       
+      },
+    ];
+    setStatsData(transformedStats);
+    setLoading(false);
+
+  }, [ monthlyData ]);
 
   if (loading) return <div>Loading stats...</div>;
   if (!statsData.length) return <div>No data available</div>;

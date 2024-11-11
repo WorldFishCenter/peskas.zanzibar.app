@@ -1,10 +1,18 @@
 import { pingRouter } from "./router/ping";
 import { testRouter } from "./router/test";
+import { aggregatedCatchRouter } from "./router/aggregated-catch";
+import { mapDistributionRouter } from "./router/map-distribution";
+import { gearRouter } from "./router/gear";
+import { monthlyStatsRouter } from "./router/monthly-stats";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   ping: pingRouter,
   test: testRouter,
+  aggregatedCatch: aggregatedCatchRouter,
+  gear: gearRouter,
+  mapDistribution: mapDistributionRouter,
+  monthlyStats: monthlyStatsRouter,
 });
 
 // export type definition of API

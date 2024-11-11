@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { useMedia } from '@hooks/use-media';
 import { useTranslation } from '@/app/i18n/client';
+import { api } from "@/trpc/react";
 
 // Define colors for each gear type
 const gearColors = {
@@ -42,21 +43,19 @@ export default function GearDistribution({
   const { t } = useTranslation(lang!);
   const isMediumScreen = useMedia('(max-width: 1200px)', false);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/gear-distribution');
-        const data = await response.json();
-        setChartData(data);
-      } catch (error) {
-        console.error('Error fetching gear distribution:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const { data: distribution } = api.gear.distribution.useQuery();
 
-    fetchData();
-  }, []);
+  useEffect(() => {
+    if (!distribution) return
+
+    try {
+      setChartData(distribution);
+    } catch (error) {
+      console.error('Error fetching gear distribution:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [ distribution ]);
 
   if (loading) return <div>Loading chart...</div>;
   if (!chartData || chartData.length === 0) return <div>No data available.</div>;
