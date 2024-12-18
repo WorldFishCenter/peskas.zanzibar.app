@@ -155,52 +155,58 @@ export default function CatchRadarChart({
   });
 
   useEffect(() => {
-    if (!meanCatch) return;
+    // Start loading
+    setLoading(true);
+
+    // If data is not available yet, just stop and remove loading state
+    if (!meanCatch) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      setLoading(true);
-      if (!meanCatch || !Array.isArray(meanCatch) || meanCatch.length === 0) {
+      if (!Array.isArray(meanCatch) || meanCatch.length === 0) {
         setError("No data available");
-        return;
-      }
+      } else {
+        // Get unique sites from the first data point (excluding 'month' field)
+        const uniqueSites = Object.keys(meanCatch[0]).filter(
+          (key) => key !== "month"
+        );
 
-      // Get unique sites from the first data point (excluding 'month' field)
-      const uniqueSites = Object.keys(meanCatch[0]).filter(
-        (key) => key !== "month"
-      );
-
-      // Generate colors for each site
-      const newSiteColors = uniqueSites.reduce(
-        (acc, site, index) => ({
-          ...acc,
-          [site]: generateColor(index),
-        }),
-        {}
-      );
-      setSiteColors(newSiteColors);
-
-      // Initialize visibility state for all sites
-      setVisibilityState(
-        uniqueSites.reduce(
-          (acc, site) => ({
+        // Generate colors for each site
+        const newSiteColors = uniqueSites.reduce(
+          (acc, site, index) => ({
             ...acc,
-            [site]: { opacity: 1 },
+            [site]: generateColor(index),
           }),
           {}
-        )
-      );
+        );
+        setSiteColors(newSiteColors);
 
-      // Sort data according to MONTH_ORDER
-      const sortedData = [...meanCatch].sort((a, b) => {
-        return MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month);
-      });
+        // Initialize visibility state for all sites
+        setVisibilityState(
+          uniqueSites.reduce(
+            (acc, site) => ({
+              ...acc,
+              [site]: { opacity: 1 },
+            }),
+            {}
+          )
+        );
 
-      setData(sortedData);
-      setError(null);
+        // Sort data according to MONTH_ORDER
+        const sortedData = [...meanCatch].sort(
+          (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
+        );
+
+        setData(sortedData);
+        setError(null);
+      }
     } catch (error) {
       console.error("Error processing data:", error);
       setError("Error processing data");
     } finally {
+      // End loading
       setLoading(false);
     }
   }, [meanCatch, selectedMetric]);

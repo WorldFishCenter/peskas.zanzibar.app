@@ -160,7 +160,7 @@ export function FileStatGrid({
       {statsData.map((stat) => {
         // By default, show the latest month as current (last element of the array)
         const currentIdx = hoveredMonth
-          ? stat.chart.findIndex(d => d.day === hoveredMonth)
+          ? stat.chart.findIndex((d) => d.day === hoveredMonth)
           : stat.chart.length - 1;
 
         const currentMonth = stat.chart[currentIdx]?.day;
@@ -171,7 +171,9 @@ export function FileStatGrid({
         const previousValue = stat.chart[currentIdx - 1]?.sale || 0;
 
         // Calculate change FROM previous TO current
-        const percentChange = previousValue ? ((currentValue - previousValue) / previousValue) * 100 : 0;
+        const percentChange = previousValue
+          ? ((currentValue - previousValue) / previousValue) * 100
+          : 0;
         const isIncrease = percentChange > 0;
 
         return (
@@ -195,10 +197,11 @@ export function FileStatGrid({
                   ) : (
                     <TrendingDownIcon className="me-1 h-4 w-4" />
                   )}
-                  {isIncrease ? '+' : ''}{Math.abs(percentChange).toFixed(2)}%
+                  {isIncrease ? "+" : ""}
+                  {Math.abs(percentChange).toFixed(2)}%
                 </Text>
                 {previousMonth && currentMonth && (
-                  <span 
+                  <span
                     className={cn(
                       "text-xs",
                       isIncrease ? "text-green-500" : "text-red-500"
