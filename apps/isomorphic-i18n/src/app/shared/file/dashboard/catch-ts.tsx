@@ -111,58 +111,62 @@ const MetricSelector = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">Select metric:</span>
-      <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
-        <Popover.Trigger>
-          <ActionIcon
-            variant="text"
-            className="relative h-auto w-auto p-0 flex items-center gap-2"
-          >
-            <span className="text-sm font-medium text-gray-900">
-              {selectedMetricOption?.label}
-            </span>
-            <svg
-              className="h-4 w-4 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500">Select metric:</span>
+        <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
+          <Popover.Trigger>
+            <ActionIcon
+              variant="text"
+              className="relative h-auto w-auto p-0 flex items-center gap-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </ActionIcon>
-        </Popover.Trigger>
-        <Popover.Content className="w-[200px] p-1">
-          <div className="space-y-0.5">
-            {METRIC_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onMetricChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md",
-                  selectedMetric === option.value
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-50"
-                )}
+              <span className="text-sm font-medium text-gray-900">
+                {selectedMetricOption?.label}
+              </span>
+              <svg
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </Popover.Content>
-      </Popover>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </ActionIcon>
+          </Popover.Trigger>
+          <Popover.Content className="w-[200px] p-1">
+            <div className="space-y-0.5">
+              {METRIC_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onMetricChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md",
+                    selectedMetric === option.value
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:bg-gray-50"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover>
+      </div>
+      <span className="text-xs text-gray-500 ml-0">
+        Unit: {selectedMetricOption?.unit}
+      </span>
     </div>
   );
 };
-
 const CustomTooltip = ({
   active,
   payload,
@@ -281,7 +285,10 @@ export default function CatchMetricsChart({
           if (!acc[date]) {
             acc[date] = {
               date,
-              ...uniqueSites.reduce((sites, site) => ({ ...sites, [site]: undefined }), {}),
+              ...uniqueSites.reduce(
+                (sites, site) => ({ ...sites, [site]: undefined }),
+                {}
+              ),
             };
           }
           acc[date][item.landing_site] = item[selectedMetric];
@@ -339,7 +346,8 @@ export default function CatchMetricsChart({
   };
 
   if (loading) return <div>Loading chart...</div>;
-  if (!chartData || chartData.length === 0) return <div>No data available.</div>;
+  if (!chartData || chartData.length === 0)
+    return <div>No data available.</div>;
 
   const selectedMetricOption = METRIC_OPTIONS.find(
     (m) => m.value === selectedMetric
