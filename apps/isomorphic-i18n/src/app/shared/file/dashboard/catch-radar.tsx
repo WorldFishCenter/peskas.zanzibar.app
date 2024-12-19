@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "@/app/i18n/client";
 import WidgetCard from "@components/cards/widget-card";
