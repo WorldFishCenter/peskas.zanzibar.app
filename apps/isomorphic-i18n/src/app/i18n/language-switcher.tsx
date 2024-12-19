@@ -1,11 +1,7 @@
 "use client";
 
 import { useTranslation } from "./client";
-import { SAFlag } from "@components/icons/language/SAFlag";
-import { CNFlag } from "@components/icons/language/CNFlag";
 import { USFlag } from "@components/icons/language/USFlag";
-import { DEFlag } from "@components/icons/language/DEFlag";
-import { ESFlag } from "@components/icons/language/ESFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
 import { usePathname, useRouter } from "next/navigation";
 import useQueryParams from "@hooks/use-query-params";
@@ -34,30 +30,6 @@ const languageMenu: LanguageMenuProps[] = [
     value: "sw",
     icon: <SWFlag />,
   },  
-  {
-    id: "ar",
-    name: "عربى - AR",
-    value: "ar",
-    icon: <SAFlag />,
-  },
-  {
-    id: "zh",
-    name: "中国人 - ZH",
-    value: "zh",
-    icon: <CNFlag />,
-  },
-  {
-    id: "de",
-    name: "Deutsch - DE",
-    value: "de",
-    icon: <DEFlag />,
-  },
-  {
-    id: "es",
-    name: "Español - ES",
-    value: "es",
-    icon: <ESFlag />,
-  },
 ];
 
 export default function LanguageSwitcher({

@@ -113,7 +113,7 @@ export function FileStatGrid({
             monthlyData.fishers.percentage > 0
               ? `+${monthlyData.fishers.percentage.toFixed(2)}`
               : monthlyData.fishers.percentage.toFixed(2),
-          fill: "#fc3468",
+          fill: "#0c526e",
           chart: monthlyData.fishers.trend,
         },
         {
@@ -126,7 +126,7 @@ export function FileStatGrid({
             monthlyData.catches.percentage > 0
               ? `+${monthlyData.catches.percentage.toFixed(2)}`
               : monthlyData.catches.percentage.toFixed(2),
-          fill: "#f09609",
+          fill: "#0c526e",
           chart: monthlyData.catches.trend,
         },
         {
@@ -139,7 +139,7 @@ export function FileStatGrid({
             monthlyData.weight.percentage > 0
               ? `+${monthlyData.weight.percentage.toFixed(2)}`
               : monthlyData.weight.percentage.toFixed(2),
-          fill: "#2563eb",
+          fill: "#0c526e",
           chart: monthlyData.weight.trend,
         },
       ];
