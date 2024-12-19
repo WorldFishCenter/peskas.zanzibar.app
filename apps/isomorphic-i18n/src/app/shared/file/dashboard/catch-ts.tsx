@@ -1,4 +1,5 @@
 import WidgetCard from "@components/cards/widget-card";
+import { Loader } from "lucide-react";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import {
@@ -84,19 +85,31 @@ const METRIC_OPTIONS: MetricOption[] = [
   { value: "mean_cpua", label: "Mean CPUA", unit: "kg/area" },
 ];
 
-// Generate colors dynamically based on index
 const generateColor = (index: number): string => {
   const colors = [
-    "#0c526e", // Dark blue
-    "#fc3468", // Pink
-    "#f09609", // Orange
-    "#2563eb", // Blue
-    "#16a34a", // Green
-    "#9333ea", // Purple
-    "#ea580c", // Dark orange
-    "#0891b2", // Cyan
+    "#0c526e",
+    "#fc3468",
+    "#f09609",
+    "#2563eb",
+    "#16a34a",
+    "#9333ea",
+    "#ea580c",
+    "#0891b2",
   ];
   return colors[index % colors.length];
+};
+
+const LoadingState = () => {
+  return (
+    <WidgetCard title="Catch Metrics">
+      <div className="h-96 w-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader className="h-8 w-8 animate-spin text-gray-500" />
+          <span className="text-sm text-gray-500">Loading chart...</span>
+        </div>
+      </div>
+    </WidgetCard>
+  );
 };
 
 const MetricSelector = ({
@@ -167,6 +180,7 @@ const MetricSelector = ({
     </div>
   );
 };
+
 const CustomTooltip = ({
   active,
   payload,
@@ -252,12 +266,10 @@ export default function CatchMetricsChart({
     if (!monthlyData) return;
 
     try {
-      // Get unique landing sites from the data
       const uniqueSites = Array.from(
         new Set(monthlyData.map((item: ApiDataPoint) => item.landing_site))
       );
 
-      // Generate colors for each site
       const newSiteColors = uniqueSites.reduce(
         (acc, site, index) => ({
           ...acc,
@@ -267,7 +279,6 @@ export default function CatchMetricsChart({
       );
       setSiteColors(newSiteColors);
 
-      // Initialize visibility state for all sites
       setVisibilityState(
         uniqueSites.reduce(
           (acc, site) => ({
@@ -278,7 +289,6 @@ export default function CatchMetricsChart({
         )
       );
 
-      // Group data by date
       const groupedData = monthlyData.reduce<Record<string, ChartDataPoint>>(
         (acc, item: ApiDataPoint) => {
           const date = new Date(item.date).getTime();
@@ -345,9 +355,16 @@ export default function CatchMetricsChart({
     );
   };
 
-  if (loading) return <div>Loading chart...</div>;
-  if (!chartData || chartData.length === 0)
-    return <div>No data available.</div>;
+  if (loading) return <LoadingState />;
+  if (!chartData || chartData.length === 0) {
+    return (
+      <WidgetCard title="Catch Metrics">
+        <div className="h-96 w-full flex items-center justify-center">
+          <span className="text-sm text-gray-500">No data available</span>
+        </div>
+      </WidgetCard>
+    );
+  }
 
   const selectedMetricOption = METRIC_OPTIONS.find(
     (m) => m.value === selectedMetric
