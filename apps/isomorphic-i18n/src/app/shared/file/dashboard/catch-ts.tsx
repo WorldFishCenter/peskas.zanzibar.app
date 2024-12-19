@@ -1,5 +1,4 @@
 import WidgetCard from "@components/cards/widget-card";
-import { Loader } from "lucide-react";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import {
@@ -104,7 +103,7 @@ const LoadingState = () => {
     <WidgetCard title="Catch Metrics">
       <div className="h-96 w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
-          <Loader className="h-8 w-8 animate-spin text-gray-500" />
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
           <span className="text-sm text-gray-500">Loading chart...</span>
         </div>
       </div>
