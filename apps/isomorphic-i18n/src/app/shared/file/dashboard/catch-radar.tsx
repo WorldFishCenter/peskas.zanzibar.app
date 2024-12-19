@@ -83,18 +83,30 @@ const CustomTooltip = ({ active, payload, metric }: any) => {
   if (active && payload && payload.length) {
     const metricInfo = METRIC_INFO[metric as MetricKey];
     return (
-      <div className="bg-white p-4 border border-gray-200 shadow-lg rounded-lg">
-        <p className="text-sm font-medium text-gray-600 mb-2">
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "1rem",
+          border: "1px solid #e5e5e5",
+          borderRadius: "0.5rem",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <p style={{ fontSize: "0.875rem", fontWeight: "500", color: "#4b5563" }}>
           {payload[0]?.payload?.month ?? ""}
         </p>
         {payload.map((entry: any) => (
-          <div key={entry.dataKey} className="flex items-center gap-2">
+          <div key={entry.dataKey} style={{ display: "flex", gap: "0.5rem" }}>
             <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
+              style={{
+                width: "0.5rem",
+                height: "0.5rem",
+                borderRadius: "50%",
+                backgroundColor: entry.color,
+              }}
             />
-            <p className="text-sm">
-              <span className="font-medium">{entry.name}:</span>{" "}
+            <p style={{ fontSize: "0.875rem" }}>
+              <span style={{ fontWeight: "500" }}>{entry.name}:</span>{" "}
               {entry.value?.toFixed(1) ?? "N/A"} {metricInfo.unit}
             </p>
           </div>
@@ -126,19 +138,39 @@ export default function CatchRadarChart({
   };
 
   const CustomLegend = ({ payload }: any) => (
-    <div className="flex flex-wrap gap-4 justify-center mt-2">
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "1rem",
+        justifyContent: "center",
+        marginTop: "0.5rem",
+      }}
+    >
       {payload?.map((entry: any) => (
         <div
           key={entry.value}
-          className="flex items-center gap-2 cursor-pointer select-none transition-all duration-200"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            cursor: "pointer",
+            transition: "opacity 0.2s",
+            opacity: visibilityState[entry.dataKey]?.opacity ?? 1,
+          }}
           onClick={() => handleLegendClick(entry.dataKey)}
-          style={{ opacity: visibilityState[entry.dataKey]?.opacity }}
         >
           <div
-            className="w-3 h-3 rounded-full transition-all duration-200"
-            style={{ backgroundColor: entry.color }}
+            style={{
+              width: "0.75rem",
+              height: "0.75rem",
+              borderRadius: "50%",
+              backgroundColor: entry.color,
+            }}
           />
-          <span className="text-sm font-medium">{entry.value}</span>
+          <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>
+            {entry.value}
+          </span>
         </div>
       ))}
     </div>
@@ -202,15 +234,6 @@ export default function CatchRadarChart({
     }
   }, [meanCatch, selectedMetric]);
 
-  // Optional: Force a resize after data is loaded to ensure correct dimensions
-  useEffect(() => {
-    if (data && data.length > 0) {
-      setTimeout(() => {
-        window.dispatchEvent(new Event("resize"));
-      }, 100);
-    }
-  }, [data]);
-
   if (loading) return <div>Loading chart...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!data || data.length === 0) return <div>No data available</div>;
@@ -218,10 +241,9 @@ export default function CatchRadarChart({
   return (
     <WidgetCard
       title={METRIC_INFO[selectedMetric].label}
-      className={cn(className)}
+      className={className}
     >
-      {/* Removed complex container queries and aspect ratios */}
-      <div className="mt-5 h-96 w-full pb-2">
+      <div style={{ marginTop: "1.25rem", height: "24rem", width: "100%" }}>
         <ResponsiveContainer
           key={JSON.stringify(data)} // Forces a re-render when data changes
           width="100%"
