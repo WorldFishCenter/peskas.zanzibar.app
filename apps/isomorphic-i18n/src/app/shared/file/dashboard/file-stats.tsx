@@ -153,7 +153,7 @@ export function FileStatGrid({
   }, [monthlyData, bmus]);
 
   if (loading) return <div>Loading stats...</div>;
-  if (!statsData.length) return <div>No data available for selected BMUs</div>;
+  if (!statsData.length) return <div>Loading chart...</div>;
 
   return (
     <>

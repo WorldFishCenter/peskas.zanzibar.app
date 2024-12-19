@@ -1,7 +1,6 @@
 "use client";
 
 import WidgetCard from "@components/cards/widget-card";
-import { Loader } from "lucide-react";
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
 import {
@@ -104,7 +103,8 @@ const LoadingState = () => {
     <WidgetCard title="Catch Metrics">
       <div className="h-96 w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
-          <Loader className="h-8 w-8 animate-spin text-gray-500" />
+          {/* Tailwind-based spinner */}
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
           <span className="text-sm text-gray-500">Loading chart data...</span>
         </div>
       </div>
@@ -124,7 +124,6 @@ export default function CatchRadarChart({
   const { t } = useTranslation(lang!);
   const [bmus] = useAtom(bmusAtom);
 
-  // Just like in the area chart, we manage loading and error states locally.
   const [data, setData] = useState<RadarData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,13 +132,11 @@ export default function CatchRadarChart({
 
   const { data: meanCatch } = api.aggregatedCatch.meanCatchRadar.useQuery({ bmus, metric: selectedMetric });
 
-  // Just like the area chart uses an effect to process data:
   useEffect(() => {
     setLoading(true);
 
     if (!meanCatch) {
-      // If no data yet, just end here
-      setLoading(false);
+      setLoading(true); // still loading since no data
       return;
     }
 
@@ -184,8 +181,6 @@ export default function CatchRadarChart({
     }
   }, [meanCatch, selectedMetric]);
 
-  // Just like the area chart:
-  // We now use these states to return early if needed.
   if (loading) return <LoadingState />;
   if (error) {
     return (
@@ -200,7 +195,7 @@ export default function CatchRadarChart({
     return (
       <WidgetCard title={METRIC_INFO[selectedMetric].label}>
         <div className="h-96 w-full flex items-center justify-center">
-          <span className="text-sm text-gray-500">Loading chart...</span>
+          <span className="text-sm text-gray-500">No data available</span>
         </div>
       </WidgetCard>
     );
