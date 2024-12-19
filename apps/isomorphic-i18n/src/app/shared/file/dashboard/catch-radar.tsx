@@ -50,22 +50,20 @@ const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_cpua: { label: "Mean CPUA", unit: "kg/area" },
 };
 
-// Generate colors dynamically based on index
 const generateColor = (index: number): string => {
   const colors = [
-    "#0c526e", // Dark blue
-    "#fc3468", // Pink
-    "#f09609", // Orange
-    "#2563eb", // Blue
-    "#16a34a", // Green
-    "#9333ea", // Purple
-    "#ea580c", // Dark orange
-    "#0891b2", // Cyan
+    "#0c526e",
+    "#fc3468",
+    "#f09609",
+    "#2563eb",
+    "#16a34a",
+    "#9333ea",
+    "#ea580c",
+    "#0891b2",
   ];
   return colors[index % colors.length];
 };
 
-// Define the correct month order starting from January
 const MONTH_ORDER = [
   "Jan",
   "Feb",
@@ -87,7 +85,7 @@ const CustomTooltip = ({ active, payload, metric }: any) => {
     return (
       <div className="bg-white p-4 border border-gray-200 shadow-lg rounded-lg">
         <p className="text-sm font-medium text-gray-600 mb-2">
-          {payload[0].payload.month}
+          {payload[0]?.payload?.month ?? ""}
         </p>
         {payload.map((entry: any) => (
           <div key={entry.dataKey} className="flex items-center gap-2">
@@ -127,26 +125,24 @@ export default function CatchRadarChart({
     }));
   };
 
-  const CustomLegend = ({ payload }: any) => {
-    return (
-      <div className="flex flex-wrap gap-4 justify-center mt-2">
-        {payload?.map((entry: any) => (
+  const CustomLegend = ({ payload }: any) => (
+    <div className="flex flex-wrap gap-4 justify-center mt-2">
+      {payload?.map((entry: any) => (
+        <div
+          key={entry.value}
+          className="flex items-center gap-2 cursor-pointer select-none transition-all duration-200"
+          onClick={() => handleLegendClick(entry.dataKey)}
+          style={{ opacity: visibilityState[entry.dataKey]?.opacity }}
+        >
           <div
-            key={entry.value}
-            className="flex items-center gap-2 cursor-pointer select-none transition-all duration-200"
-            onClick={() => handleLegendClick(entry.dataKey)}
-            style={{ opacity: visibilityState[entry.dataKey]?.opacity }}
-          >
-            <div
-              className="w-3 h-3 rounded-full transition-all duration-200"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-sm font-medium">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
+            className="w-3 h-3 rounded-full transition-all duration-200"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-sm font-medium">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
 
   const { t } = useTranslation(lang!);
   const [bmus] = useAtom(bmusAtom);
@@ -157,10 +153,8 @@ export default function CatchRadarChart({
   });
 
   useEffect(() => {
-    // Start loading
     setLoading(true);
 
-    // If data is not available yet, just stop and remove loading state
     if (!meanCatch) {
       setLoading(false);
       return;
@@ -170,12 +164,10 @@ export default function CatchRadarChart({
       if (!Array.isArray(meanCatch) || meanCatch.length === 0) {
         setError("No data available");
       } else {
-        // Get unique sites from the first data point (excluding 'month' field)
         const uniqueSites = Object.keys(meanCatch[0]).filter(
           (key) => key !== "month"
         );
 
-        // Generate colors for each site
         const newSiteColors = uniqueSites.reduce(
           (acc, site, index) => ({
             ...acc,
@@ -185,7 +177,6 @@ export default function CatchRadarChart({
         );
         setSiteColors(newSiteColors);
 
-        // Initialize visibility state for all sites
         setVisibilityState(
           uniqueSites.reduce(
             (acc, site) => ({
@@ -196,7 +187,6 @@ export default function CatchRadarChart({
           )
         );
 
-        // Sort data according to MONTH_ORDER
         const sortedData = [...meanCatch].sort(
           (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
         );
@@ -204,14 +194,22 @@ export default function CatchRadarChart({
         setData(sortedData);
         setError(null);
       }
-    } catch (error) {
-      console.error("Error processing data:", error);
+    } catch (e) {
+      console.error("Error processing data:", e);
       setError("Error processing data");
     } finally {
-      // End loading
       setLoading(false);
     }
   }, [meanCatch, selectedMetric]);
+
+  // Optional: Force a resize after data is loaded to ensure correct dimensions
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 100);
+    }
+  }, [data]);
 
   if (loading) return <div>Loading chart...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -220,10 +218,15 @@ export default function CatchRadarChart({
   return (
     <WidgetCard
       title={METRIC_INFO[selectedMetric].label}
-      className={cn("@container", className)}
+      className={cn(className)}
     >
-      <div className="mt-5 h-96 w-full pb-2 @sm:h-96 @xl:pb-0 @2xl:aspect-[1060/660] @2xl:h-auto lg:mt-7">
-        <ResponsiveContainer width="100%" height="100%">
+      {/* Removed complex container queries and aspect ratios */}
+      <div className="mt-5 h-96 w-full pb-2">
+        <ResponsiveContainer
+          key={JSON.stringify(data)} // Forces a re-render when data changes
+          width="100%"
+          height="100%"
+        >
           <RadarChart
             data={data}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -249,11 +252,7 @@ export default function CatchRadarChart({
                 strokeOpacity={visibilityState[site]?.opacity}
               />
             ))}
-            <Tooltip
-              content={(props) => (
-                <CustomTooltip {...props} metric={selectedMetric} />
-              )}
-            />
+            <Tooltip content={(props) => <CustomTooltip {...props} metric={selectedMetric} />} />
             <Legend content={CustomLegend} />
           </RadarChart>
         </ResponsiveContainer>
