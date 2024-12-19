@@ -3,8 +3,6 @@
 import { useTranslation } from "./client";
 import { USFlag } from "@components/icons/language/USFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
-import { usePathname, useRouter } from "next/navigation";
-import useQueryParams from "@hooks/use-query-params";
 import { useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import cn from "@utils/class-names";
@@ -29,7 +27,7 @@ const languageMenu: LanguageMenuProps[] = [
     name: "Swahili - SW",
     value: "sw",
     icon: <SWFlag />,
-  },  
+  },
 ];
 
 export default function LanguageSwitcher({
@@ -43,14 +41,7 @@ export default function LanguageSwitcher({
   iconClassName?: string;
   variant?: "text" | "icon";
 }) {
-  const { t } = useTranslation(lang!);
-  const router = useRouter();
-  const pathname = usePathname();
-  const pathnameSplit = pathname?.split("/") ?? [];
-  const newPathname: string = pathnameSplit
-    .slice(2, pathnameSplit.length)
-    .join("/");
-  const { query } = useQueryParams(pathname ?? "/");
+  const { i18n, t } = useTranslation(lang);
   const options = languageMenu;
   const currentSelectedItem = lang
     ? options.find((o) => o.value === lang) ?? options[0]
@@ -59,15 +50,14 @@ export default function LanguageSwitcher({
 
   function handleItemClick(values: any) {
     setSelectedItem(values);
-    const pushPathname: string = `/${values.value}/${newPathname}${query}`;
-    router.push(pushPathname);
+    i18n.changeLanguage(values.value); // Change language without reloading
   }
 
   return (
     <>
       <Listbox value={selectedItem} onChange={handleItemClick}>
         {({ open }) => (
-          <div className="relative z-10 lg:top-[1px]">
+          <div className="relative z-10">
             <Listbox.Button
               className={cn(
                 "relative flex h-[34px] w-14 items-center justify-center rounded-md p-1 shadow backdrop-blur-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30 focus-visible:ring-opacity-50 hover:enabled:text-gray-1000 active:enabled:translate-y-px dark:bg-gray-100",
@@ -133,17 +123,6 @@ export default function LanguageSwitcher({
           </div>
         )}
       </Listbox>
-
-      {/* <SelectBox
-        selectClassName="w-full shadow backdrop-blur-md dark:bg-gray-100 border-transparent"
-        options={options}
-        value={selectedItem}
-        onChange={handleItemClick}
-        getOptionValue={(option) => option}
-        displayValue={(selected: any) =>
-          options?.find((option) => option.value === selected?.value)?.name
-        }
-      /> */}
     </>
   );
 }
