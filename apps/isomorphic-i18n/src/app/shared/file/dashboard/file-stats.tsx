@@ -92,7 +92,7 @@ export function FileStatGrid({
       const transformedStats: StatData[] = [
         {
           id: "1",
-          title: "Total surveys",
+          title: "text-total-surveys",
           metric: monthlyData.submissions.current.toString(),
           increased: monthlyData.submissions.percentage > 0,
           decreased: monthlyData.submissions.percentage < 0,
@@ -105,7 +105,7 @@ export function FileStatGrid({
         },
         {
           id: "2",
-          title: "Total fishers",
+          title: "text-total-fishers",
           metric: monthlyData.fishers.current.toString(),
           increased: monthlyData.fishers.percentage > 0,
           decreased: monthlyData.fishers.percentage < 0,
@@ -118,7 +118,7 @@ export function FileStatGrid({
         },
         {
           id: "3",
-          title: "Total catches",
+          title: "text-total-catches",
           metric: monthlyData.catches.current.toString(),
           increased: monthlyData.catches.percentage > 0,
           decreased: monthlyData.catches.percentage < 0,
@@ -131,7 +131,7 @@ export function FileStatGrid({
         },
         {
           id: "4",
-          title: "Monthly tonnes",
+          title: "text-total-tonnes",
           metric: monthlyData.weight.current.toFixed(1),
           increased: monthlyData.weight.percentage > 0,
           decreased: monthlyData.weight.percentage < 0,

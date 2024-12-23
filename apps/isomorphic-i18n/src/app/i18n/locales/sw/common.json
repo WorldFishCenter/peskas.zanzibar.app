@@ -741,5 +741,9 @@
   "text-basic-information-description": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
   "text-property-size-and-pricing": "Ukubwa wa Mali na Bei",
   "text-property-size-and-pricing-details": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
-  "text-select-metric": "Chagua kipimo"
+  "text-select-metric": "Chagua kipimo",
+  "text-total-surveys": "Jumla ya tafiti",
+  "text-total-fishers": "Jumla ya wavuvi",
+  "text-total-catches": "Jumla ya samaki waliovuliwa",
+  "text-total-tonnes": "Jumla ya tani"
 }
