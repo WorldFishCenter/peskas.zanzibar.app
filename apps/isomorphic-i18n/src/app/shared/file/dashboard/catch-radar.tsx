@@ -160,28 +160,39 @@ export default function CatchRadarChart({
 
     const processData = async () => {
       if (!meanCatch) {
+        console.warn("meanCatch is undefined");
         return;
       }
 
       try {
         if (!Array.isArray(meanCatch) || meanCatch.length === 0) {
           setError("No data available");
+          console.warn("meanCatch is not an array or is empty:", meanCatch);
           return;
         }
 
-        const uniqueSites = Object.keys(meanCatch[0]).filter((key) => key !== "month");
+        // Extract unique BMUs from all data points
+        const uniqueSitesSet = meanCatch.reduce((sites, item) => {
+          Object.keys(item).forEach((key) => {
+            if (key !== "month") sites.add(key);
+          });
+          return sites;
+        }, new Set<string>());
+        const uniqueSites: string[] = Array.from(uniqueSitesSet);
 
-        const newSiteColors = uniqueSites.reduce(
-          (acc, site, index) => ({
-            ...acc,
-            [site]: generateColor(index),
-          }),
+        console.log("Unique Sites:", uniqueSites);
+
+        const newSiteColors = uniqueSites.reduce<Record<string, string>>(
+          (acc: Record<string, string>, site: string, index: number) => {
+            acc[site] = generateColor(index);
+            return acc;
+          },
           {}
         );
         setSiteColors(newSiteColors);
 
-        const newVisibilityState = uniqueSites.reduce(
-          (acc, site) => ({
+        const newVisibilityState: VisibilityState = uniqueSites.reduce<VisibilityState>(
+          (acc: VisibilityState, site: string) => ({
             ...acc,
             [site]: { opacity: 1 },
           }),
@@ -189,9 +200,18 @@ export default function CatchRadarChart({
         );
         setVisibilityState(newVisibilityState);
 
+        // Sort data by month order and ensure all BMUs are present
         const sortedData = [...meanCatch].sort(
           (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
-        );
+        ).map((item) => {
+          const completeItem: RadarData = { month: item.month };
+          uniqueSites.forEach((site) => {
+            completeItem[site] = (item as Record<string, number | string>)[site] !== undefined 
+              ? (item as Record<string, number | string>)[site] 
+              : 0; // Use 0 or null as default
+          });
+          return completeItem;
+        });
 
         setData(sortedData);
         setError(null);
@@ -200,6 +220,7 @@ export default function CatchRadarChart({
         setError("Error processing data");
       } finally {
         setLoading(false);
+        if (isInitialLoad) setIsInitialLoad(false);
       }
     };
 
