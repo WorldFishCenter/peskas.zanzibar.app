@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   /* default theme */
   :root {
@@ -87,80 +86,72 @@
   }
 
   /* dark theme */
-  [data-theme='dark'] {
+  [data-theme="dark"] {
+    /* Set background color to #374151 */
+    --background: 55 65 81; /* #374151 */
+
     /*
-      - gray/natural color shades for texts, borders and disabled elements.
-      - If required we can use as background too.
-    */
-    /* For rgb(0 0 0 / <alpha-value>) = #000000  */
-    --gray-0: 0 0 0;
-    /* For rgb(17 17 17 / <alpha-value>) = #111111 */
-    --gray-50: 17 17 17;
-    /* For rgb(31 31 31 / <alpha-value>) = #1f1f1f */
-    --gray-100: 31 31 31;
-    /* For rgb(51 51 51 / <alpha-value>) = #333333 */
-    --gray-200: 51 51 51;
-    /* For rgb(72 72 72 / <alpha-value>) = #484848 */
-    --gray-300: 72 72 72;
-    /* For rgb(102 102 102 / <alpha-value>) = #666666 */
-    --gray-400: 102 102 102;
-    /* For rgb(146 146 146 / <alpha-value>) = #929292 */
-    --gray-500: 146 146 146;
-    /* For rgb(162 162 162 / <alpha-value>) = #a2a2a2 */
-    --gray-600: 162 162 162;
-    /* For rgb(223 223 223 / <alpha-value>) = #dfdfdf */
-    --gray-700: 223 223 223;
-    /* For rgb(226 226 226 / <alpha-value>) = #e2e2e2 */
-    --gray-800: 226 226 226;
-    /* For rgb(241 241 241 / <alpha-value>) = #f1f1f1 */
-    --gray-900: 241 241 241;
-    /* For rgb(255 255 255 / <alpha-value>) = #ffffff */
-    --gray-1000: 255 255 255;
+    - Gray/natural color shades for texts, borders, and disabled elements.
+    - Adjusted to work with #374151 as the base.
+  */
+    --gray-0: 55 65 81; /* #374151 - base color */
+    --gray-50: 31 41 55; /* #1F2937 - darker */
+    --gray-100: 17 24 39; /* #111827 - even darker */
+    --gray-200: 75 85 99; /* #4B5563 - lighter */
+    --gray-300: 107 114 128; /* #6B7280 */
+    --gray-400: 156 163 175; /* #9CA3AF */
+    --gray-500: 209 213 219; /* #D1D5DB */
+    --gray-600: 229 231 235; /* #E5E7EB */
+    --gray-700: 243 244 246; /* #F3F4F6 */
+    --gray-800: 249 250 251; /* #F9FAFB */
+    --gray-900: 255 255 255; /* #FFFFFF */
+    --gray-1000: 255 255 255; /* #FFFFFF */
 
-    --background: 8 9 14; /* #08090e */
-    --foreground: 223 223 223; /* #dfdfdf */
-    --muted: 51 51 51; /* #333333 */
-    --muted-foreground: 102 102 102; /* #666666 */
+    /* Body and text styles */
+    --foreground: 229 231 235; /* #E5E7EB */
+    --muted: 75 85 99; /* #4B5563 */
+    --muted-foreground: 156 163 175; /* #9CA3AF */
 
-    /* ----------------------------------- */
-    /* primary/brand colors */
-    /* ----------------------------------- */
-    --primary-lighter: 34 34 34; /* #222222 */
-    --primary-default: 241 241 241; /* #f1f1f1 */
-    --primary-dark: 255 255 255; /* #ffffff */
-    --primary-foreground: 0 0 0; /* #000000 */
+    /* Brand/Primary colors */
+    --primary-lighter: 107 114 128; /* #6B7280 */
+    --primary-default: 229 231 235; /* #E5E7EB */
+    --primary-dark: 255 255 255; /* #FFFFFF */
+    --primary-foreground: 17 24 39; /* #111827 */
 
-    /* ----------------------------------- */
-    /* secondary colors */
-    /* ----------------------------------- */
-    --secondary-lighter: 31 22 90; /* #1f165a */
-    --secondary-dark: 193 203 255; /* #c1cbff */
+    /* Secondary colors */
+    --secondary-lighter: 75 85 99; /* #4B5563 */
+    --secondary-default: 107 114 128; /* #6B7280 */
+    --secondary-dark: 209 213 219; /* #D1D5DB */
+    --secondary-foreground: 17 24 39; /* #111827 */
 
-    /* ----------------------------------- */
-    /* red/error colors */
-    /* ----------------------------------- */
+    /* Red/Error colors */
     --red-lighter: 80 0 0; /* #500000 */
-    --red-dark: 255 193 193; /* #ffc1c1 */
+    --red-default: 239 68 68; /* #EF4444 */
+    --red-dark: 252 165 165; /* #FCA5A5 */
 
-    /* ----------------------------------- */
-    /* orange/warning colors */
-    /* ----------------------------------- */
-    --orange-lighter: 68 29 4; /* #441d04 */
-    --orange-dark: 252 234 139; /* #fcea8b */
+    /* Orange/Warning colors */
+    --orange-lighter: 234 88 12; /* #EA580C */
+    --orange-default: 249 115 22; /* #F97316 */
+    --orange-dark: 253 186 116; /* #FDBA74 */
 
-    /* ----------------------------------- */
-    /* blue/info colors */
-    /* ----------------------------------- */
-    --blue-lighter: 13 51 94; /* #0d335e */
-    --blue-dark: 181 233 255; /* #b5e9ff */
+    /* Blue/Info colors */
+    --blue-lighter: 37 99 235; /* #2563EB */
+    --blue-default: 59 130 246; /* #3B82F6 */
+    --blue-dark: 191 219 254; /* #BFDBFE */
 
-    /* ----------------------------------- */
-    /* green/success colors */
-    /* ----------------------------------- */
-    --green-lighter: 3 48 22; /* #033016 */
-    --green-dark: 185 249 207; /* #b9f9cf */
+    /* Green/Success colors */
+    --green-lighter: 16 185 129; /* #10B981 */
+    --green-default: 34 197 94; /* #22C55E */
+    --green-dark: 134 239 172; /* #86EFAC */
 
-    /* here you can customize other colors for dark theme if design required */
+    /* Additional settings for improved coverage */
+    --link: 191 219 254; /* #BFDBFE */
+    --link-hover: 59 130 246; /* #3B82F6 */
+    --border: 75 85 99; /* #4B5563 */
+    --card-background: 31 41 55; /* #1F2937 */
+    --hover-background: 75 85 99; /* #4B5563 */
+    --input-background: 31 41 55; /* #1F2937 */
+    --input-border: 75 85 99; /* #4B5563 */
   }
 
   .rizzui-select-options {
@@ -185,16 +176,16 @@
     @apply hidden;
   }
 
-  input[type='search']::-webkit-search-cancel-button {
+  input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
   }
 
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
     @apply m-0 appearance-none;
   }
 
-  input[type='checkbox']:checked {
+  input[type="checkbox"]:checked {
     @apply bg-none;
   }
 
@@ -851,7 +842,7 @@ td.rc-table-cell-fix-right {
 
 .rc-table-cell-fix-right-first:after,
 .rc-table-cell-fix-right-last:after {
-  content: '';
+  content: "";
   transform: translate(-100%);
   @apply pointer-events-none absolute -bottom-[1px] -left-[1px] top-0 w-5;
 }
@@ -975,7 +966,7 @@ td.rc-table-cell-fix-right {
 
 .ql-formats button:hover::before,
 .ql-formats > span:hover::before {
-  content: '';
+  content: "";
   @apply absolute left-1/2 top-[-9px] z-10 -translate-x-1/2 transform border-x-[7px] border-y-[6px] border-solid border-transparent border-t-[#0d1e42];
 }
 
@@ -986,75 +977,75 @@ td.rc-table-cell-fix-right {
 
 /** Set tooltip content for toolbar options **/
 .ql-bold:hover::after {
-  content: 'Bold';
+  content: "Bold";
 }
 
 .ql-italic:hover::after {
-  content: 'Italic';
+  content: "Italic";
 }
 
 .ql-underline:hover::after {
-  content: 'Underline';
+  content: "Underline";
 }
 
 .ql-strike:hover::after {
-  content: 'Strikeout';
+  content: "Strikeout";
 }
 
 .ql-link:hover::after {
-  content: 'Hyperlink';
+  content: "Hyperlink";
 }
 
 .ql-blockquote:hover::after {
-  content: 'Quote';
+  content: "Quote";
 }
 
 .ql-code-block:hover::after {
-  content: 'Code Block';
+  content: "Code Block";
 }
 
-.ql-list[value='bullet']:hover::after {
-  content: 'Bulleted List';
+.ql-list[value="bullet"]:hover::after {
+  content: "Bulleted List";
 }
 
-.ql-list[value='ordered']:hover::after {
-  content: 'Numbered List';
+.ql-list[value="ordered"]:hover::after {
+  content: "Numbered List";
 }
 
-.ql-script[value='sub']:hover::after {
-  content: 'Sub Script';
+.ql-script[value="sub"]:hover::after {
+  content: "Sub Script";
 }
 
-.ql-script[value='super']:hover::after {
-  content: 'Super Script';
+.ql-script[value="super"]:hover::after {
+  content: "Super Script";
 }
 
-.ql-indent[value='-1']:hover::after {
-  content: 'Indent -1';
+.ql-indent[value="-1"]:hover::after {
+  content: "Indent -1";
 }
 
-.ql-indent[value='+1']:hover::after {
-  content: 'Indent +1';
+.ql-indent[value="+1"]:hover::after {
+  content: "Indent +1";
 }
 
 .ql-color:hover::after {
-  content: 'Text Color';
+  content: "Text Color";
 }
 
 .ql-background:hover::after {
-  content: 'Background Color';
+  content: "Background Color";
 }
 
 .ql-align:hover::after {
-  content: 'Text Align';
+  content: "Text Align";
 }
 
 .ql-clean:hover::after {
-  content: 'Clear Formatting';
+  content: "Clear Formatting";
 }
 
 .ql-font:hover::after {
-  content: 'Font Family';
+  content: "Font Family";
 }
 
 /* react-quill responsive styles */
@@ -1088,7 +1079,7 @@ td.rc-table-cell-fix-right {
 }
 
 /* colors filter  */
-.colors-filter input[type='checkbox']:checked ~ svg {
+.colors-filter input[type="checkbox"]:checked ~ svg {
   @apply !hidden;
 }
 
@@ -1135,7 +1126,7 @@ textarea::placeholder {
 /* .gmnoprint {
   @apply hidden;
 } */
-div[style='z-index: 1000001;'],
+div[style="z-index: 1000001;"],
 .gm-style-cc {
   @apply hidden;
 }
@@ -1498,6 +1489,6 @@ div[style='z-index: 1000001;'],
   }
 }
 
-[dir='rtl'] :is(.rizzui-checkbox-icon, .rizzui-switch-on-icon) {
+[dir="rtl"] :is(.rizzui-checkbox-icon, .rizzui-switch-on-icon) {
   @apply -scale-x-100;
 }
