@@ -18,8 +18,8 @@ import { loginSchema, LoginSchema } from "@/validators/login.schema";
 import { Form } from "@ui/form";
 
 const initialValues: LoginSchema = {
-  email: "anthony@mountaindev.com",
-  password: "1234qwer",
+  email: "",
+  password: "",
   rememberMe: true,
 };
 
