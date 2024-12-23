@@ -8,6 +8,7 @@ import { useTranslation } from '@/app/i18n/client';
 import { api } from "@/trpc/react";
 import { bmusAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
+import { useTheme } from "next-themes";
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -26,7 +27,7 @@ const METRIC_OPTIONS: MetricOption[] = [
   { value: "mean_cpua", label: "Mean CPUA", unit: "kg/area" }
 ];
 
-const NO_DATA_COLOR = '#f0f0f0';
+const NO_DATA_COLOR = '#f4f4f4';
 const YL_GN_BU = [
   '#ffffd9', // Lightest
   '#edf8b1',
@@ -148,6 +149,7 @@ interface GearData {
 }
 
 export default function GearHeatmap({ className, lang }: { className?: string; lang?: string; }) {
+  const { theme } = useTheme();
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("mean_cpue");
   const [series, setSeries] = useState<any[]>([]);
   const [colorRanges, setColorRanges] = useState<any[]>([]);
@@ -174,7 +176,12 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
       }));
 
       setColorRanges([
-        { from: -1, to: -1, color: NO_DATA_COLOR, name: 'No Data' },
+        { 
+          from: -1, 
+          to: -1, 
+          color: theme === 'dark' ? '#374151' : NO_DATA_COLOR, 
+          name: 'No Data' 
+        },
         ...formattedRanges
       ]);
 
@@ -205,7 +212,7 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
     } finally {
       setLoading(false);
     }
-  }, [rawData, selectedMetric]);
+  }, [rawData, selectedMetric, theme]);
 
   const chartOptions = {
     chart: {
@@ -214,11 +221,13 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
         show: false
       },
       fontFamily: 'Inter, sans-serif',
+      background: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+      foreColor: theme === 'dark' ? '#D1D5DB' : '#4B5563',
     },
     dataLabels: {
       enabled: true,
       style: {
-        colors: ['#fff'],
+        colors: [theme === 'dark' ? '#FFFFFF' : '#000000'],
         fontSize: '14px',
         fontWeight: '600'
       },
@@ -242,14 +251,38 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
       labels: {
         trim: true,
         style: {
-          fontSize: '12px'
+          fontSize: '12px',
+          colors: theme === 'dark' ? '#D1D5DB' : '#4B5563'
         }
+      },
+      axisBorder: {
+        color: theme === 'dark' ? '#4B5563' : '#E5E7EB'
+      },
+      axisTicks: {
+        color: theme === 'dark' ? '#4B5563' : '#E5E7EB'
       }
     },
     yaxis: {
       labels: {
         style: {
-          fontSize: '12px'
+          fontSize: '12px',
+          colors: theme === 'dark' ? '#D1D5DB' : '#4B5563'
+        }
+      }
+    },
+    grid: {
+      show: true,
+      borderColor: theme === 'dark' ? '#374151' : '#E5E7EB',
+      xaxis: {
+        lines: {
+          show: true,
+          colors: theme === 'dark' ? '#374151' : '#E5E7EB'
+        }
+      },
+      yaxis: {
+        lines: {
+          show: true,
+          colors: theme === 'dark' ? '#374151' : '#E5E7EB'
         }
       }
     },
@@ -257,6 +290,10 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
       show: true,
       position: 'top' as const,
       fontSize: '12px',
+      labels: {
+        colors: theme === 'dark' ? '#D1D5DB' : '#4B5563',
+        useSeriesColors: false
+      },
       markers: {
         size: 10
       },
@@ -268,26 +305,31 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
       }
     },
     tooltip: {
+      theme: theme as 'light' | 'dark',
       custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
         const value = series[seriesIndex][dataPointIndex];
         const bmu = w.globals.seriesNames[seriesIndex];
         const gearType = w.globals.labels[dataPointIndex];
 
+        const bgColor = theme === 'dark' ? '#374151' : '#FFFFFF';
+        const textColor = theme === 'dark' ? '#D1D5DB' : '#4B5563';
+        const borderColor = theme === 'dark' ? '#4B5563' : '#E5E7EB';
+
         if (value === -1) {
           return `
-            <div class="p-2 bg-white rounded-lg shadow-lg border border-gray-200">
-              <div class="text-sm font-medium text-gray-600">BMU: ${bmu}</div>
-              <div class="text-sm">Gear Type: ${gearType}</div>
-              <div class="text-sm font-medium mt-1">No Data</div>
+            <div class="p-2 rounded-lg shadow-lg" style="background: ${bgColor}; border: 1px solid ${borderColor}">
+              <div class="text-sm font-medium" style="color: ${textColor}">BMU: ${bmu}</div>
+              <div class="text-sm" style="color: ${textColor}">Gear Type: ${gearType}</div>
+              <div class="text-sm font-medium mt-1" style="color: ${textColor}">No Data</div>
             </div>
           `;
         }
 
         return `
-          <div class="p-2 bg-white rounded-lg shadow-lg border border-gray-200">
-            <div class="text-sm font-medium text-gray-600">BMU: ${bmu}</div>
-            <div class="text-sm">Gear Type: ${gearType}</div>
-            <div class="text-sm font-medium mt-1">${selectedMetricOption?.label}: ${value.toFixed(2)} ${selectedMetricOption?.unit}</div>
+          <div class="p-2 rounded-lg shadow-lg" style="background: ${bgColor}; border: 1px solid ${borderColor}">
+            <div class="text-sm font-medium" style="color: ${textColor}">BMU: ${bmu}</div>
+            <div class="text-sm" style="color: ${textColor}">Gear Type: ${gearType}</div>
+            <div class="text-sm font-medium mt-1" style="color: ${textColor}">${selectedMetricOption?.label}: ${value.toFixed(2)} ${selectedMetricOption?.unit}</div>
           </div>
         `;
       }
@@ -324,3 +366,20 @@ export default function GearHeatmap({ className, lang }: { className?: string; l
     </WidgetCard>
   );
 }
+
+const WidgetCardTitle = ({
+  title,
+  children,
+}: {
+  title: string;
+  children?: React.ReactNode;
+}) => {
+  return (
+    <div className="flex items-center justify-between">
+      <h2 className="text-base font-medium">{title}</h2>
+      {children}
+    </div>
+  );
+};
+
+export { MetricSelector };

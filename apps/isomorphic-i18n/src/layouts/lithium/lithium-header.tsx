@@ -14,7 +14,10 @@ import {
   PiChatsCircleDuotone,
   PiGearDuotone,
   PiMagnifyingGlassDuotone,
+  PiSun,
+  PiMoon,
 } from "react-icons/pi";
+import { useTheme } from "next-themes";
 import HeaderMenuLeft from "@/layouts/lithium/lithium-menu";
 import Sidebar from "@/layouts/hydrogen/sidebar";
 import StickyHeader from "@/layouts/sticky-header";
@@ -22,13 +25,32 @@ import LanguageSwitcher from "@/app/i18n/language-switcher";
 import SearchWidget from "@/app/shared/search/search";
 import { FilterSelector } from "@/app/components/filter-selector";
 
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <ActionIcon
+      aria-label="Toggle theme"
+      variant="text"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className={cn(
+        "h-[34px] w-[34px] shadow backdrop-blur-md dark:bg-gray-100 md:h-9 md:w-9",
+        "relative rounded-full text-gray-700 hover:text-gray-1000"
+      )}
+    >
+      {theme === "dark" ? (
+        <PiSun className="h-[22px] w-auto" />
+      ) : (
+        <PiMoon className="h-[22px] w-auto" />
+      )}
+    </ActionIcon>
+  );
+}
 function HeaderMenuRight() {
   return (
     <div className="ms-auto flex shrink-0 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
       <FilterSelector />
-      <SettingsButton className="rounded-full text-gray-700 shadow-none backdrop-blur-none hover:text-gray-1000 3xl:h-10 3xl:w-10 dark:bg-gray-100/0">
-        <PiGearDuotone className="h-[22px] w-auto animate-spin-slow" />
-      </SettingsButton>
+      <ThemeToggle />
       <ProfileMenu
         buttonClassName="w-auto sm:w-auto p-1 border border-gray-300"
         avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"
