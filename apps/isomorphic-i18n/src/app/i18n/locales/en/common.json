@@ -886,5 +886,7 @@
   "text-total-surveys": "Total surveys",
   "text-total-fishers": "Total fishers",
   "text-total-catches": "Total catches",
-  "text-total-tonnes": "Total tonnes"
+  "text-total-tonnes": "Total tonnes",
+  "text-select-metric": "Select metric:",
+  "text-bmu-ranking": "BMU Performance Rankings"
 }
