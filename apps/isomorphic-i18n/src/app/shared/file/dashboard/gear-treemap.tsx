@@ -21,10 +21,10 @@ interface MetricOption {
 }
 
 const METRIC_OPTIONS: MetricOption[] = [
-  { value: "mean_trip_catch", label: "Mean Catch per Trip", unit: "kg" },
-  { value: "mean_effort", label: "Mean Effort", unit: "hours" },
-  { value: "mean_cpue", label: "Mean CPUE", unit: "kg/hour" },
-  { value: "mean_cpua", label: "Mean CPUA", unit: "kg/area" }
+  { value: "mean_trip_catch", label: "Mean Catch per Trip", unit: "kg/trip" },
+  { value: "mean_effort", label: "Mean Effort", unit: "fishers/km²/day" },
+  { value: "mean_cpue", label: "Mean CPUE", unit: "kg/fisher/day" },
+  { value: "mean_cpua", label: "Mean CPUA", unit: "kg/km²/day" }
 ];
 
 const NO_DATA_COLOR = '#f4f4f4';
