@@ -8,4 +8,4 @@ export const loginSchema = z.object({
 });
 
 // generate form types from zod validation schema
-export type LoginSchema = z.infer<typeof loginSchema>;
+export type LoginType = z.infer<typeof loginSchema>;

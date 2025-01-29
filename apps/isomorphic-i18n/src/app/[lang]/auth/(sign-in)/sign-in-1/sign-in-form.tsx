@@ -8,9 +8,9 @@ import { PiArrowRightBold } from 'react-icons/pi';
 import { Checkbox, Password, Button, Input, Text } from 'rizzui';
 import { Form } from '@ui/form';
 import { routes } from '@/config/routes';
-import { loginSchema, LoginSchema } from '@/validators/login.schema';
+import { loginSchema, LoginType } from '@/validators/login.schema';
 
-const initialValues: LoginSchema = {
+const initialValues: LoginType = {
   email: 'admin@admin.com',
   password: 'admin',
   rememberMe: true,
@@ -20,7 +20,7 @@ export default function SignInForm() {
   //TODO: why we need to reset it here
   const [reset, setReset] = useState({});
 
-  const onSubmit: SubmitHandler<LoginSchema> = (data) => {
+  const onSubmit: SubmitHandler<LoginType> = (data) => {
     console.log(data);
     signIn('credentials', {
       ...data,
@@ -30,7 +30,7 @@ export default function SignInForm() {
 
   return (
     <>
-      <Form<LoginSchema>
+      <Form<LoginType>
         validationSchema={loginSchema}
         resetValues={reset}
         onSubmit={onSubmit}

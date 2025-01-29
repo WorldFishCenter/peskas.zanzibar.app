@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from 'next-auth';
+import type { DefaultSession, NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import get from 'lodash/get';
@@ -6,12 +6,15 @@ import pick from 'lodash/pick';
 import bcryptjs from "bcryptjs";
 
 import getDb from "@repo/nosql";
-import { UserModel } from "@repo/nosql/schema/auth";
+import { TGroup, UserModel } from "@repo/nosql/schema/auth";
 import { loginSchema } from '@/validators/login.schema';
 import { env } from '@/env.mjs';
 import InvalidPayloadError from "@/app/shared/error/InvalidPayloadError";
 import UserNotFoundError from "@/app/shared/error/UserNotFoundError";
 import { MDMongooseAdapter } from "./mongoose-adapter";
+import UserInactiveError from '@/app/shared/error/UserInactiveError';
+import { DefaultJWT } from 'next-auth/jwt';
+import { TBmu } from '@repo/nosql/schema/bmu';
 
 export const authOptions: NextAuthOptions = {
   adapter: MDMongooseAdapter(),
@@ -22,10 +25,11 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.name = user.name
         token.email = user.email
-        token.maxAge = get(user, 'maxAge')
-        token.groups = get(user, 'groups')
-        token.bmus = get(user, 'bmus')
+        token.maxAge = user.maxAge
+        token.groups = user.groups
+        token.bmus = user.bmus
       }
       return token;
     },
@@ -43,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         user: {
           ...session.user,
           id: token.id as string | undefined,
+          name: token.name,
           email: token.email,
           groups: token.groups,
           bmus: token.bmus,
@@ -97,10 +102,13 @@ export const authOptions: NextAuthOptions = {
              */ 
             const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
             return {
-              ...pick(user, ['id', 'email', 'groups', 'bmus']),
+              ...pick(user, ['id', 'email', 'groups', 'bmus', 'name']),
               maxAge
             }
           }
+
+          const isInactive = user.status === 'inactive'
+          if (isInactive) throw new UserInactiveError()
         }
         throw new InvalidPayloadError()
       },
@@ -112,3 +120,4 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 };
+

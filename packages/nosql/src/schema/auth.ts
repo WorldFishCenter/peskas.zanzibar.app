@@ -5,7 +5,6 @@ import type { TBmu } from "./bmu"
 
 export { BmuModel } from "./bmu"
 
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TUser = {
   _id: Types.ObjectId;
   id: string;
@@ -17,6 +16,7 @@ export type TUser = {
   roleId: Types.ObjectId;
   groups: TGroup[];
   bmus: TBmu[];
+  status: string;
   created_at: Date;
   updated_at: Date;
 };
@@ -46,7 +46,7 @@ export type TVerificationToken = {
 };
 
 export type TGroup = {
-  _id: string;
+  _id: Types.ObjectId;
   name: string;
   permission_id: Types.ObjectId;
 };
@@ -61,8 +61,10 @@ export const PERMISSION_ACTIONS = [
 export type TAction = (typeof PERMISSION_ACTIONS)[number];
 
 export type TPermission = {
+  _id: Types.ObjectId;
   name: string;
   domain: {
+    _id: Types.ObjectId;
     country: string;
     resource: string;
     actions: TAction[];
@@ -82,6 +84,7 @@ const userSchema = new Schema<TUser>({
   image: String,
   groups: [{ type: Schema.Types.ObjectId, ref: "Group" }],
   bmus: [{ type: Schema.Types.ObjectId, ref: "Bmu" }],
+  status: { type: String, default: 'active' },
   created_at: { type: Date, default: Date.now },
   updated_at: Date,
 });

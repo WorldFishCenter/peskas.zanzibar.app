@@ -46,7 +46,7 @@ function ThemeToggle() {
     </ActionIcon>
   );
 }
-function HeaderMenuRight() {
+function HeaderMenuRight({ lang }: { lang?: string }) {
   return (
     <div className="ms-auto flex shrink-0 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
       <FilterSelector />
@@ -54,6 +54,7 @@ function HeaderMenuRight() {
       <ProfileMenu
         buttonClassName="w-auto sm:w-auto p-1 border border-gray-300"
         avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"
+        lang={lang}
       />
     </div>
   );
@@ -100,7 +101,7 @@ export default function Header({ lang }: { lang?: string }) {
           />
           */}
         </div>
-        <HeaderMenuRight />
+        <HeaderMenuRight lang={lang} />
       </div>
     </StickyHeader>
   );

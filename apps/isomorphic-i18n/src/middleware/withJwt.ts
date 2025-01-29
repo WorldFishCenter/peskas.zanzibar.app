@@ -11,6 +11,7 @@ const withJwt: MiddlewareFactory = (next: NextMiddleware) => {
       .getAll()
       .filter((o) => o.name.indexOf(JWT_COOKIE_NAME) > -1)
 
+    //@ts-ignore
     const loginPageMatches = /.*\/(?<page>(sign-in))$/gim.exec(
       request.nextUrl.pathname,
     )

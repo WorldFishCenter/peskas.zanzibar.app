@@ -6,9 +6,9 @@ import { Password, Button, Switch, Input, Text } from 'rizzui';
 import { useMedia } from '@hooks/use-media';
 import { Form } from '@ui/form';
 import { routes } from '@/config/routes';
-import { loginSchema, LoginSchema } from '@/validators/login.schema';
+import { loginSchema, LoginType } from '@/validators/login.schema';
 
-const initialValues: LoginSchema = {
+const initialValues: LoginType = {
   email: 'admin@admin.com',
   password: 'admin',
   rememberMe: true,
@@ -16,13 +16,13 @@ const initialValues: LoginSchema = {
 
 export default function SignInForm() {
   const isMedium = useMedia('(max-width: 1200px)', false);
-  const onSubmit: SubmitHandler<LoginSchema> = (data) => {
+  const onSubmit: SubmitHandler<LoginType> = (data) => {
     console.log('Sign in data ->', data);
   };
 
   return (
     <div className="xl:pe-12 2xl:pe-20">
-      <Form<LoginSchema>
+      <Form<LoginType>
         validationSchema={loginSchema}
         onSubmit={onSubmit}
         useFormProps={{

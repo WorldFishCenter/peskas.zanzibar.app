@@ -23,7 +23,8 @@
       "@shared/*": ["../../packages/isomorphic-core/src/shared/*"],
       "@hooks/*": ["../../packages/isomorphic-core/src/hooks/*"],
       "@utils/*": ["../../packages/isomorphic-core/src/utils/*"],
-      "@layouts/*": ["../../packages/isomorphic-core/src/layouts/*"]
+      "@layouts/*": ["../../packages/isomorphic-core/src/layouts/*"],
+      "@api/*": ["../../packages/api/src/*"]
     },
     "plugins": [
       {

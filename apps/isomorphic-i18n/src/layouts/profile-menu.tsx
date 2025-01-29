@@ -1,13 +1,15 @@
 "use client";
 
 import { Title, Text, Avatar, Button, Popover } from "rizzui";
-import cn from "@utils/class-names";
-import { routes } from "@/config/routes";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import cn from "@utils/class-names";
+import { routes } from "@/config/routes";
 import { useTranslation } from "@/app/i18n/client";
+import { hasPermission } from '@/helpers/auth';
 
 export default function ProfileMenu({
   buttonClassName,
@@ -86,23 +88,33 @@ const menuItems = [
 
 function DropdownMenu({ lang }: { lang?: string }) {
   const { t } = useTranslation(lang!);
+  const { data: session } = useSession()
+  const userMenuItems = [
+    ...menuItems,
+    ...hasPermission(session?.user?.groups, 'user', ["create", "read", "update", "delete"])
+      ? [{
+        name: "text-manage-users",
+        href: routes.admin.users,
+      }]
+      : []
+  ]
 
   return (
     <div className="w-64 text-left rtl:text-right">
       <div className="flex items-center border-b border-gray-300 px-6 pb-5 pt-6">
         <Avatar
-          // src="https://isomorphic-furyroad.s3.amazonaws.com/public/avatars/avatar-11.webp"
-          name="Lore Lon"
+          src="https://isomorphic-furyroad.s3.amazonaws.com/public/avatars/avatar-11.webp"
+          name={session?.user?.name ?? ''}
         />
         <div className="ms-3">
           <Title as="h6" className="font-semibold">
-          Lore Lon
+            {session?.user?.name}
           </Title>
-          <Text className="text-gray-600">lorelon@doe.io</Text>
+          <Text className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap w-[96%]">{session?.user?.email}</Text>
         </div>
       </div>
       <div className="grid px-3.5 py-3.5 font-medium text-gray-700">
-        {menuItems.map((item) => (
+        {userMenuItems.map((item) => (
           <Link
             key={item.name}
             href={`/${lang}${item.href}`}
