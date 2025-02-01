@@ -741,10 +741,10 @@
   "text-basic-information-description": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
   "text-property-size-and-pricing": "Ukubwa wa Mali na Bei",
   "text-property-size-and-pricing-details": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
-  "text-total-surveys": "Jumla ya tafiti",
-  "text-total-fishers": "Jumla ya wavuvi",
-  "text-total-catches": "Jumla ya samaki waliovuliwa",
-  "text-total-tonnes": "Jumla ya tani",
-  "text-select-metric": "Chagua kipimo:",
+  "text-fishing-effort": "Effort",
+  "text-catch-rate": "Catch rate",
+  "text-catch-density": "Catch density",
+  "text-fisher-revenue": "Fisher revenue",
+  "text-area-revenue": "Area revenue",
   "text-bmu-ranking": "Viwango vya Utendaji vya BMU"
 }

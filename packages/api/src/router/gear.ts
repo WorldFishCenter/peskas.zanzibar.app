@@ -18,7 +18,9 @@ export const gearRouter = createTRPCRouter({
           mean_trip_catch: 1,
           mean_effort: 1,
           mean_cpue: 1,
-          mean_cpua: 1
+          mean_cpua: 1,
+          mean_rpue: 1, 
+          mean_rpua: 1   
         })
         .exec();
     }),

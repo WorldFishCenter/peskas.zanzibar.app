@@ -3,10 +3,11 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const metricSchema = z.enum([
-  "mean_trip_catch",
   "mean_effort",
   "mean_cpue",
   "mean_cpua",
+  "mean_rpue",
+  "mean_rpua",
 ]);
 
 export const aggregatedCatchRouter = createTRPCRouter({
@@ -18,7 +19,13 @@ export const aggregatedCatchRouter = createTRPCRouter({
         {
           $match: {
             BMU: { $in: input.bmus },
-            mean_trip_catch: { $ne: null },
+            $or: [
+              { mean_effort: { $ne: null } },
+              { mean_cpue: { $ne: null } },
+              { mean_cpua: { $ne: null } },
+              { mean_rpue: { $ne: null } },
+              { mean_rpua: { $ne: null } },
+            ],
           },
         },
         {
@@ -26,10 +33,11 @@ export const aggregatedCatchRouter = createTRPCRouter({
             _id: 0,
             date: 1,
             landing_site: "$BMU",
-            mean_trip_catch: 1,
             mean_effort: 1,
             mean_cpue: 1,
             mean_cpua: 1,
+            mean_rpue: 1,
+            mean_rpua: 1,
           },
         },
         {
@@ -46,87 +54,114 @@ export const aggregatedCatchRouter = createTRPCRouter({
         {
           $match: {
             BMU: { $in: input.bmus },
-            mean_trip_catch: { $ne: null },
+            $or: [
+              { mean_effort: { $ne: null } },
+              { mean_cpue: { $ne: null } },
+              { mean_cpua: { $ne: null } },
+              { mean_rpue: { $ne: null } },
+              { mean_rpua: { $ne: null } },
+            ],
           },
         },
         {
           $addFields: {
             month: { $month: "$date" },
-            year: { $year: "$date" }
-          }
+            year: { $year: "$date" },
+          },
         },
         {
           $group: {
             _id: "$BMU",
-            avgCatch: { $avg: "$mean_trip_catch" },
             avgEffort: { $avg: "$mean_effort" },
             avgCPUE: { $avg: "$mean_cpue" },
             avgCPUA: { $avg: "$mean_cpua" },
-            totalCatch: { $sum: "$mean_trip_catch" },
+            avgRPUE: { $avg: "$mean_rpue" },
+            avgRPUA: { $avg: "$mean_rpua" },
             totalEffort: { $sum: "$mean_effort" },
             monthlyData: {
               $push: {
                 date: "$date",
-                mean_trip_catch: "$mean_trip_catch",
                 mean_effort: "$mean_effort",
                 mean_cpue: "$mean_cpue",
-                mean_cpua: "$mean_cpua"
-              }
-            }
-          }
+                mean_cpua: "$mean_cpua",
+                mean_rpue: "$mean_rpue",
+                mean_rpua: "$mean_rpua",
+              },
+            },
+          },
         },
         {
           $facet: {
             stats: [
-              { $sort: { avgCatch: -1 } },
+              { $sort: { avgEffort: -1 } },
               {
                 $group: {
                   _id: null,
-                  maxCatch: { $first: "$avgCatch" },
                   maxEffort: { $max: "$avgEffort" },
                   maxCPUE: { $max: "$avgCPUE" },
                   maxCPUA: { $max: "$avgCPUA" },
-                  bmus: { $push: "$$ROOT" }
-                }
+                  maxRPUE: { $max: "$avgRPUE" },
+                  maxRPUA: { $max: "$avgRPUA" },
+                  bmus: { $push: "$$ROOT" },
+                },
               },
               {
-                $unwind: "$bmus"
+                $unwind: "$bmus",
               },
               {
                 $project: {
                   bmu: "$bmus._id",
-                  avgCatch: "$bmus.avgCatch",
                   avgEffort: "$bmus.avgEffort",
                   avgCPUE: "$bmus.avgCPUE",
                   avgCPUA: "$bmus.avgCPUA",
-                  totalCatch: "$bmus.totalCatch",
+                  avgRPUE: "$bmus.avgRPUE",
+                  avgRPUA: "$bmus.avgRPUA",
+                  totalEffort: "$bmus.totalEffort",
                   monthlyData: "$bmus.monthlyData",
-                  catchPerformance: { 
-                    $multiply: [{ $divide: ["$bmus.avgCatch", "$maxCatch"] }, 100] 
+                  effortPerformance: {
+                    $multiply: [
+                      { $divide: ["$bmus.avgEffort", "$maxEffort"] },
+                      100,
+                    ],
                   },
-                  effortPerformance: { 
-                    $multiply: [{ $divide: ["$bmus.avgEffort", "$maxEffort"] }, 100] 
+                  cpuePerformance: {
+                    $multiply: [
+                      { $divide: ["$bmus.avgCPUE", "$maxCPUE"] },
+                      100,
+                    ],
                   },
-                  cpuePerformance: { 
-                    $multiply: [{ $divide: ["$bmus.avgCPUE", "$maxCPUE"] }, 100] 
+                  cpuaPerformance: {
+                    $multiply: [
+                      { $divide: ["$bmus.avgCPUA", "$maxCPUA"] },
+                      100,
+                    ],
                   },
-                  cpuaPerformance: { 
-                    $multiply: [{ $divide: ["$bmus.avgCPUA", "$maxCPUA"] }, 100] 
-                  }
-                }
+                  rpuePerformance: {
+                    $multiply: [
+                      { $divide: ["$bmus.avgRPUE", "$maxRPUE"] },
+                      100,
+                    ],
+                  },
+                  rpuaPerformance: {
+                    $multiply: [
+                      { $divide: ["$bmus.avgRPUA", "$maxRPUA"] },
+                      100,
+                    ],
+                  },
+                },
               },
               {
-                $sort: { catchPerformance: -1 }
-              }
-            ]
-          }
+                $sort: { effortPerformance: -1 },
+              },
+            ],
+          },
         },
         {
-          $unwind: "$stats"
+          $unwind: "$stats",
         },
         {
-          $replaceRoot: { newRoot: "$stats" }
-        }
+          $replaceRoot: { newRoot: "$stats" },
+        },
       ]).exec();
     }),
 
@@ -135,7 +170,7 @@ export const aggregatedCatchRouter = createTRPCRouter({
     .input(
       z.object({
         bmus: z.string().array(),
-        metric: metricSchema.default("mean_trip_catch"),
+        metric: metricSchema.default("mean_effort"),
       })
     )
     .query(({ input }) => {

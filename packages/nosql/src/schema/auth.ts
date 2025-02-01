@@ -1,6 +1,4 @@
-import type { Types } from "mongoose";
-import mongoose, { Schema } from "mongoose";
-
+import mongoose, { Schema, Types } from "mongoose";
 import type { TBmu } from "./bmu"
 
 export { BmuModel } from "./bmu"

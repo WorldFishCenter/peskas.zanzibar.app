@@ -23,22 +23,24 @@ type ColumnType = {
 
 interface PerformanceData {
   bmu: string;
-  avgCatch: number;
   avgEffort: number;
   avgCPUE: number;
   avgCPUA: number;
-  totalCatch: number;
+  avgRPUE: number;
+  avgRPUA: number;
   monthlyData: Array<{
     date: string;
-    mean_trip_catch: number;
     mean_effort: number;
     mean_cpue: number;
     mean_cpua: number;
+    mean_rpue: number;
+    mean_rpua: number;
   }>;
-  catchPerformance: number;
   effortPerformance: number;
   cpuePerformance: number;
   cpuaPerformance: number;
+  rpuePerformance: number;
+  rpuaPerformance: number;
 }
 
 const BAR_COLOR = "#0c526e";
@@ -52,14 +54,15 @@ const PerformanceIndicator = ({ value }: { value: number }) => {
   return (
     <div className={cn("text-xs font-medium flex items-center gap-2", color)}>
       <span>{value.toFixed(1)}% of top BMU</span>
-      <Tooltip content={`This value is ${value.toFixed(1)}% of the top-performing BMU's value.`}>
+      <Tooltip
+        content={`This value is ${value.toFixed(1)}% of the top-performing BMU`}
+      >
         <Info className="h-4 w-4" />
       </Tooltip>
     </div>
   );
 };
 
-// A helper component similar to HeaderCell from your provided code:
 function SortableHeader({
   title,
   sortable,
@@ -69,56 +72,56 @@ function SortableHeader({
   title: React.ReactNode;
   sortable?: boolean;
   isCurrentColumn: boolean;
-  direction?: 'asc' | 'desc';
+  direction?: "asc" | "desc";
 }) {
   return (
-    <div className={cn("flex items-center gap-1", sortable && "cursor-pointer")}>
+    <div
+      className={cn(
+        "flex items-center justify-center gap-1",
+        sortable && "cursor-pointer hover:opacity-80"
+      )}
+    >
       <span>{title}</span>
       {sortable && (
         <div className="inline-flex items-center">
           {direction === undefined && (
-            // Neutral state: show both arrows to indicate sortable column
             <div className="flex flex-col items-center text-gray-400">
-              {/* Up Arrow */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
                 className="h-auto w-3"
                 viewBox="0 0 16 16"
               >
-                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659L8.753 4.86a1 1 0 0 0-1.506 0z"/>
+                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659L8.753 4.86a1 1 0 0 0-1.506 0z" />
               </svg>
-              {/* Down Arrow */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
                 className="h-auto w-3"
                 viewBox="0 0 16 16"
               >
-                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
               </svg>
             </div>
           )}
-          {direction === 'asc' && (
-            // Ascending arrow (already sorted ascending)
+          {direction === "asc" && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="currentColor"
               className="h-auto w-3"
               viewBox="0 0 16 16"
             >
-              <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659L8.753 4.86a1 1 0 0 0-1.506 0z"/>
+              <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659L8.753 4.86a1 1 0 0 0-1.506 0z" />
             </svg>
           )}
-          {direction === 'desc' && (
-            // Descending arrow (already sorted descending)
+          {direction === "desc" && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="currentColor"
               className="h-auto w-3"
               viewBox="0 0 16 16"
             >
-              <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+              <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
             </svg>
           )}
         </div>
@@ -126,7 +129,6 @@ function SortableHeader({
     </div>
   );
 }
-
 export default function PerformanceTable({
   className,
   lang,
@@ -138,7 +140,7 @@ export default function PerformanceTable({
   const { t } = useTranslation(lang!, "table");
   const [bmus] = useAtom(bmusAtom);
 
-  const { data: performanceData, isLoading: isDataLoading } = 
+  const { data: performanceData, isLoading: isDataLoading } =
     api.aggregatedCatch.performance.useQuery({ bmus });
 
   const {
@@ -155,12 +157,16 @@ export default function PerformanceTable({
     () => [
       {
         title: (
-          <SortableHeader
-            title={t("BMU")}
-            sortable={true}
-            isCurrentColumn={sortConfig.key === "bmu"}
-            direction={sortConfig.key === "bmu" ? sortConfig.direction : undefined}
-          />
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("BMU")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "bmu"}
+              direction={
+                sortConfig.key === "bmu" ? sortConfig.direction : undefined
+              }
+            />
+          </div>
         ),
         dataKey: "bmu",
         width: 150,
@@ -169,70 +175,28 @@ export default function PerformanceTable({
           onClick: () => handleSort("bmu"),
         }),
         render: (_: unknown, row: PerformanceData) => (
-          <div className="space-y-1">
+          <div className="space-y-1 text-center">
             <span className="font-medium">{row.bmu}</span>
-            <div className="text-xs text-gray-500">
-              {`Total: ${(row.totalCatch / 1000).toFixed(2)} tons`}
-            </div>
           </div>
         ),
       },
       {
         title: (
-          <SortableHeader
-            title={t("Catch Performance")}
-            sortable={true}
-            isCurrentColumn={sortConfig.key === "avgCatch"}
-            direction={sortConfig.key === "avgCatch" ? sortConfig.direction : undefined}
-          />
-        ),
-        dataKey: "avgCatch",
-        width: 180,
-        sortable: true,
-        onHeaderCell: () => ({
-          onClick: () => handleSort("avgCatch"),
-        }),
-        render: (_: unknown, row: PerformanceData) => (
-          <div className="space-y-1">
-            <div className="font-medium flex items-center gap-1">
-              {row.avgCatch.toFixed(1)} kg
-            </div>
-            <PerformanceIndicator value={row.catchPerformance} />
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("Effort")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "avgEffort"}
+              direction={
+                sortConfig.key === "avgEffort"
+                  ? sortConfig.direction
+                  : undefined
+              }
+            />
+            <span className="text-[11px] font-light text-gray-400">
+              fishers/km²/day
+            </span>
           </div>
-        ),
-      },
-      {
-        title: (
-          <SortableHeader
-            title={t("CPUE")}
-            sortable={true}
-            isCurrentColumn={sortConfig.key === "avgCPUE"}
-            direction={sortConfig.key === "avgCPUE" ? sortConfig.direction : undefined}
-          />
-        ),
-        dataKey: "avgCPUE",
-        width: 180,
-        sortable: true,
-        onHeaderCell: () => ({
-          onClick: () => handleSort("avgCPUE"),
-        }),
-        render: (_: unknown, row: PerformanceData) => (
-          <div className="space-y-1">
-            <div className="font-medium flex items-center gap-1">
-              {row.avgCPUE.toFixed(1)} kg/hour
-            </div>
-            <PerformanceIndicator value={row.cpuePerformance} />
-          </div>
-        ),
-      },
-      {
-        title: (
-          <SortableHeader
-            title={t("Effort")}
-            sortable={true}
-            isCurrentColumn={sortConfig.key === "avgEffort"}
-            direction={sortConfig.key === "avgEffort" ? sortConfig.direction : undefined}
-          />
         ),
         dataKey: "avgEffort",
         width: 180,
@@ -241,16 +205,152 @@ export default function PerformanceTable({
           onClick: () => handleSort("avgEffort"),
         }),
         render: (_: unknown, row: PerformanceData) => (
-          <div className="space-y-1">
-            <div className="font-medium flex items-center gap-1">
-              {row.avgEffort.toFixed(1)} hours
+          <div className="space-y-1 text-center">
+            <div className="font-medium flex items-center justify-center gap-1">
+              {typeof row.avgEffort === "number"
+                ? row.avgEffort.toFixed(1)
+                : "N/A"}
             </div>
-            <PerformanceIndicator value={row.effortPerformance} />
+            <div className="flex justify-center">
+              <PerformanceIndicator value={row.effortPerformance ?? 0} />
+            </div>
           </div>
         ),
       },
       {
-        title: t("6-Month Trend"),
+        title: (
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("Catch Rate")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "avgCPUE"}
+              direction={
+                sortConfig.key === "avgCPUE" ? sortConfig.direction : undefined
+              }
+            />
+            <span className="text-[11px] font-light text-gray-400">
+              kg/fisher/day
+            </span>
+          </div>
+        ),
+        dataKey: "avgCPUE",
+        width: 180,
+        sortable: true,
+        onHeaderCell: () => ({
+          onClick: () => handleSort("avgCPUE"),
+        }),
+        render: (_: unknown, row: PerformanceData) => (
+          <div className="space-y-1 text-center">
+            <div className="font-medium flex items-center justify-center gap-1">
+              {typeof row.avgCPUE === "number" ? row.avgCPUE.toFixed(1) : "N/A"}
+            </div>
+            <div className="flex justify-center">
+              <PerformanceIndicator value={row.cpuePerformance ?? 0} />
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: (
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("Catch Density")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "avgCPUA"}
+              direction={
+                sortConfig.key === "avgCPUA" ? sortConfig.direction : undefined
+              }
+            />
+            <span className="text-[11px] font-light text-gray-400">
+              kg/km²/day
+            </span>
+          </div>
+        ),
+        dataKey: "avgCPUA",
+        width: 180,
+        sortable: true,
+        onHeaderCell: () => ({
+          onClick: () => handleSort("avgCPUA"),
+        }),
+        render: (_: unknown, row: PerformanceData) => (
+          <div className="space-y-1 text-center">
+            <div className="font-medium flex items-center justify-center gap-1">
+              {typeof row.avgCPUA === "number" ? row.avgCPUA.toFixed(1) : "N/A"}
+            </div>
+            <div className="flex justify-center">
+              <PerformanceIndicator value={row.cpuaPerformance ?? 0} />
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: (
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("Fisher Revenue")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "avgRPUE"}
+              direction={
+                sortConfig.key === "avgRPUE" ? sortConfig.direction : undefined
+              }
+            />
+            <span className="text-[11px] font-light text-gray-400">
+              KSH/fisher/day
+            </span>
+          </div>
+        ),
+        dataKey: "avgRPUE",
+        width: 180,
+        sortable: true,
+        onHeaderCell: () => ({
+          onClick: () => handleSort("avgRPUE"),
+        }),
+        render: (_: unknown, row: PerformanceData) => (
+          <div className="space-y-1 text-center">
+            <div className="font-medium flex items-center justify-center gap-1">
+              {typeof row.avgRPUE === "number" ? row.avgRPUE.toFixed(1) : "N/A"}
+            </div>
+            <div className="flex justify-center">
+              <PerformanceIndicator value={row.rpuePerformance ?? 0} />
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: (
+          <div className="flex flex-col items-center w-full">
+            <SortableHeader
+              title={t("Area Revenue")}
+              sortable={true}
+              isCurrentColumn={sortConfig.key === "avgRPUA"}
+              direction={
+                sortConfig.key === "avgRPUA" ? sortConfig.direction : undefined
+              }
+            />
+            <span className="text-[11px] font-light text-gray-400">
+              KSH/km²/day
+            </span>
+          </div>
+        ),
+        dataKey: "avgRPUA",
+        width: 180,
+        sortable: true,
+        onHeaderCell: () => ({
+          onClick: () => handleSort("avgRPUA"),
+        }),
+        render: (_: unknown, row: PerformanceData) => (
+          <div className="space-y-1 text-center">
+            <div className="font-medium flex items-center justify-center gap-1">
+              {typeof row.avgRPUA === "number" ? row.avgRPUA.toFixed(1) : "N/A"}
+            </div>
+            <div className="flex justify-center">
+              <PerformanceIndicator value={row.rpuaPerformance ?? 0} />
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: <div className="w-full text-center">{t("6-Month Trend")}</div>,
         dataKey: "trend",
         width: 200,
         render: (_: unknown, row: PerformanceData) => (
@@ -260,7 +360,11 @@ export default function PerformanceTable({
                 data={row.monthlyData.slice(-6)}
                 margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
               >
-                <Bar dataKey="mean_trip_catch" fill={BAR_COLOR} radius={[2, 2, 0, 0]} />
+                <Bar
+                  dataKey="mean_effort"
+                  fill={BAR_COLOR}
+                  radius={[2, 2, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -273,7 +377,10 @@ export default function PerformanceTable({
   return (
     <div className={className}>
       <div className="mb-3 flex items-center justify-between gap-4">
-        <Title as="h3" className="text-lg font-semibold text-gray-900 xl:text-xl">
+        <Title
+          as="h3"
+          className="text-lg font-semibold text-gray-900 xl:text-xl"
+        >
           {t("BMU Performance Rankings")}
         </Title>
         <div className="text-sm text-gray-500">

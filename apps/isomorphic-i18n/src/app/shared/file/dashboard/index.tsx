@@ -6,17 +6,17 @@ import PerformanceTable from "@/app/shared/file/dashboard/file-list/table";
 import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 
-type MetricKey = "mean_trip_catch" | "mean_effort" | "mean_cpue" | "mean_cpua";
+type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
 export default function FileDashboard({ lang }: { lang?: string }) {
   const [selectedMetric, setSelectedMetric] =
-    useState<MetricKey>("mean_trip_catch");
+    useState<MetricKey>("mean_effort");
 
   return (
     <div className="@container">
       {/* General Stats Row */}
       <FileStats className="mb-5 2xl:mb-8" lang={lang} />
-      
+
       {/* Charts Row */}
       <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
         <CatchMonthly

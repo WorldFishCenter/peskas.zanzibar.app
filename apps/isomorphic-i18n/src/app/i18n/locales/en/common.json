@@ -884,10 +884,10 @@
   "text-yellow": "Yellow",
   "text-no-data": "No Data",
   "text-manage-users": "Manage Users",
-  "text-total-surveys": "Total surveys",
-  "text-total-fishers": "Total fishers",
-  "text-total-catches": "Total catches",
-  "text-total-tonnes": "Total tonnes",
-  "text-select-metric": "Select metric:",
+  "text-fishing-effort": "Effort",
+  "text-catch-rate": "Catch rate",
+  "text-catch-density": "Catch density",
+  "text-fisher-revenue": "Fisher revenue",
+  "text-area-revenue": "Area revenue",
   "text-bmu-ranking": "BMU Performance Rankings"
 }

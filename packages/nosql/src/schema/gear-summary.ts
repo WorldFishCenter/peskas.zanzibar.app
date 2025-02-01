@@ -1,15 +1,14 @@
-import type { Types } from "mongoose";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TGearSummary = {
   _id: Types.ObjectId;
   BMU: string;
   gear: string;
-  mean_trip_catch: number;
   mean_effort: number;
   mean_cpue: number;
   mean_cpua: number;
+  mean_rpue: number;
+  mean_rpua: number;
 };
 
 /**
@@ -19,14 +18,15 @@ const gearSummarySchema = new Schema<TGearSummary>(
   {
     BMU: String,
     gear: String,
-    mean_trip_catch: Number,
     mean_effort: Number,
     mean_cpue: Number,
     mean_cpua: Number,
+    mean_rpue: Number,
+    mean_rpua: Number,
   },
   {
     collection: "gear_summaries",
-  },
+  }
 );
 
 /**

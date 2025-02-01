@@ -1,5 +1,4 @@
-import type { Types } from "mongoose";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 export const TREATMENTS = [
   "individual",
@@ -10,7 +9,6 @@ export const TREATMENTS = [
 
 export type TTreatment = (typeof TREATMENTS)[number];
 
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TBmu = {
   _id: Types.ObjectId;
   BMU: string;

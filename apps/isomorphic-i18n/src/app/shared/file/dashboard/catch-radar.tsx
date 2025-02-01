@@ -18,7 +18,12 @@ import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
 
-type MetricKey = "mean_trip_catch" | "mean_effort" | "mean_cpue" | "mean_cpua";
+type MetricKey =
+  | "mean_effort"
+  | "mean_cpue"
+  | "mean_cpua"
+  | "mean_rpue"
+  | "mean_rpua";
 
 interface RadarData {
   month: string;
@@ -35,15 +40,30 @@ interface VisibilityState {
 }
 
 const METRIC_INFO: Record<MetricKey, MetricInfo> = {
-  mean_trip_catch: { label: "Mean Catch per Trip", unit: "kg" },
-  mean_effort: { label: "Mean Effort", unit: "hours" },
-  mean_cpue: { label: "Mean CPUE", unit: "kg/hour" },
-  mean_cpua: { label: "Mean CPUA", unit: "kg/area" },
+  mean_effort: { label: "Effort", unit: "fishers/km²/day" },
+  mean_cpue: { label: "Catch Rate", unit: "kg/fisher/day" },
+  mean_cpua: { label: "Catch Density", unit: "kg/km²/day" },
+  mean_rpue: { label: "Fisher Revenue", unit: "KSH/fisher/day" },
+  mean_rpua: { label: "Area Revenue", unit: "KSH/km²/day" },
+};
+
+const getMetricLabel = (metric: string): string => {
+  return METRIC_INFO[metric as MetricKey]?.label || "Catch Metrics";
 };
 
 const MONTH_ORDER = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 const generateColor = (index: number): string => {
@@ -92,18 +112,14 @@ const LoadingState = () => {
       <div className="h-96 w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">Loading chart data...</span>
+          <span className="text-sm text-gray-500">Loading chart...</span>
         </div>
       </div>
     </WidgetCard>
   );
 };
 
-const CustomLegend = ({ 
-  payload, 
-  visibilityState, 
-  handleLegendClick 
-}: any) => (
+const CustomLegend = ({ payload, visibilityState, handleLegendClick }: any) => (
   <div className="flex flex-wrap gap-4 justify-center mt-2">
     {payload?.map((entry: any) => (
       <div
@@ -144,14 +160,15 @@ export default function CatchRadarChart({
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { data: meanCatch, isLoading: isFetching } = api.aggregatedCatch.meanCatchRadar.useQuery(
-    { bmus, metric: selectedMetric },
-    {
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      retry: 3
-    }
-  );
+  const { data: meanCatch, isLoading: isFetching } =
+    api.aggregatedCatch.meanCatchRadar.useQuery(
+      { bmus, metric: selectedMetric },
+      {
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
+        retry: 3,
+      }
+    );
 
   useEffect(() => {
     if (isInitialLoad) {
@@ -191,27 +208,32 @@ export default function CatchRadarChart({
         );
         setSiteColors(newSiteColors);
 
-        const newVisibilityState: VisibilityState = uniqueSites.reduce<VisibilityState>(
-          (acc: VisibilityState, site: string) => ({
-            ...acc,
-            [site]: { opacity: 1 },
-          }),
-          {}
-        );
+        const newVisibilityState: VisibilityState =
+          uniqueSites.reduce<VisibilityState>(
+            (acc: VisibilityState, site: string) => ({
+              ...acc,
+              [site]: { opacity: 1 },
+            }),
+            {}
+          );
         setVisibilityState(newVisibilityState);
 
         // Sort data by month order and ensure all BMUs are present
-        const sortedData = [...meanCatch].sort(
-          (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
-        ).map((item) => {
-          const completeItem: RadarData = { month: item.month };
-          uniqueSites.forEach((site) => {
-            completeItem[site] = (item as Record<string, number | string>)[site] !== undefined 
-              ? (item as Record<string, number | string>)[site] 
-              : 0; // Use 0 or null as default
+        const sortedData = [...meanCatch]
+          .sort(
+            (a, b) =>
+              MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
+          )
+          .map((item) => {
+            const completeItem: RadarData = { month: item.month };
+            uniqueSites.forEach((site) => {
+              completeItem[site] =
+                (item as Record<string, number | string>)[site] !== undefined
+                  ? (item as Record<string, number | string>)[site]
+                  : 0; // Use 0 or null as default
+            });
+            return completeItem;
           });
-          return completeItem;
-        });
 
         setData(sortedData);
         setError(null);
@@ -244,7 +266,7 @@ export default function CatchRadarChart({
   };
 
   if (loading || isFetching) return <LoadingState />;
-  
+
   if (error) {
     return (
       <WidgetCard title={METRIC_INFO[selectedMetric].label}>
@@ -254,7 +276,7 @@ export default function CatchRadarChart({
       </WidgetCard>
     );
   }
-  
+
   if (!data || data.length === 0) {
     return (
       <WidgetCard title={METRIC_INFO[selectedMetric].label}>
@@ -266,7 +288,10 @@ export default function CatchRadarChart({
   }
 
   return (
-    <WidgetCard title={METRIC_INFO[selectedMetric].label} className={cn(className)}>
+    <WidgetCard
+      title={getMetricLabel(selectedMetric)}
+      className={cn(className)}
+    >
       <div className="mt-5 h-96 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
@@ -274,14 +299,14 @@ export default function CatchRadarChart({
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
           >
             <PolarGrid gridType="polygon" />
-            <PolarAngleAxis 
-              dataKey="month" 
-              tick={{ fill: "#666", fontSize: 12 }} 
+            <PolarAngleAxis
+              dataKey="month"
+              tick={{ fill: "#666", fontSize: 12 }}
             />
-            <PolarRadiusAxis 
-              angle={90} 
-              domain={[0, "auto"]} 
-              tick={{ fill: "#666" }} 
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, "auto"]}
+              tick={{ fill: "#666" }}
             />
             {Object.entries(siteColors).map(([site, color]) => {
               const opacity = visibilityState[site]?.opacity ?? 1;
@@ -297,14 +322,20 @@ export default function CatchRadarChart({
                 />
               );
             })}
-            <Tooltip content={(props) => <CustomTooltip {...props} metric={selectedMetric} />} />
-            <Legend content={(props) => (
-              <CustomLegend 
-                {...props} 
-                visibilityState={visibilityState} 
-                handleLegendClick={handleLegendClick}
-              />
-            )} />
+            <Tooltip
+              content={(props) => (
+                <CustomTooltip {...props} metric={selectedMetric} />
+              )}
+            />
+            <Legend
+              content={(props) => (
+                <CustomLegend
+                  {...props}
+                  visibilityState={visibilityState}
+                  handleLegendClick={handleLegendClick}
+                />
+              )}
+            />
           </RadarChart>
         </ResponsiveContainer>
       </div>

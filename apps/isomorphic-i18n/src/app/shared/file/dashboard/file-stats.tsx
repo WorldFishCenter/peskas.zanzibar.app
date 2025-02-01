@@ -42,10 +42,11 @@ interface StatsData {
 }
 
 interface MonthlyStats {
-  submissions: StatsData;
-  fishers: StatsData;
-  catches: StatsData;
-  weight: StatsData;
+  effort: StatsData;
+  cpue: StatsData;
+  cpua: StatsData;
+  rpue: StatsData;
+  rpua: StatsData;
 }
 
 const CustomTooltip = ({ active, payload, onHover }: any) => {
@@ -83,7 +84,7 @@ export function FileStatGrid({
   const { data: monthlyData } = api.monthlyStats.allStats.useQuery({ bmus });
 
   useEffect(() => {
-    if (!monthlyData?.submissions) {
+    if (!monthlyData?.effort) {
       setLoading(false);
       return;
     }
@@ -92,56 +93,64 @@ export function FileStatGrid({
       const transformedStats: StatData[] = [
         {
           id: "1",
-          title: "text-total-surveys",
-          metric: monthlyData.submissions.current.toString(),
-          increased: monthlyData.submissions.percentage > 0,
-          decreased: monthlyData.submissions.percentage < 0,
-          percentage:
-            monthlyData.submissions.percentage > 0
-              ? `+${monthlyData.submissions.percentage.toFixed(2)}`
-              : monthlyData.submissions.percentage.toFixed(2),
+          title: "text-fishing-effort",
+          metric: monthlyData.effort.current.toFixed(1),
+          increased: monthlyData.effort.percentage > 0,
+          decreased: monthlyData.effort.percentage < 0,
+          percentage: monthlyData.effort.percentage > 0
+            ? `+${monthlyData.effort.percentage.toFixed(2)}`
+            : monthlyData.effort.percentage.toFixed(2),
           fill: "#0c526e",
-          chart: monthlyData.submissions.trend,
+          chart: monthlyData.effort.trend,
         },
         {
           id: "2",
-          title: "text-total-fishers",
-          metric: monthlyData.fishers.current.toString(),
-          increased: monthlyData.fishers.percentage > 0,
-          decreased: monthlyData.fishers.percentage < 0,
-          percentage:
-            monthlyData.fishers.percentage > 0
-              ? `+${monthlyData.fishers.percentage.toFixed(2)}`
-              : monthlyData.fishers.percentage.toFixed(2),
+          title: "text-catch-rate",
+          metric: monthlyData.cpue.current.toFixed(1),
+          increased: monthlyData.cpue.percentage > 0,
+          decreased: monthlyData.cpue.percentage < 0,
+          percentage: monthlyData.cpue.percentage > 0
+            ? `+${monthlyData.cpue.percentage.toFixed(2)}`
+            : monthlyData.cpue.percentage.toFixed(2),
           fill: "#0c526e",
-          chart: monthlyData.fishers.trend,
+          chart: monthlyData.cpue.trend,
         },
         {
           id: "3",
-          title: "text-total-catches",
-          metric: monthlyData.catches.current.toString(),
-          increased: monthlyData.catches.percentage > 0,
-          decreased: monthlyData.catches.percentage < 0,
-          percentage:
-            monthlyData.catches.percentage > 0
-              ? `+${monthlyData.catches.percentage.toFixed(2)}`
-              : monthlyData.catches.percentage.toFixed(2),
+          title: "text-catch-density",
+          metric: monthlyData.cpua.current.toFixed(1),
+          increased: monthlyData.cpua.percentage > 0,
+          decreased: monthlyData.cpua.percentage < 0,
+          percentage: monthlyData.cpua.percentage > 0
+            ? `+${monthlyData.cpua.percentage.toFixed(2)}`
+            : monthlyData.cpua.percentage.toFixed(2),
           fill: "#0c526e",
-          chart: monthlyData.catches.trend,
+          chart: monthlyData.cpua.trend,
         },
         {
           id: "4",
-          title: "text-total-tonnes",
-          metric: monthlyData.weight.current.toFixed(1),
-          increased: monthlyData.weight.percentage > 0,
-          decreased: monthlyData.weight.percentage < 0,
-          percentage:
-            monthlyData.weight.percentage > 0
-              ? `+${monthlyData.weight.percentage.toFixed(2)}`
-              : monthlyData.weight.percentage.toFixed(2),
+          title: "text-fisher-revenue",
+          metric: monthlyData.rpue.current.toFixed(1),
+          increased: monthlyData.rpue.percentage > 0,
+          decreased: monthlyData.rpue.percentage < 0,
+          percentage: monthlyData.rpue.percentage > 0
+            ? `+${monthlyData.rpue.percentage.toFixed(2)}`
+            : monthlyData.rpue.percentage.toFixed(2),
           fill: "#0c526e",
-          chart: monthlyData.weight.trend,
+          chart: monthlyData.rpue.trend,
         },
+        {
+          id: "5",
+          title: "text-area-revenue",
+          metric: monthlyData.rpua.current.toFixed(1),
+          increased: monthlyData.rpua.percentage > 0,
+          decreased: monthlyData.rpua.percentage < 0,
+          percentage: monthlyData.rpua.percentage > 0
+            ? `+${monthlyData.rpua.percentage.toFixed(2)}`
+            : monthlyData.rpua.percentage.toFixed(2),
+          fill: "#0c526e",
+          chart: monthlyData.rpua.trend,
+        }
       ];
 
       setStatsData(transformedStats);
@@ -158,19 +167,14 @@ export function FileStatGrid({
   return (
     <>
       {statsData.map((stat) => {
-        // By default, show the latest month as current (last element of the array)
         const currentIdx = hoveredMonth
           ? stat.chart.findIndex((d) => d.day === hoveredMonth)
           : stat.chart.length - 1;
 
         const currentMonth = stat.chart[currentIdx]?.day;
         const currentValue = stat.chart[currentIdx]?.sale || 0;
-
-        // The previous month is the one before currentIdx in the array, since oldest is at index 0 and newest at the end
         const previousMonth = stat.chart[currentIdx - 1]?.day;
         const previousValue = stat.chart[currentIdx - 1]?.sale || 0;
-
-        // Calculate change FROM previous TO current
         const percentChange = previousValue
           ? ((currentValue - previousValue) / previousValue) * 100
           : 0;

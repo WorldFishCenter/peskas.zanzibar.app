@@ -20,7 +20,7 @@ import SimpleBar from "@ui/simplebar";
 import cn from "@utils/class-names";
 import { ActionIcon, Popover } from "rizzui";
 
-type MetricKey = "mean_trip_catch" | "mean_effort" | "mean_cpue" | "mean_cpua";
+type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
 interface ChartDataPoint {
   date: number;
@@ -30,16 +30,18 @@ interface ChartDataPoint {
 interface ApiDataPoint {
   date: string;
   landing_site: string;
-  mean_trip_catch: number;
   mean_effort: number;
   mean_cpue: number;
   mean_cpua: number;
+  mean_rpue: number;
+  mean_rpua: number;
 }
 
 interface MetricOption {
   value: MetricKey;
   label: string;
   unit: string;
+  category: "catch" | "revenue";
 }
 
 interface CatchMetricsChartProps {
@@ -78,10 +80,36 @@ type TickProps = {
 };
 
 const METRIC_OPTIONS: MetricOption[] = [
-  { value: "mean_trip_catch", label: "Mean Catch per Trip", unit: "kg/trip" },
-  { value: "mean_effort", label: "Mean Effort", unit: "fishers/km²/day" },
-  { value: "mean_cpue", label: "Mean CPUE", unit: "kg/fisher/day" },
-  { value: "mean_cpua", label: "Mean CPUA", unit: "kg/km²/day" },
+  {
+    value: "mean_effort",
+    label: "Effort",
+    unit: "fishers/km²/day",
+    category: "catch",
+  },
+  {
+    value: "mean_cpue",
+    label: "Catch Rate",
+    unit: "kg/fisher/day",
+    category: "catch",
+  },
+  {
+    value: "mean_cpua",
+    label: "Catch Density",
+    unit: "kg/km²/day",
+    category: "catch",
+  },
+  {
+    value: "mean_rpue",
+    label: "Fisher Revenue",
+    unit: "KES/fisher/day",
+    category: "revenue",
+  },
+  {
+    value: "mean_rpua",
+    label: "Area Revenue",
+    unit: "KES/km²/day",
+    category: "revenue",
+  },
 ];
 
 const generateColor = (index: number): string => {
@@ -122,21 +150,30 @@ const MetricSelector = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const groupedMetrics = {
+    catch: METRIC_OPTIONS.filter((m) => m.category === "catch"),
+    revenue: METRIC_OPTIONS.filter((m) => m.category === "revenue"),
+  };
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Select metric:</span>
         <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
           <Popover.Trigger>
             <ActionIcon
               variant="text"
-              className="relative h-auto w-auto p-0 flex items-center gap-2"
+              className={cn(
+                "relative min-w-[180px] h-auto px-4 py-2 rounded-full flex items-center justify-between",
+                selectedMetric === "mean_rpue" || selectedMetric === "mean_rpua"
+                  ? "bg-amber-50 text-amber-900"
+                  : "bg-blue-50 text-blue-900"
+              )}
             >
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium">
                 {selectedMetricOption?.label}
               </span>
               <svg
-                className="h-4 w-4 text-gray-500"
+                className="h-4 w-4 ml-2" 
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -149,33 +186,80 @@ const MetricSelector = ({
                 />
               </svg>
             </ActionIcon>
-          </Popover.Trigger>
-          <Popover.Content className="w-[200px] p-1">
-            <div className="space-y-0.5">
-              {METRIC_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    onMetricChange(option.value);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md",
-                    selectedMetric === option.value
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-600 hover:bg-gray-50"
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
+          </Popover.Trigger>{" "}
+          <Popover.Content
+            className="w-[280px] p-2 bg-white/90 backdrop-blur-sm" 
+          >
+            <div className="grid grid-cols-1 gap-2">
+              {/* Catch Metrics Section */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-sm font-semibold text-gray-900">
+                    Catch Metrics
+                  </span>
+                </div>
+                <div className="space-y-1 pl-4">
+                  {groupedMetrics.catch.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        onMetricChange(option.value);
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md flex items-center justify-between",
+                        selectedMetric === option.value
+                          ? "bg-blue-50/90 text-blue-900" // Added transparency to selected state
+                          : "text-gray-600 hover:bg-gray-50/90" // Added transparency to hover state
+                      )}
+                    >
+                      <span>{option.label}</span>
+                      <span className="text-xs text-gray-500">
+                        {option.unit}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 my-2" />
+
+              {/* Revenue Metrics Section */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-2">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-sm font-semibold text-gray-900">
+                    Revenue Metrics
+                  </span>
+                </div>
+                <div className="space-y-1 pl-4">
+                  {groupedMetrics.revenue.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        onMetricChange(option.value);
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md flex items-center justify-between",
+                        selectedMetric === option.value
+                          ? "bg-amber-50 text-amber-900"
+                          : "text-gray-600 hover:bg-gray-50"
+                      )}
+                    >
+                      <span>{option.label}</span>
+                      <span className="text-xs text-gray-500">
+                        {option.unit}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </Popover.Content>
         </Popover>
       </div>
-      <span className="text-xs text-gray-500 ml-0">
-        Unit: {selectedMetricOption?.unit}
-      </span>
     </div>
   );
 };
@@ -185,8 +269,8 @@ const CustomTooltip = ({
   payload,
   label,
   selectedMetric,
-  selectedMetricOption,
 }: TooltipProps) => {
+  // Removed selectedMetricOption from props
   if (active && payload?.length) {
     const date = new Date(label as number);
 
@@ -208,7 +292,7 @@ const CustomTooltip = ({
               <span className="font-medium">
                 {entry.name || entry.dataKey}:
               </span>{" "}
-              {entry.value?.toFixed(1) ?? "N/A"} {selectedMetricOption?.unit}
+              {entry.value?.toFixed(1) ?? "N/A"} {/* Removed the unit here */}
             </p>
           </div>
         ))}
@@ -217,7 +301,6 @@ const CustomTooltip = ({
   }
   return null;
 };
-
 function CustomYAxisTick({ x = 0, y = 0, payload = { value: 0 } }: TickProps) {
   return (
     <g transform={`translate(${x},${y})`}>
@@ -269,20 +352,20 @@ export default function CatchMetricsChart({
         new Set(monthlyData.map((item: ApiDataPoint) => item.landing_site))
       );
 
-      const newSiteColors = uniqueSites.reduce(
+      const newSiteColors = uniqueSites.reduce<Record<string, string>>(
         (acc, site, index) => ({
           ...acc,
-          [site]: generateColor(index),
+          [site as string]: generateColor(index),
         }),
         {}
       );
       setSiteColors(newSiteColors);
 
       setVisibilityState(
-        uniqueSites.reduce(
+        uniqueSites.reduce<VisibilityState>(
           (acc, site) => ({
             ...acc,
-            [site]: { opacity: 1 },
+            [site as string]: { opacity: 1 },
           }),
           {}
         )
@@ -392,9 +475,10 @@ export default function CatchMetricsChart({
             <AreaChart
               data={chartData}
               margin={{
-                left: 16,
+                left: 32,
                 right: 16,
                 bottom: 20,
+                top: 10,
               }}
               className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
             >
@@ -434,15 +518,22 @@ export default function CatchMetricsChart({
                 axisLine={false}
                 tickLine={false}
                 tick={CustomYAxisTick}
-                width={45}
+                width={60}
+                label={{
+                  value: selectedMetricOption?.unit,
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: -20,
+                  style: {
+                    fontSize: 14,
+                    fill: "#666666",
+                    textAnchor: "middle",
+                  },
+                }}
               />
               <Tooltip
                 content={(props: any) => (
-                  <CustomTooltip
-                    {...props}
-                    selectedMetric={selectedMetric}
-                    selectedMetricOption={selectedMetricOption}
-                  />
+                  <CustomTooltip {...props} selectedMetric={selectedMetric} />
                 )}
               />
               <Legend content={CustomLegend} />

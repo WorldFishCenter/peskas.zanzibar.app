@@ -17,23 +17,24 @@ export const monthlyStatsRouter = createTRPCRouter({
       
       if (isEmpty(input.bmus)) return null;
 
-      // Use aggregation to group and sum by month
+      console.log('Querying BMUs:', input.bmus);
+
       const data = await MonthlyStatsModel.aggregate([
         {
           $match: {
-            landing_site: {
-              $in: input.bmus.map(bmu => new RegExp(`^${bmu}$`, 'i'))
+            BMU: {
+              $in: input.bmus
             }
           }
         },
         {
-          // Group by month to sum all values
           $group: {
             _id: "$date",
-            tot_submissions: { $sum: "$tot_submissions" },
-            tot_fishers: { $sum: "$tot_fishers" },
-            tot_catches: { $sum: "$tot_catches" },
-            tot_kg: { $sum: "$tot_kg" },
+            mean_effort: { $avg: "$mean_effort" },
+            mean_cpue: { $avg: "$mean_cpue" },
+            mean_cpua: { $avg: "$mean_cpua" },
+            mean_rpue: { $avg: "$mean_rpue" },
+            mean_rpua: { $avg: "$mean_rpua" },
             date: { $first: "$date" }
           }
         },
@@ -45,41 +46,52 @@ export const monthlyStatsRouter = createTRPCRouter({
         }
       ]);
 
-      console.log('Aggregated data:', data);
+      console.log('Aggregated data:', JSON.stringify(data, null, 2));
 
-      if (isEmpty(data)) return null;
+      if (isEmpty(data)) {
+        console.log('No data found for BMUs:', input.bmus);
+        return null;
+      }
 
       return {
-        submissions: {
-          current: data[0].tot_submissions,
-          percentage: calculatePercentageChange(data[0].tot_submissions, data[1]?.tot_submissions),
+        effort: {
+          current: data[0].mean_effort,
+          percentage: calculatePercentageChange(data[0].mean_effort, data[1]?.mean_effort),
           trend: data.slice(0, 6).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
-            sale: d.tot_submissions
+            sale: d.mean_effort
           })).reverse()
         },
-        fishers: {
-          current: data[0].tot_fishers,
-          percentage: calculatePercentageChange(data[0].tot_fishers, data[1]?.tot_fishers),
+        cpue: {
+          current: data[0].mean_cpue,
+          percentage: calculatePercentageChange(data[0].mean_cpue, data[1]?.mean_cpue),
           trend: data.slice(0, 6).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
-            sale: d.tot_fishers
+            sale: d.mean_cpue
           })).reverse()
         },
-        catches: {
-          current: data[0].tot_catches,
-          percentage: calculatePercentageChange(data[0].tot_catches, data[1]?.tot_catches),
+        cpua: {
+          current: data[0].mean_cpua,
+          percentage: calculatePercentageChange(data[0].mean_cpua, data[1]?.mean_cpua),
           trend: data.slice(0, 6).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
-            sale: d.tot_catches
+            sale: d.mean_cpua
           })).reverse()
         },
-        weight: {
-          current: data[0].tot_kg,
-          percentage: calculatePercentageChange(data[0].tot_kg, data[1]?.tot_kg),
+        rpue: {
+          current: data[0].mean_rpue,
+          percentage: calculatePercentageChange(data[0].mean_rpue, data[1]?.mean_rpue),
           trend: data.slice(0, 6).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
-            sale: d.tot_kg
+            sale: d.mean_rpue
+          })).reverse()
+        },
+        rpua: {
+          current: data[0].mean_rpua,
+          percentage: calculatePercentageChange(data[0].mean_rpua, data[1]?.mean_rpua),
+          trend: data.slice(0, 6).map(d => ({
+            day: new Date(d.date).toLocaleString('default', { month: 'short' }),
+            sale: d.mean_rpua
           })).reverse()
         }
       };
