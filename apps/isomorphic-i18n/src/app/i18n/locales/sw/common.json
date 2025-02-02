@@ -199,6 +199,8 @@
   "text-cash-in-bank": "Fedha Benki",
   "text-cash-flow": "Mtiririko wa Fedha",
   "text-operating-cash-flow": "Mtiririko wa Fedha wa Uendeshaji",
+  "text-metrics-performance-rankings": "Orodha ya Utendaji wa BMU",
+  "text-metrics-based-on-last-6-months": "Kulingana na data ya miezi 6 iliyopita",
   "text-new-arr-by-sign-up": "ARR Mpya kwa Kujisajili",
   "text-sales-sign-up": "Mauzo ya Kujisajili",
   "text-self-sign-up": "Kujisajili Mwenyewe",
@@ -741,10 +743,12 @@
   "text-basic-information-description": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
   "text-property-size-and-pricing": "Ukubwa wa Mali na Bei",
   "text-property-size-and-pricing-details": "Unahitaji kutoa maelezo haya mara moja tu, wakati wa orodha yako ya kwanza.",
-  "text-fishing-effort": "Effort",
-  "text-catch-rate": "Catch rate",
-  "text-catch-density": "Catch density",
-  "text-fisher-revenue": "Fisher revenue",
-  "text-area-revenue": "Area revenue",
-  "text-bmu-ranking": "Viwango vya Utendaji vya BMU"
+  "text-bmu-ranking": "Viwango vya Utendaji vya BMU",
+  "text-metrics-revenue": "Viwango vya Utozaji",
+  "text-metrics-catch": "Viwango vya Kuvutia",
+  "text-metrics-effort": "Viwango vya Utendaji",
+  "text-metrics-catch-rate": "Viwango vya Kuvutia",
+  "text-metrics-catch-density": "Viwango vya Kuvutia",
+  "text-metrics-fisher-revenue": "Mapato ya Mvuvi",
+  "text-metrics-area-revenue": "Mapato ya Eneo"
 }

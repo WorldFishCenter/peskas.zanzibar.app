@@ -145,6 +145,7 @@ const MetricSelector = ({
   selectedMetricOption: MetricOption | undefined;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation("common");
 
   const groupedMetrics = {
     catch: METRIC_OPTIONS.filter((m) => m.category === "catch"),
@@ -182,15 +183,15 @@ const MetricSelector = ({
                 />
               </svg>
             </ActionIcon>
-          </Popover.Trigger>
-          <Popover.Content className="w-[280px] p-2 bg-white/90 backdrop-blur-sm">
+          </Popover.Trigger>{" "}
+          <Popover.Content className="w-[280px] p-2 bg-white/75 backdrop-blur-sm">
             <div className="grid grid-cols-1 gap-2">
               {/* Catch Metrics Section */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500" />
                   <span className="text-sm font-semibold text-gray-900">
-                    Catch Metrics
+                    {t("text-metrics-catch")}
                   </span>
                 </div>
                 <div className="space-y-1 pl-4">
@@ -208,7 +209,11 @@ const MetricSelector = ({
                           : "text-gray-600 hover:bg-gray-50/90"
                       )}
                     >
-                      <span>{option.label}</span>
+                      <span>
+                        {t(
+                          `text-metrics-${option.label.toLowerCase().replace(/ /g, "-")}`
+                        )}
+                      </span>
                       <span className="text-xs text-gray-500">
                         {option.unit}
                       </span>
@@ -224,7 +229,7 @@ const MetricSelector = ({
                 <div className="flex items-center gap-2 px-2">
                   <div className="w-2 h-2 rounded-full bg-amber-500" />
                   <span className="text-sm font-semibold text-gray-900">
-                    Revenue Metrics
+                    {t("text-metrics-revenue")}
                   </span>
                 </div>
                 <div className="space-y-1 pl-4">
@@ -242,7 +247,11 @@ const MetricSelector = ({
                           : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
-                      <span>{option.label}</span>
+                      <span>
+                        {t(
+                          `text-metrics-${option.label.toLowerCase().replace(/ /g, "-")}`
+                        )}
+                      </span>
                       <span className="text-xs text-gray-500">
                         {option.unit}
                       </span>
@@ -257,6 +266,7 @@ const MetricSelector = ({
     </div>
   );
 };
+
 interface GearData {
   BMU: string;
   gear: string;
@@ -279,6 +289,8 @@ export default function GearHeatmap({
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
+  const numBMUs = (bmus || []).length;
+  const containerHeight = numBMUs >= 4 ? 600 : (300 + (numBMUs * 300) / 4) - 150;
 
   const { data: rawData } = api.gear.summaries.useQuery({ bmus });
   const selectedMetricOption = METRIC_OPTIONS.find(
@@ -318,7 +330,7 @@ export default function GearHeatmap({
           to: -1,
           color: theme === "dark" ? "#374151" : NO_DATA_COLOR,
           name: "No Data",
-        },
+        },  
         ...formattedRanges,
       ]);
 
@@ -516,7 +528,7 @@ export default function GearHeatmap({
       className={className}
     >
       <SimpleBar>
-        <div className="h-[600px] w-full pt-9">
+        <div style={{ height: `${containerHeight}px` }} className="w-full pt-9">
           <Chart
             options={chartOptions}
             series={series}

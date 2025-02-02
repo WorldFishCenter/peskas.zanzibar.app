@@ -16,6 +16,7 @@ import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { bmusAtom } from "@/app/components/filter-selector";
 
+
 type FileStatsType = {
   className?: string;
   lang?: string;
@@ -61,7 +62,7 @@ const CustomTooltip = ({ active, payload, onHover }: any) => {
     return (
       <div className="bg-white p-2 border border-gray-200 shadow-lg rounded-lg">
         <p className="text-xs font-medium">
-          {value.toLocaleString()} ({month})
+          {Math.round(value).toLocaleString()} ({month})
         </p>
       </div>
     );
@@ -93,61 +94,51 @@ export function FileStatGrid({
       const transformedStats: StatData[] = [
         {
           id: "1",
-          title: "text-fishing-effort",
-          metric: monthlyData.effort.current.toFixed(1),
+          title: t("text-metrics-effort"),
+          metric: Math.round(monthlyData.effort.current).toLocaleString(),
           increased: monthlyData.effort.percentage > 0,
           decreased: monthlyData.effort.percentage < 0,
-          percentage: monthlyData.effort.percentage > 0
-            ? `+${monthlyData.effort.percentage.toFixed(2)}`
-            : monthlyData.effort.percentage.toFixed(2),
+          percentage: monthlyData.effort.percentage > 0 ? `+${Math.round(monthlyData.effort.percentage)}%` : `${Math.round(monthlyData.effort.percentage)}%`,
           fill: "#0c526e",
           chart: monthlyData.effort.trend,
         },
         {
           id: "2",
-          title: "text-catch-rate",
-          metric: monthlyData.cpue.current.toFixed(1),
+          title: t("text-metrics-catch-rate"),
+          metric: Math.round(monthlyData.cpue.current).toLocaleString(),
           increased: monthlyData.cpue.percentage > 0,
           decreased: monthlyData.cpue.percentage < 0,
-          percentage: monthlyData.cpue.percentage > 0
-            ? `+${monthlyData.cpue.percentage.toFixed(2)}`
-            : monthlyData.cpue.percentage.toFixed(2),
+          percentage: monthlyData.cpue.percentage > 0 ? `+${Math.round(monthlyData.cpue.percentage)}%` : `${Math.round(monthlyData.cpue.percentage)}%`,
           fill: "#0c526e",
           chart: monthlyData.cpue.trend,
         },
         {
           id: "3",
-          title: "text-catch-density",
-          metric: monthlyData.cpua.current.toFixed(1),
+          title: t("text-metrics-catch-density"),
+          metric: Math.round(monthlyData.cpua.current).toLocaleString(),
           increased: monthlyData.cpua.percentage > 0,
           decreased: monthlyData.cpua.percentage < 0,
-          percentage: monthlyData.cpua.percentage > 0
-            ? `+${monthlyData.cpua.percentage.toFixed(2)}`
-            : monthlyData.cpua.percentage.toFixed(2),
+          percentage: monthlyData.cpua.percentage > 0 ? `+${Math.round(monthlyData.cpua.percentage)}%` : `${Math.round(monthlyData.cpua.percentage)}%`,
           fill: "#0c526e",
           chart: monthlyData.cpua.trend,
         },
         {
           id: "4",
-          title: "text-fisher-revenue",
-          metric: monthlyData.rpue.current.toFixed(1),
+          title: t("text-metrics-fisher-revenue"),
+          metric: Math.round(monthlyData.rpue.current).toLocaleString(),
           increased: monthlyData.rpue.percentage > 0,
           decreased: monthlyData.rpue.percentage < 0,
-          percentage: monthlyData.rpue.percentage > 0
-            ? `+${monthlyData.rpue.percentage.toFixed(2)}`
-            : monthlyData.rpue.percentage.toFixed(2),
+          percentage: monthlyData.rpue.percentage > 0 ? `+${Math.round(monthlyData.rpue.percentage)}%` : `${Math.round(monthlyData.rpue.percentage)}%`,
           fill: "#0c526e",
           chart: monthlyData.rpue.trend,
         },
         {
           id: "5",
-          title: "text-area-revenue",
-          metric: monthlyData.rpua.current.toFixed(1),
+          title: t("text-metrics-area-revenue"),
+          metric: Math.round(monthlyData.rpua.current).toLocaleString(),
           increased: monthlyData.rpua.percentage > 0,
           decreased: monthlyData.rpua.percentage < 0,
-          percentage: monthlyData.rpua.percentage > 0
-            ? `+${monthlyData.rpua.percentage.toFixed(2)}`
-            : monthlyData.rpua.percentage.toFixed(2),
+          percentage: monthlyData.rpua.percentage > 0 ? `+${Math.round(monthlyData.rpua.percentage)}%` : `${Math.round(monthlyData.rpua.percentage)}%`,
           fill: "#0c526e",
           chart: monthlyData.rpua.trend,
         }
@@ -159,10 +150,10 @@ export function FileStatGrid({
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, bmus]);
+  }, [monthlyData, bmus, t]);
 
-  if (loading) return <div>Loading stats...</div>;
-  if (!statsData.length) return <div>Loading chart...</div>;
+  if (loading) return <div>{t("text-loading-stats")}</div>;
+  if (!statsData.length) return <div>{t("text-loading-chart")}</div>;
 
   return (
     <>
@@ -195,7 +186,7 @@ export function FileStatGrid({
                     "me-2 inline-flex items-center font-medium",
                     isIncrease ? "text-green-500" : "text-red-500"
                   )}
-                >
+                  >
                   {isIncrease ? (
                     <TrendingUpIcon className="me-1 h-4 w-4" />
                   ) : (
@@ -215,6 +206,7 @@ export function FileStatGrid({
                   </span>
                 )}
               </Text>
+
             }
             chart={
               <div className="h-12 w-20 @[16.25rem]:h-16 @[16.25rem]:w-24 @xs:h-20 @xs:w-28">

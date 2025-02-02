@@ -159,7 +159,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("BMU")}
+              title="BMU"
               sortable={true}
               isCurrentColumn={sortConfig.key === "bmu"}
               direction={
@@ -184,7 +184,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("Effort")}
+              title={t("text-metrics-effort")}
               sortable={true}
               isCurrentColumn={sortConfig.key === "avgEffort"}
               direction={
@@ -221,7 +221,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("Catch Rate")}
+              title={t("text-metrics-catch-rate")}
               sortable={true}
               isCurrentColumn={sortConfig.key === "avgCPUE"}
               direction={
@@ -254,7 +254,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("Catch Density")}
+              title={t("text-metrics-catch-density")}
               sortable={true}
               isCurrentColumn={sortConfig.key === "avgCPUA"}
               direction={
@@ -287,7 +287,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("Fisher Revenue")}
+              title={t("text-metrics-fisher-revenue")}
               sortable={true}
               isCurrentColumn={sortConfig.key === "avgRPUE"}
               direction={
@@ -320,7 +320,7 @@ export default function PerformanceTable({
         title: (
           <div className="flex flex-col items-center w-full">
             <SortableHeader
-              title={t("Area Revenue")}
+              title={t("text-metrics-area-revenue")}
               sortable={true}
               isCurrentColumn={sortConfig.key === "avgRPUA"}
               direction={
@@ -350,7 +350,7 @@ export default function PerformanceTable({
         ),
       },
       {
-        title: <div className="w-full text-center">{t("6-Month Trend")}</div>,
+        title: <div className="w-full text-center">{t("text-metrics-trend")}</div>,
         dataKey: "trend",
         width: 200,
         render: (_: unknown, row: PerformanceData) => (
@@ -381,10 +381,10 @@ export default function PerformanceTable({
           as="h3"
           className="text-lg font-semibold text-gray-900 xl:text-xl"
         >
-          {t("BMU Performance Rankings")}
+          {t("text-metrics-performance-rankings")}
         </Title>
         <div className="text-sm text-gray-500">
-          {t("Based on last 6 months of data")}
+          {t("text-metrics-based-on-last-6-months")}
         </div>
       </div>
 

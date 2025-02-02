@@ -108,7 +108,7 @@ const CustomTooltip = ({ active, payload, metric }: any) => {
 
 const LoadingState = () => {
   return (
-    <WidgetCard title="Catch Metrics">
+    <WidgetCard title="">
       <div className="h-96 w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
@@ -269,7 +269,7 @@ export default function CatchRadarChart({
 
   if (error) {
     return (
-      <WidgetCard title={METRIC_INFO[selectedMetric].label}>
+      <WidgetCard title="">
         <div className="h-96 w-full flex items-center justify-center">
           <span className="text-sm text-gray-500">Error: {error}</span>
         </div>
@@ -279,7 +279,7 @@ export default function CatchRadarChart({
 
   if (!data || data.length === 0) {
     return (
-      <WidgetCard title={METRIC_INFO[selectedMetric].label}>
+      <WidgetCard title="">
         <div className="h-96 w-full flex items-center justify-center">
           <span className="text-sm text-gray-500">No data available</span>
         </div>
@@ -288,10 +288,7 @@ export default function CatchRadarChart({
   }
 
   return (
-    <WidgetCard
-      title={getMetricLabel(selectedMetric)}
-      className={cn(className)}
-    >
+    <WidgetCard title="" className={cn(className)}>
       <div className="mt-5 h-96 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart

@@ -20,6 +20,7 @@ import SimpleBar from "@ui/simplebar";
 import cn from "@utils/class-names";
 import { ActionIcon, Popover } from "rizzui";
 
+
 type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
 interface ChartDataPoint {
@@ -149,6 +150,7 @@ const MetricSelector = ({
   selectedMetricOption: MetricOption | undefined;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation("common");
 
   const groupedMetrics = {
     catch: METRIC_OPTIONS.filter((m) => m.category === "catch"),
@@ -173,7 +175,7 @@ const MetricSelector = ({
                 {selectedMetricOption?.label}
               </span>
               <svg
-                className="h-4 w-4 ml-2" 
+                className="h-4 w-4 ml-2"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -188,7 +190,7 @@ const MetricSelector = ({
             </ActionIcon>
           </Popover.Trigger>{" "}
           <Popover.Content
-            className="w-[280px] p-2 bg-white/90 backdrop-blur-sm" 
+            className="w-[280px] p-2 bg-white/75 backdrop-blur-sm"
           >
             <div className="grid grid-cols-1 gap-2">
               {/* Catch Metrics Section */}
@@ -196,7 +198,7 @@ const MetricSelector = ({
                 <div className="flex items-center gap-2 px-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500" />
                   <span className="text-sm font-semibold text-gray-900">
-                    Catch Metrics
+                    {t("text-metrics-catch")}
                   </span>
                 </div>
                 <div className="space-y-1 pl-4">
@@ -210,11 +212,11 @@ const MetricSelector = ({
                       className={cn(
                         "w-full px-3 py-2 text-left text-sm transition duration-200 rounded-md flex items-center justify-between",
                         selectedMetric === option.value
-                          ? "bg-blue-50/90 text-blue-900" // Added transparency to selected state
-                          : "text-gray-600 hover:bg-gray-50/90" // Added transparency to hover state
+                          ? "bg-blue-50/90 text-blue-900"
+                          : "text-gray-600 hover:bg-gray-50/90"
                       )}
                     >
-                      <span>{option.label}</span>
+                      <span>{t(`text-metrics-${option.label.toLowerCase().replace(/ /g, "-")}`)}</span>
                       <span className="text-xs text-gray-500">
                         {option.unit}
                       </span>
@@ -230,7 +232,7 @@ const MetricSelector = ({
                 <div className="flex items-center gap-2 px-2">
                   <div className="w-2 h-2 rounded-full bg-amber-500" />
                   <span className="text-sm font-semibold text-gray-900">
-                    Revenue Metrics
+                    {t("text-metrics-revenue")}
                   </span>
                 </div>
                 <div className="space-y-1 pl-4">
@@ -248,7 +250,7 @@ const MetricSelector = ({
                           : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
-                      <span>{option.label}</span>
+                      <span>{t(`text-metrics-${option.label.toLowerCase().replace(/ /g, "-")}`)}</span>
                       <span className="text-xs text-gray-500">
                         {option.unit}
                       </span>
@@ -330,7 +332,7 @@ export default function CatchMetricsChart({
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
 
   const isTablet = useMedia("(max-width: 800px)", false);
-  const { t } = useTranslation(lang!, "common");
+  const { t } = useTranslation("common");
   const [bmus] = useAtom(bmusAtom);
 
   const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus });
@@ -451,6 +453,7 @@ export default function CatchMetricsChart({
   const selectedMetricOption = METRIC_OPTIONS.find(
     (m) => m.value === selectedMetric
   );
+
 
   return (
     <WidgetCard
