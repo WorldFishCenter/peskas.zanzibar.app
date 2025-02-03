@@ -10,6 +10,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Line,
 } from "recharts";
 
 import { bmusAtom } from "@/app/components/filter-selector";
@@ -321,6 +322,36 @@ function CustomYAxisTick({ x = 0, y = 0, payload = { value: 0 } }: TickProps) {
   );
 }
 
+const calculateTrendline = (data: { date: number; difference: number }[]) => {
+  if (data.length === 0) return { slope: 0, intercept: 0 };
+
+  // Calculate means
+  const meanX = data.reduce((sum, point) => sum + point.date, 0) / data.length;
+  const meanY = data.reduce((sum, point) => sum + point.difference, 0) / data.length;
+
+  // Calculate slope using covariance and variance
+  const numerator = data.reduce((sum, point) => {
+    return sum + (point.date - meanX) * (point.difference - meanY);
+  }, 0);
+
+  const denominator = data.reduce((sum, point) => {
+    return sum + Math.pow(point.date - meanX, 2);
+  }, 0);
+
+  const slope = numerator / denominator;
+  const intercept = meanY - slope * meanX;
+
+  // Calculate monthly slope for display
+  const msPerMonth = 30 * 24 * 60 * 60 * 1000;
+  const monthlySlope = slope * msPerMonth;
+
+  return { 
+    slope,           // For the visualization
+    intercept,       // For the visualization
+    displaySlope: monthlySlope  // For display purposes
+  };
+};
+
 export default function CatchMetricsChart({
   className,
   lang,
@@ -468,6 +499,20 @@ export default function CatchMetricsChart({
 
   const differenceData = calculateDifferenceData(chartData);
 
+  console.log("Difference Data:", differenceData);
+
+  const trendline = calculateTrendline(differenceData);
+
+  // Create trendline data separately
+  const trendlineData = differenceData.map((point) => {
+    const trendValue = trendline.slope * point.date + trendline.intercept;
+    return {
+      date: point.date,
+      difference: point.difference,
+      trendline: trendValue
+    };
+  });
+
   if (loading) return <LoadingState />;
   if (!chartData || chartData.length === 0) {
     return (
@@ -613,7 +658,7 @@ export default function CatchMetricsChart({
               {...(isTablet && { minWidth: "700px" })}
             >
               <AreaChart
-                data={differenceData}
+                data={trendlineData}
                 margin={{
                   left: 32,
                   right: 16,
@@ -624,8 +669,8 @@ export default function CatchMetricsChart({
               >
                 <defs>
                   <linearGradient id="colorDiff" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#FC766A" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#FC766A" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
@@ -650,8 +695,9 @@ export default function CatchMetricsChart({
                   tickLine={false}
                   tick={CustomYAxisTick}
                   width={60}
+                  domain={['auto', 'auto']}
                   label={{
-                    value: 'Difference',
+                    value: `Difference (${selectedMetricOption?.unit})`,
                     angle: -90,
                     position: 'insideLeft',
                     offset: -20,
@@ -670,13 +716,32 @@ export default function CatchMetricsChart({
                 <Area
                   type="monotone"
                   dataKey="difference"
-                  stroke="#8884d8"
+                  stroke="#5B84B1"
                   strokeWidth={2}
-                  fillOpacity={1}
+                  fillOpacity={0.75}
                   fill="url(#colorDiff)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="trendline"
+                  stroke="#FF0000"
+                  strokeWidth={3}
+                  fillOpacity={0}
+                  isAnimationActive={false}
+                  name="Trend"
                 />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+          <div className="text-center mt-4">
+            <span className="text-sm font-medium">
+              Trendline Slope:{' '}
+              <span style={{ 
+                color: (trendline.displaySlope ?? 0) > 0 ? '#16a34a' : '#dc2626'
+              }}>
+                {(trendline.displaySlope ?? 0).toFixed(3)} per month
+              </span>
+            </span>
           </div>
         </SimpleBar>
       )}
