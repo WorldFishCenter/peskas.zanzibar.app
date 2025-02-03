@@ -132,9 +132,11 @@ function SortableHeader({
 export default function PerformanceTable({
   className,
   lang,
+  bmu,
 }: {
   className?: string;
   lang?: string;
+  bmu?: string;
 }) {
   const [pageSize, setPageSize] = useState(10);
   const { t } = useTranslation(lang!, "table");

@@ -19,6 +19,7 @@ import { useMedia } from "@hooks/use-media";
 import SimpleBar from "@ui/simplebar";
 import cn from "@utils/class-names";
 import { ActionIcon, Popover } from "rizzui";
+import { useSession } from "next-auth/react";
 
 
 type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
@@ -50,6 +51,7 @@ interface CatchMetricsChartProps {
   lang?: string;
   selectedMetric: MetricKey;
   onMetricChange: (metric: MetricKey) => void;
+  bmu?: string;
 }
 
 interface TooltipProps {
@@ -324,16 +326,22 @@ export default function CatchMetricsChart({
   lang,
   selectedMetric,
   onMetricChange,
+  bmu,
 }: CatchMetricsChartProps) {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [fiveYearMarks, setFiveYearMarks] = useState<number[]>([]);
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState('standard');
 
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation("common");
   const [bmus] = useAtom(bmusAtom);
+  const { data: session } = useSession();
+
+  // Determine if the user is part of the CIA group
+  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
 
   const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus });
 
@@ -344,6 +352,10 @@ export default function CatchMetricsChart({
         opacity: prev[site]?.opacity === 1 ? 0.2 : 1,
       },
     }));
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
   };
 
   useEffect(() => {
@@ -363,11 +375,12 @@ export default function CatchMetricsChart({
       );
       setSiteColors(newSiteColors);
 
+      // Set visibility state based on user's BMU
       setVisibilityState(
         uniqueSites.reduce<VisibilityState>(
           (acc, site) => ({
             ...acc,
-            [site as string]: { opacity: 1 },
+            [site as string]: { opacity: site === bmu ? 1 : 0.2 },
           }),
           {}
         )
@@ -414,7 +427,7 @@ export default function CatchMetricsChart({
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, selectedMetric]);
+  }, [monthlyData, selectedMetric, bmu]);
 
   const CustomLegend = ({ payload }: any) => {
     return (
@@ -438,6 +451,22 @@ export default function CatchMetricsChart({
       </div>
     );
   };
+
+  const calculateDifferenceData = (data: ChartDataPoint[]) => {
+    if (!bmu) return [];
+    return data.map((item) => {
+      const userValue = item[bmu] || 0;
+      const otherBMUs = Object.keys(item).filter((key) => key !== "date" && key !== bmu);
+      const otherAverage =
+        otherBMUs.reduce((sum, key) => sum + (item[key] || 0), 0) / otherBMUs.length;
+      return {
+        date: item.date,
+        difference: userValue - otherAverage,
+      };
+    });
+  };
+
+  const differenceData = calculateDifferenceData(chartData);
 
   if (loading) return <LoadingState />;
   if (!chartData || chartData.length === 0) {
@@ -464,99 +493,193 @@ export default function CatchMetricsChart({
             onMetricChange={onMetricChange}
             selectedMetricOption={selectedMetricOption}
           />
+          {!isCiaUser && (
+            <div className="flex flex-wrap justify-end space-x-2">
+              <button
+                className={`px-3 py-1 text-sm ${activeTab === 'standard' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                onClick={() => handleTabChange('standard')}
+              >
+                Standard
+              </button>
+              <button
+                className={`px-3 py-1 text-sm ${activeTab === 'differenced' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                onClick={() => handleTabChange('differenced')}
+              >
+                Differenced
+              </button>
+            </div>
+          )}
         </div>
       }
       className={className}
     >
-      <SimpleBar>
-        <div className="h-96 w-full pt-9">
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            {...(isTablet && { minWidth: "700px" })}
-          >
-            <AreaChart
-              data={chartData}
-              margin={{
-                left: 32,
-                right: 16,
-                bottom: 20,
-                top: 10,
-              }}
-              className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+      {activeTab === 'standard' && (
+        <SimpleBar>
+          <div className="h-96 w-full pt-9">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              {...(isTablet && { minWidth: "700px" })}
             >
-              <defs>
-                {Object.entries(siteColors).map(([site, color]) => (
-                  <linearGradient
-                    key={site}
-                    id={`${site}_gradient`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor={color} stopOpacity={0.75} />
-                    <stop offset="95%" stopColor={color} stopOpacity={0} />
-                  </linearGradient>
-                ))}
-              </defs>
-              <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
-              <XAxis
-                dataKey="date"
-                scale="time"
-                type="number"
-                domain={["dataMin", "dataMax"]}
-                tickFormatter={(unixTime) => {
-                  if (fiveYearMarks.includes(unixTime)) {
-                    return new Date(unixTime).getFullYear().toString();
-                  }
-                  return "";
+              <AreaChart
+                data={chartData}
+                margin={{
+                  left: 32,
+                  right: 16,
+                  bottom: 20,
+                  top: 10,
                 }}
-                ticks={fiveYearMarks}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={CustomYAxisTick}
-                width={60}
-                label={{
-                  value: selectedMetricOption?.unit,
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: -20,
-                  style: {
-                    fontSize: 14,
-                    fill: "#666666",
-                    textAnchor: "middle",
-                  },
-                }}
-              />
-              <Tooltip
-                content={(props: any) => (
-                  <CustomTooltip {...props} selectedMetric={selectedMetric} />
-                )}
-              />
-              <Legend content={CustomLegend} />
-              {Object.entries(siteColors).map(([site, color]) => (
-                <Area
-                  key={site}
-                  type="monotone"
-                  dataKey={site}
-                  name={site}
-                  stroke={color}
-                  strokeWidth={2}
-                  fillOpacity={visibilityState[site]?.opacity ?? 1}
-                  strokeOpacity={visibilityState[site]?.opacity ?? 1}
-                  fill={`url(#${site}_gradient)`}
+                className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+              >
+                <defs>
+                  {Object.entries(siteColors).map(([site, color]) => (
+                    <linearGradient
+                      key={site}
+                      id={`${site}_gradient`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor={color} stopOpacity={0.75} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
+                <XAxis
+                  dataKey="date"
+                  scale="time"
+                  type="number"
+                  domain={["dataMin", "dataMax"]}
+                  tickFormatter={(unixTime) => {
+                    if (fiveYearMarks.includes(unixTime)) {
+                      return new Date(unixTime).getFullYear().toString();
+                    }
+                    return "";
+                  }}
+                  ticks={fiveYearMarks}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
                 />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </SimpleBar>
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={CustomYAxisTick}
+                  width={60}
+                  label={{
+                    value: selectedMetricOption?.unit,
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: -20,
+                    style: {
+                      fontSize: 14,
+                      fill: "#666666",
+                      textAnchor: "middle",
+                    },
+                  }}
+                />
+                <Tooltip
+                  content={(props: any) => (
+                    <CustomTooltip {...props} selectedMetric={selectedMetric} />
+                  )}
+                />
+                <Legend content={CustomLegend} />
+                {Object.entries(siteColors).map(([site, color]) => (
+                  <Area
+                    key={site}
+                    type="monotone"
+                    dataKey={site}
+                    name={site}
+                    stroke={color}
+                    strokeWidth={2}
+                    fillOpacity={visibilityState[site]?.opacity ?? 1}
+                    strokeOpacity={visibilityState[site]?.opacity ?? 1}
+                    fill={`url(#${site}_gradient)`}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </SimpleBar>
+      )}
+      {activeTab === 'differenced' && (
+        <SimpleBar>
+          <div className="h-96 w-full pt-9">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              {...(isTablet && { minWidth: "700px" })}
+            >
+              <AreaChart
+                data={differenceData}
+                margin={{
+                  left: 32,
+                  right: 16,
+                  bottom: 20,
+                  top: 10,
+                }}
+                className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+              >
+                <defs>
+                  <linearGradient id="colorDiff" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
+                <XAxis
+                  dataKey="date"
+                  scale="time"
+                  type="number"
+                  domain={["dataMin", "dataMax"]}
+                  tickFormatter={(unixTime) => {
+                    if (fiveYearMarks.includes(unixTime)) {
+                      return new Date(unixTime).getFullYear().toString();
+                    }
+                    return "";
+                  }}
+                  ticks={fiveYearMarks}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={CustomYAxisTick}
+                  width={60}
+                  label={{
+                    value: 'Difference',
+                    angle: -90,
+                    position: 'insideLeft',
+                    offset: -20,
+                    style: {
+                      fontSize: 14,
+                      fill: '#666666',
+                      textAnchor: 'middle',
+                    },
+                  }}
+                />
+                <Tooltip
+                  content={(props: any) => (
+                    <CustomTooltip {...props} selectedMetric={selectedMetric} />
+                  )}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="difference"
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorDiff)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </SimpleBar>
+      )}
     </WidgetCard>
   );
 }

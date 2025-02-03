@@ -145,10 +145,12 @@ export default function CatchRadarChart({
   className,
   lang,
   selectedMetric,
+  bmu,
 }: {
   className?: string;
   lang?: string;
   selectedMetric: MetricKey;
+  bmu?: string;
 }) {
   const { t } = useTranslation(lang!);
   const [bmus] = useAtom(bmusAtom);

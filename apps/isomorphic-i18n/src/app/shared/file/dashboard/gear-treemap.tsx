@@ -95,7 +95,7 @@ const calculateDynamicRanges = (data: any[], metric: string) => {
 
   if (values.length === 0) return [];
 
-  // Sort the values (we don’t want to modify the original array)
+  // Sort the values (we don't want to modify the original array)
   const sorted = [...values].sort((a, b) => a - b);
 
   // Helper function to compute the qth quantile
@@ -276,9 +276,11 @@ interface GearData {
 export default function GearHeatmap({
   className,
   lang,
+  bmu,
 }: {
   className?: string;
   lang?: string;
+  bmu?: string;
 }) {
   const { theme } = useTheme();
   const [selectedMetric, setSelectedMetric] =

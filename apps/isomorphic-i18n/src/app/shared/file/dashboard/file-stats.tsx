@@ -20,6 +20,7 @@ import { bmusAtom } from "@/app/components/filter-selector";
 type FileStatsType = {
   className?: string;
   lang?: string;
+  bmu?: string;
 };
 
 interface StatData {

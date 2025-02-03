@@ -153,12 +153,21 @@ const FilterGroup = ({
   searchFilter: string;
 }) => {
   const [bmus, setBmus] = useAtom(bmusAtom);
+  const { data: session } = useSession();
+
+  // Determine if the user is part of the CIA group
+  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
 
   const handleBmuSelect = (unit: string) => {
-    if (bmus.includes(unit)) {
-      setBmus(bmus.filter((filter) => filter !== unit));
+    // For the CIA group, ensure only one BMU is selectable
+    if (isCiaUser) {
+      setBmus([unit]);
     } else {
-      setBmus([...bmus, unit]);
+      if (bmus.includes(unit)) {
+        setBmus(bmus.filter((filter) => filter !== unit));
+      } else {
+        setBmus([...bmus, unit]);
+      }
     }
   };
 

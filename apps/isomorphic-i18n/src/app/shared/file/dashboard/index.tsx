@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FileStats from "@/app/shared/file/dashboard/file-stats";
 import CatchMonthly from "@/app/shared/file/dashboard/catch-ts";
 import PerformanceTable from "@/app/shared/file/dashboard/file-list/table";
@@ -12,10 +12,18 @@ export default function FileDashboard({ lang }: { lang?: string }) {
   const [selectedMetric, setSelectedMetric] =
     useState<MetricKey>("mean_effort");
 
+  // Extract BMU from user email
+  const userEmail = "test+WBCIA+Kuruwitu@mountaindev.com"; // This should be dynamically obtained
+  const bmu = userEmail.split('+')[2].split('@')[0];
+
+  useEffect(() => {
+    console.log("User BMU:", bmu);
+  }, [bmu]);
+
   return (
     <div className="@container">
       {/* General Stats Row */}
-      <FileStats className="mb-5 2xl:mb-8" lang={lang} />
+      <FileStats className="mb-5 2xl:mb-8" lang={lang} bmu={bmu} />
 
       {/* Charts Row */}
       <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
@@ -24,11 +32,13 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           lang={lang}
           selectedMetric={selectedMetric}
           onMetricChange={setSelectedMetric}
+          bmu={bmu}
         />
         <CatchRadarChart
           className="@4xl:col-span-4 @[96.937rem]:col-span-3"
           lang={lang}
           selectedMetric={selectedMetric}
+          bmu={bmu}
         />
       </div>
 
@@ -37,6 +47,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
         <GearTreemap
           className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
           lang={lang}
+          bmu={bmu}
         />
       </div>
 
@@ -44,6 +55,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
         <PerformanceTable
           className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
           lang={lang}
+          bmu={bmu}
         />
       </div>
     </div>
