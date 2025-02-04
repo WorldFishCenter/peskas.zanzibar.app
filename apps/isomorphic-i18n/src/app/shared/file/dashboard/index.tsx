@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import type { DefaultSession } from "next-auth";
+import type { TBmu } from "@repo/nosql/schema/bmu";
 import FileStats from "@/app/shared/file/dashboard/file-stats";
 import CatchMonthly from "@/app/shared/file/dashboard/catch-ts";
 import PerformanceTable from "@/app/shared/file/dashboard/file-list/table";
@@ -8,23 +11,31 @@ import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 
 type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
+type CustomSession = {
+  user?: {
+    bmus?: Omit<TBmu, "lat" | "lng" | "treatments">[]
+  } & DefaultSession["user"]
+}
+
 export default function FileDashboard({ lang }: { lang?: string }) {
   const [selectedMetric, setSelectedMetric] =
     useState<MetricKey>("mean_effort");
   const [activeTab, setActiveTab] = useState('standard');
+  const { data: session } = useSession() as { data: CustomSession | null };
 
-  // Extract BMU from user email
-  const userEmail = "test+WBCIA+Kuruwitu@mountaindev.com"; // This should be dynamically obtained
-  const bmu = userEmail.split('+')[2].split('@')[0];
+  // Extract BMU from user's email
+  const userBmu = session?.user?.email ? session.user.email.split('+')[2]?.split('@')[0] : undefined;
 
   useEffect(() => {
-    console.log("User BMU:", bmu);
-  }, [bmu]);
+    if (userBmu) {
+      console.log("User BMU:", userBmu);
+    }
+  }, [userBmu]);
 
   return (
     <div className="@container">
       {/* General Stats Row */}
-      <FileStats className="mb-5 2xl:mb-8" lang={lang} bmu={bmu} />
+      <FileStats className="mb-5 2xl:mb-8" lang={lang} bmu={userBmu} />
 
       {/* Charts Row */}
       <div className="mb-6 grid grid-cols-1 gap-6 @4xl:grid-cols-12 2xl:mb-8 2xl:gap-8">
@@ -33,7 +44,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           lang={lang}
           selectedMetric={selectedMetric}
           onMetricChange={setSelectedMetric}
-          bmu={bmu}
+          bmu={userBmu}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -41,7 +52,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           className="@4xl:col-span-4 @[96.937rem]:col-span-3"
           lang={lang}
           selectedMetric={selectedMetric}
-          bmu={bmu}
+          bmu={userBmu}
           activeTab={activeTab}
         />
       </div>
@@ -51,7 +62,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
         <GearTreemap
           className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
           lang={lang}
-          bmu={bmu}
+          bmu={userBmu}
         />
       </div>
 
@@ -59,7 +70,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
         <PerformanceTable
           className="@container @4xl:col-span-12 @[96.937rem]:col-span-12"
           lang={lang}
-          bmu={bmu}
+          bmu={userBmu}
         />
       </div>
     </div>
