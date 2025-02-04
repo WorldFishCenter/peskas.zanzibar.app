@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
   Line,
+  ReferenceLine,
 } from "recharts";
 
 import { bmusAtom } from "@/app/components/filter-selector";
@@ -492,22 +493,41 @@ export default function CatchMetricsChart({
 
   const calculateDifferenceData = (data: ChartDataPoint[]) => {
     if (!bmu) return [];
+    
     return data.map((item) => {
-      const userValue = item[bmu] || 0;
-      const otherBMUs = Object.keys(item).filter((key) => key !== "date" && key !== bmu);
-      const otherAverage =
-        otherBMUs.reduce((sum, key) => sum + (item[key] || 0), 0) / otherBMUs.length;
+      const userValue = item[bmu];
+      // Only calculate difference if the BMU has data for this period
+      if (userValue === undefined) {
+        return {
+          date: item.date,
+          difference: undefined
+        };
+      }
+
+      const otherBMUs = Object.keys(item).filter(
+        key => key !== "date" && key !== bmu && item[key] !== undefined
+      );
+
+      // Only calculate average if there are other BMUs with data
+      if (otherBMUs.length === 0) {
+        return {
+          date: item.date,
+          difference: undefined
+        };
+      }
+
+      const otherAverage = otherBMUs.reduce((sum, key) => sum + (item[key] || 0), 0) / otherBMUs.length;
+      
       return {
         date: item.date,
-        difference: userValue - otherAverage,
+        difference: userValue - otherAverage
       };
-    });
+    }).filter(item => item.difference !== undefined); // Remove periods with no difference
   };
 
   const differenceData = calculateDifferenceData(chartData);
 
-  console.log("Difference Data:", differenceData);
-
+  // Calculate trendline only for periods with valid differences
   const trendline = calculateTrendline(differenceData);
 
   // Create trendline data separately
@@ -681,6 +701,12 @@ export default function CatchMetricsChart({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
+                <ReferenceLine 
+                  y={0} 
+                  stroke="#666666" 
+                  strokeDasharray="3 3"
+                  strokeWidth={2}
+                />
                 <XAxis
                   dataKey="date"
                   scale="time"

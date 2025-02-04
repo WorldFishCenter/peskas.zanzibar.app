@@ -241,17 +241,38 @@ export default function CatchRadarChart({
         // Calculate differenced data if needed
         if (activeTab === 'differenced' && bmu) {
           processedData = processedData.map(item => {
-            const userValue = Number(item[bmu]) || 0;
-            const otherBMUs = uniqueSites.filter(site => site !== bmu);
+            const userValue = Number(item[bmu]);
+            // Only calculate difference if the BMU has data for this month
+            if (isNaN(userValue) || userValue === 0) {
+              return {
+                month: item.month,
+                [bmu]: 0
+              };
+            }
+
+            const otherBMUs = uniqueSites.filter(site => 
+              site !== bmu && 
+              !isNaN(Number(item[site])) && 
+              Number(item[site]) !== 0
+            );
+
+            // Only calculate average if there are other BMUs with data
+            if (otherBMUs.length === 0) {
+              return {
+                month: item.month,
+                [bmu]: 0
+              };
+            }
+
             const otherAverage = otherBMUs.reduce((sum, site) => {
-              return sum + (Number(item[site]) || 0);
+              return sum + Number(item[site] || 0);
             }, 0) / otherBMUs.length;
 
             return {
               month: item.month,
               [bmu]: userValue - otherAverage
             };
-          });
+          }).filter(item => Number(item[bmu]) !== 0); // Remove months with no valid difference
         }
 
         setData(processedData);
