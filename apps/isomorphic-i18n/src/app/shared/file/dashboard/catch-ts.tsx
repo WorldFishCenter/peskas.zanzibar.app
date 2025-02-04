@@ -53,6 +53,8 @@ interface CatchMetricsChartProps {
   selectedMetric: MetricKey;
   onMetricChange: (metric: MetricKey) => void;
   bmu?: string;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 interface TooltipProps {
@@ -116,16 +118,18 @@ const METRIC_OPTIONS: MetricOption[] = [
   },
 ];
 
-const generateColor = (index: number): string => {
+const generateColor = (index: number, site: string, referenceBmu: string | undefined): string => {
+  if (site === referenceBmu) {
+    return "#fc3468"; // Red color for reference BMU
+  }
   const colors = [
-    "#0c526e",
-    "#fc3468",
-    "#f09609",
-    "#2563eb",
-    "#16a34a",
-    "#9333ea",
-    "#ea580c",
-    "#0891b2",
+    "#0c526e", // Dark blue
+    "#f09609", // Orange
+    "#2563eb", // Blue
+    "#16a34a", // Green
+    "#9333ea", // Purple
+    "#ea580c", // Dark orange
+    "#0891b2", // Teal
   ];
   return colors[index % colors.length];
 };
@@ -358,13 +362,15 @@ export default function CatchMetricsChart({
   selectedMetric,
   onMetricChange,
   bmu,
+  activeTab = 'standard',
+  onTabChange,
 }: CatchMetricsChartProps) {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [fiveYearMarks, setFiveYearMarks] = useState<number[]>([]);
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState('standard');
+  const [localActiveTab, setLocalActiveTab] = useState(activeTab);
 
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation("common");
@@ -386,7 +392,8 @@ export default function CatchMetricsChart({
   };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+    setLocalActiveTab(tab);
+    onTabChange?.(tab);
   };
 
   useEffect(() => {
@@ -400,7 +407,7 @@ export default function CatchMetricsChart({
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(
         (acc, site, index) => ({
           ...acc,
-          [site as string]: generateColor(index),
+          [site as string]: generateColor(index, site, bmu),
         }),
         {}
       );
@@ -541,13 +548,13 @@ export default function CatchMetricsChart({
           {!isCiaUser && (
             <div className="flex flex-wrap justify-end space-x-2">
               <button
-                className={`px-3 py-1 text-sm ${activeTab === 'standard' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                className={`px-3 py-1 text-sm ${localActiveTab === 'standard' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
                 onClick={() => handleTabChange('standard')}
               >
                 Standard
               </button>
               <button
-                className={`px-3 py-1 text-sm ${activeTab === 'differenced' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                className={`px-3 py-1 text-sm ${localActiveTab === 'differenced' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
                 onClick={() => handleTabChange('differenced')}
               >
                 Differenced
@@ -558,7 +565,7 @@ export default function CatchMetricsChart({
       }
       className={className}
     >
-      {activeTab === 'standard' && (
+      {localActiveTab === 'standard' && (
         <SimpleBar>
           <div className="h-96 w-full pt-9">
             <ResponsiveContainer
@@ -649,7 +656,7 @@ export default function CatchMetricsChart({
           </div>
         </SimpleBar>
       )}
-      {activeTab === 'differenced' && (
+      {localActiveTab === 'differenced' && (
         <SimpleBar>
           <div className="h-96 w-full pt-9">
             <ResponsiveContainer

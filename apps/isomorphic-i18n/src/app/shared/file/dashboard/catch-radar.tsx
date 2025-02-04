@@ -66,16 +66,18 @@ const MONTH_ORDER = [
   "Dec",
 ];
 
-const generateColor = (index: number): string => {
+const generateColor = (index: number, site: string, referenceBmu: string | undefined): string => {
+  if (site === referenceBmu) {
+    return "#fc3468"; // Red color for reference BMU
+  }
   const colors = [
-    "#0c526e",
-    "#fc3468",
-    "#f09609",
-    "#2563eb",
-    "#16a34a",
-    "#9333ea",
-    "#ea580c",
-    "#0891b2",
+    "#0c526e", // Dark blue
+    "#f09609", // Orange
+    "#2563eb", // Blue
+    "#16a34a", // Green
+    "#9333ea", // Purple
+    "#ea580c", // Dark orange
+    "#0891b2", // Teal
   ];
   return colors[index % colors.length];
 };
@@ -146,11 +148,13 @@ export default function CatchRadarChart({
   lang,
   selectedMetric,
   bmu,
+  activeTab = 'standard',
 }: {
   className?: string;
   lang?: string;
   selectedMetric: MetricKey;
   bmu?: string;
+  activeTab?: string;
 }) {
   const { t } = useTranslation(lang!);
   const [bmus] = useAtom(bmusAtom);
@@ -199,11 +203,9 @@ export default function CatchRadarChart({
         }, new Set<string>());
         const uniqueSites: string[] = Array.from(uniqueSitesSet);
 
-        console.log("Unique Sites:", uniqueSites);
-
         const newSiteColors = uniqueSites.reduce<Record<string, string>>(
           (acc: Record<string, string>, site: string, index: number) => {
-            acc[site] = generateColor(index);
+            acc[site] = generateColor(index, site, bmu);
             return acc;
           },
           {}
@@ -214,14 +216,13 @@ export default function CatchRadarChart({
           uniqueSites.reduce<VisibilityState>(
             (acc: VisibilityState, site: string) => ({
               ...acc,
-              [site]: { opacity: 1 },
+              [site]: { opacity: site === bmu ? 1 : 0.2 },
             }),
             {}
           );
         setVisibilityState(newVisibilityState);
 
-        // Sort data by month order and ensure all BMUs are present
-        const sortedData = [...meanCatch]
+        let processedData = [...meanCatch]
           .sort(
             (a, b) =>
               MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
@@ -232,12 +233,28 @@ export default function CatchRadarChart({
               completeItem[site] =
                 (item as Record<string, number | string>)[site] !== undefined
                   ? (item as Record<string, number | string>)[site]
-                  : 0; // Use 0 or null as default
+                  : 0;
             });
             return completeItem;
           });
 
-        setData(sortedData);
+        // Calculate differenced data if needed
+        if (activeTab === 'differenced' && bmu) {
+          processedData = processedData.map(item => {
+            const userValue = Number(item[bmu]) || 0;
+            const otherBMUs = uniqueSites.filter(site => site !== bmu);
+            const otherAverage = otherBMUs.reduce((sum, site) => {
+              return sum + (Number(item[site]) || 0);
+            }, 0) / otherBMUs.length;
+
+            return {
+              month: item.month,
+              [bmu]: userValue - otherAverage
+            };
+          });
+        }
+
+        setData(processedData);
         setError(null);
       } catch (e) {
         console.error("Error processing data:", e);
@@ -249,7 +266,7 @@ export default function CatchRadarChart({
     };
 
     processData();
-  }, [meanCatch, selectedMetric, isInitialLoad]);
+  }, [meanCatch, selectedMetric, isInitialLoad, activeTab, bmu]);
 
   // Handle bmus changes
   useEffect(() => {
@@ -290,7 +307,10 @@ export default function CatchRadarChart({
   }
 
   return (
-    <WidgetCard title="" className={cn(className)}>
+    <WidgetCard 
+      title="" 
+      className={cn(className)}
+    >
       <div className="mt-5 h-96 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
@@ -304,18 +324,22 @@ export default function CatchRadarChart({
             />
             <PolarRadiusAxis
               angle={90}
-              domain={[0, "auto"]}
+              domain={activeTab === 'differenced' ? ['auto', 'auto'] : [0, 'auto']}
               tick={{ fill: "#666" }}
             />
             {Object.entries(siteColors).map(([site, color]) => {
+              // In differenced mode, only show the selected BMU
+              if (activeTab === 'differenced' && site !== bmu) {
+                return null;
+              }
               const opacity = visibilityState[site]?.opacity ?? 1;
               return (
                 <Radar
                   key={site}
                   name={site}
                   dataKey={site}
-                  stroke={color}
-                  fill={color}
+                  stroke={activeTab === 'differenced' ? "#fc3468" : color}
+                  fill={activeTab === 'differenced' ? "#fc3468" : color}
                   fillOpacity={opacity * 0.25}
                   strokeOpacity={opacity}
                 />
@@ -326,15 +350,17 @@ export default function CatchRadarChart({
                 <CustomTooltip {...props} metric={selectedMetric} />
               )}
             />
-            <Legend
-              content={(props) => (
-                <CustomLegend
-                  {...props}
-                  visibilityState={visibilityState}
-                  handleLegendClick={handleLegendClick}
-                />
-              )}
-            />
+            {activeTab !== 'differenced' && (
+              <Legend
+                content={(props) => (
+                  <CustomLegend
+                    {...props}
+                    visibilityState={visibilityState}
+                    handleLegendClick={handleLegendClick}
+                  />
+                )}
+              />
+            )}
           </RadarChart>
         </ResponsiveContainer>
       </div>

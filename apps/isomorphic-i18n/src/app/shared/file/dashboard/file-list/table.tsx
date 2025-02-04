@@ -350,28 +350,7 @@ export default function PerformanceTable({
             </div>
           </div>
         ),
-      },
-      {
-        title: <div className="w-full text-center">{t("text-metrics-trend")}</div>,
-        dataKey: "trend",
-        width: 200,
-        render: (_: unknown, row: PerformanceData) => (
-          <div className="h-12">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={row.monthlyData.slice(-6)}
-                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-              >
-                <Bar
-                  dataKey="mean_effort"
-                  fill={BAR_COLOR}
-                  radius={[2, 2, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ),
-      },
+      }
     ],
     [t, sortConfig, handleSort]
   );

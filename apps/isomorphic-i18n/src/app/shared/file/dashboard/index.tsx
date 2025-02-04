@@ -11,6 +11,7 @@ type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean
 export default function FileDashboard({ lang }: { lang?: string }) {
   const [selectedMetric, setSelectedMetric] =
     useState<MetricKey>("mean_effort");
+  const [activeTab, setActiveTab] = useState('standard');
 
   // Extract BMU from user email
   const userEmail = "test+WBCIA+Kuruwitu@mountaindev.com"; // This should be dynamically obtained
@@ -33,12 +34,15 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           selectedMetric={selectedMetric}
           onMetricChange={setSelectedMetric}
           bmu={bmu}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
         <CatchRadarChart
           className="@4xl:col-span-4 @[96.937rem]:col-span-3"
           lang={lang}
           selectedMetric={selectedMetric}
           bmu={bmu}
+          activeTab={activeTab}
         />
       </div>
 
