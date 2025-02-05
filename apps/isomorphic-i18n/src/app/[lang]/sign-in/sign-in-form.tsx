@@ -1,52 +1,60 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, Fragment } from 'react';
-import { signIn } from 'next-auth/react';
-import { SubmitHandler } from 'react-hook-form';
-import { PiArrowRightBold } from 'react-icons/pi';
-import { Checkbox, Password, Button, Input, Text, Loader } from 'rizzui';
-import { useRouter } from 'next/navigation'
-import { useSetAtom } from 'jotai';
-import { RESET } from 'jotai/utils' 
+import { useSetAtom } from "jotai";
+import { RESET } from "jotai/utils";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Fragment, useState } from "react";
+import { SubmitHandler } from "react-hook-form";
+import { PiArrowRightBold } from "react-icons/pi";
+import { Button, Checkbox, Input, Loader, Password, Text } from "rizzui";
 
-import { Form } from '@ui/form';
-import { routes } from '@/config/routes';
-import { loginSchema, LoginType } from '@/validators/login.schema';
-import Alert from '@/app/_components/alert';
+import Alert from "@/app/_components/alert";
 import { bmusAtom, dropdownAtom } from "@/app/components/filter-selector";
+import { routes } from "@/config/routes";
+import { loginSchema, LoginType } from "@/validators/login.schema";
+import { Form } from "@ui/form";
 
 const initialValues: LoginType = {
-  email: 'anthony@mountaindev.com',
-  password: '1234qwer',
+  email: "anthony@mountaindev.com",
+  password: "1234qwer",
   rememberMe: true,
 };
 
 export default function SignInForm() {
   //TODO: why we need to reset it here
-  const [loading, setLoading] = useState(false)
-  const [loginErr, setLoginErr] = useState('')
-  const [reset] = useState({})
-  const router = useRouter()
+  const [loading, setLoading] = useState(false);
+  const [loginErr, setLoginErr] = useState("");
+  const [changePassword, setChangePassword] = useState(false);
+  const [reset] = useState({});
+  const router = useRouter();
   const setBmus = useSetAtom(bmusAtom);
-  const setBmusDropdown = useSetAtom(dropdownAtom);  
+  const setBmusDropdown = useSetAtom(dropdownAtom);
 
   const onSubmit: SubmitHandler<LoginType> = async (data) => {
-    setLoading(true)
-    setLoginErr('')
-    const resp = await signIn('credentials', {
+    setLoading(true);
+    setLoginErr("");
+    const resp = await signIn("credentials", {
       ...data,
-      redirect: false
-    })
+      redirect: false,
+    });
 
     if (resp?.ok) {
-      setBmus(RESET)
-      setBmusDropdown(RESET)
-      router.refresh()
+      setBmus(RESET);
+      setBmusDropdown(RESET);
+      router.refresh();
+    } else if (
+      !resp?.ok &&
+      resp?.error === "No password is set for this user."
+    ) {
+      console.log(resp?.error);
+      setLoginErr(resp?.error);
     } else if (!resp?.ok && resp?.error) {
-      setLoginErr(resp?.error)
+      console.log(resp?.error);
+      setLoginErr(resp?.error);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   return (
@@ -61,7 +69,9 @@ export default function SignInForm() {
       >
         {({ register, formState: { errors } }) => (
           <div className="space-y-5">
-            {loginErr && <Alert color="danger" message={loginErr} className="mb-[16px]" />}
+            {loginErr && (
+              <Alert color="danger" message={loginErr} className="mb-[16px]" />
+            )}
             <Input
               type="email"
               size="lg"
@@ -69,7 +79,7 @@ export default function SignInForm() {
               placeholder="Enter your email"
               className="[&>label>span]:font-medium"
               inputClassName="text-sm"
-              {...register('email')}
+              {...register("email")}
               error={errors.email?.message}
             />
             <Password
@@ -78,12 +88,12 @@ export default function SignInForm() {
               size="lg"
               className="[&>label>span]:font-medium"
               inputClassName="text-sm"
-              {...register('password')}
+              {...register("password")}
               error={errors.password?.message}
             />
             <div className="flex items-center justify-between pb-2">
               <Checkbox
-                {...register('rememberMe')}
+                {...register("rememberMe")}
                 label="Remember Me"
                 className="[&>label>span]:font-medium"
               />
@@ -95,17 +105,20 @@ export default function SignInForm() {
               </Link>
             </div>
             <Button className="w-full" type="submit" size="lg">
-              {loading 
-                ? <Loader variant="spinner" color="current"/> 
-                : <Fragment><span>Sign in</span>{' '}<PiArrowRightBold className="ms-2 mt-0.5 h-5 w-5" /></Fragment>
-              }
-              
+              {loading ? (
+                <Loader variant="spinner" color="current" />
+              ) : (
+                <Fragment>
+                  <span>Sign in</span>{" "}
+                  <PiArrowRightBold className="ms-2 mt-0.5 h-5 w-5" />
+                </Fragment>
+              )}
             </Button>
           </div>
         )}
       </Form>
       <Text className="mt-6 text-center leading-loose text-gray-500 lg:mt-8 lg:text-start">
-        Don’t have an account?{' '}
+        Don’t have an account?{" "}
         <Link
           href={routes.auth.signUp1}
           className="font-semibold text-gray-700 transition-colors hover:text-blue"

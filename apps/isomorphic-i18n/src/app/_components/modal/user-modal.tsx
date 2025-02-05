@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
-import { useAtom } from 'jotai';
+import { useEffect } from "react";
 
-import { Z_INDEX } from "@utils/common/constants";
-import cn from "@utils/class-names";
+import { UpsertUserSchema } from "@/validators/user.schema";
 import { Button } from "@ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@ui/dialog";
 import {
   Form,
   FormControl,
@@ -31,12 +25,14 @@ import {
   SelectValue,
 } from "@ui/select";
 import { toast } from "@ui/toast";
-import { UpsertUserSchema } from "@/validators/user.schema";
+import cn from "@utils/class-names";
+import { Z_INDEX } from "@utils/common/constants";
 
 import type { DataType } from "@/store/modal";
 
+import { ModalEnum, modalStoreAtom } from "@/store/modal";
 import { api } from "@/trpc/react";
-import { modalStoreAtom, ModalEnum } from "@/store/modal";
+import { VirtualizedCombobox } from "../virtualizer-searchbar";
 
 export default function UserModal({
   data,
@@ -44,11 +40,12 @@ export default function UserModal({
   data?: DataType[ModalEnum.USER];
 }) {
   const utils = api.useUtils();
-  const { data: user } = data?.id 
+  const { data: bmus } = api.user.allBmus.useQuery();
+  const { data: user } = data?.id
     ? api.user.byId.useQuery({ id: data.id })
-    : { data: null }
+    : { data: null };
   const router = useRouter();
-  const [ , setModal ] = useAtom(modalStoreAtom)
+  const [, setModal] = useAtom(modalStoreAtom);
 
   const form = useForm({
     schema: UpsertUserSchema,
@@ -58,6 +55,7 @@ export default function UserModal({
       email: user?.email ?? "",
       role: user?.role ?? "",
       status: user?.status ?? "active",
+      bmuNames: ["Ngomeni"], //user?.bmus?.map((bmu) => bmu._id.toString()) ?? [],
     },
   });
 
@@ -76,8 +74,8 @@ export default function UserModal({
       await utils.user.invalidate();
       setModal({
         open: false,
-        type: '',
-      })
+        type: "",
+      });
       toast.success("Successfully updated user");
       router.refresh();
     },
@@ -85,22 +83,29 @@ export default function UserModal({
       toast.error(
         err?.data?.code === "UNAUTHORIZED"
           ? "You must be logged in to update users"
-          : "Failed to update user",
+          : "Failed to update user"
       );
     },
   });
 
   return (
-    <Dialog open={true} onOpenChange={() => setModal({
-      open: false,
-      type: '',
-    })}>
+    <Dialog
+      open={true}
+      onOpenChange={() =>
+        setModal({
+          open: false,
+          type: "",
+        })
+      }
+    >
       <DialogContent
         style={{ zIndex: Z_INDEX.HOW_TO_JOIN_MODAL }}
         className={cn(`max-w-[90%] rounded-lg bg-muted lg:max-w-[400px]`)}
       >
         <DialogHeader>
-          <DialogTitle className="text-center">{user ? 'Edit User' : 'Add User'}</DialogTitle>
+          <DialogTitle className="text-center">
+            {user ? "Edit User" : "Add User"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -112,7 +117,7 @@ export default function UserModal({
               (error) => {
                 toast.error("Failed to update user");
                 console.log(error);
-              },
+              }
             )}
             className="space-y-4"
           >
@@ -194,6 +199,34 @@ export default function UserModal({
 
             <FormField
               control={form.control}
+              name="bmuNames"
+              render={({ field, fieldState: { error } }) => (
+                <FormItem>
+                  <div className={cn("flex flex-col gap-y-2")}>
+                    <VirtualizedCombobox
+                      value={field.value}
+                      options={
+                        bmus?.map((bmu) => ({
+                          value: bmu.BMU,
+                          label: bmu.BMU,
+                        })) ?? []
+                      }
+                      label="BMUs"
+                      searchPlaceholder="Search for a BMU"
+                      onSelect={field.onChange}
+                      required={true}
+                      isMulti={true}
+                    />
+                    {error?.message ? (
+                      <InputError error={error.message} />
+                    ) : null}
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
@@ -222,10 +255,12 @@ export default function UserModal({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setModal({
-                  open: false,
-                  type: '',
-                })}
+                onClick={() =>
+                  setModal({
+                    open: false,
+                    type: "",
+                  })
+                }
                 className="w-full"
               >
                 Cancel
@@ -240,3 +275,9 @@ export default function UserModal({
     </Dialog>
   );
 }
+
+const InputError = ({ error }: { error?: string }) => {
+  return error ? (
+    <div className="!m-0 text-sm text-red-500">{error}</div>
+  ) : null;
+};

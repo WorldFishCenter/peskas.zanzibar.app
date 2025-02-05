@@ -1,16 +1,44 @@
-import type { Schema } from 'zod';
-import { useEffect } from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect } from "react";
 import {
-  useForm,
-  SubmitHandler,
-  UseFormReturn,
-  UseFormProps,
+  Controller,
+  ControllerProps,
+  FieldPath,
   FieldValues,
-} from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+  SubmitHandler,
+  useForm,
+  UseFormProps,
+  UseFormReturn,
+} from "react-hook-form";
+import type { Schema } from "zod";
+import { cn } from ".";
 
 type ServerErrors<T> = {
   [Property in keyof T]: string;
+};
+
+interface FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  name: TName;
+}
+
+const FormFieldContext = React.createContext<FormFieldContextValue>(
+  {} as FormFieldContextValue
+);
+
+const FormField = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) => {
+  return (
+    <FormFieldContext.Provider value={{ name: props.name }}>
+      <Controller {...props} />
+    </FormFieldContext.Provider>
+  );
 };
 
 type FormProps<TFormValues extends FieldValues> = {
@@ -25,9 +53,29 @@ type FormProps<TFormValues extends FieldValues> = {
   className?: string;
 };
 
-export const Form = <
-  TFormValues extends Record<string, any> = Record<string, any>,
->({
+interface FormItemContextValue {
+  id: string;
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>(
+  {} as FormItemContextValue
+);
+
+const FormItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  const id = React.useId();
+
+  return (
+    <FormItemContext.Provider value={{ id }}>
+      <div ref={ref} className={cn("space-y-2", className)} {...props} />
+    </FormItemContext.Provider>
+  );
+});
+FormItem.displayName = "FormItem";
+
+const Form = <TFormValues extends Record<string, any> = Record<string, any>>({
   onSubmit,
   children,
   useFormProps,
@@ -60,3 +108,5 @@ export const Form = <
     </form>
   );
 };
+
+export { Form, FormField, FormItem };
