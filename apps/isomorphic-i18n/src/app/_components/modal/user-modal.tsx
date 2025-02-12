@@ -55,7 +55,7 @@ export default function UserModal({
       email: user?.email ?? "",
       role: user?.role ?? "",
       status: user?.status ?? "active",
-      bmuNames: ["Ngomeni"], //user?.bmus?.map((bmu) => bmu._id.toString()) ?? [],
+      bmuNames: user?.bmus?.map(bmu => ({value: bmu._id.toString(), label: bmu.BMU})) ?? [],
     },
   });
 
@@ -66,6 +66,7 @@ export default function UserModal({
       email: user?.email ?? "",
       role: user?.role ?? "",
       status: user?.status ?? "active",
+      bmuNames: user?.bmus?.map(bmu => ({value: bmu._id.toString(), label: bmu.BMU})) ?? [],
     });
   }, [form, user]);
 
@@ -104,7 +105,7 @@ export default function UserModal({
       >
         <DialogHeader>
           <DialogTitle className="text-center">
-            {user ? "Edit User" : "Add User"}
+            {data?.id ? "Edit User" : "Add User"}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,19 +122,25 @@ export default function UserModal({
             )}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
-              name="_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ID" disabled {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {data?.id &&
+              <FormField
+                control={form.control}
+                name="_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="ID" 
+                        disabled 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            }
 
             <FormField
               control={form.control}
@@ -143,6 +150,7 @@ export default function UserModal({
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
+                      className="bg-white border-none"
                       placeholder="Name"
                       {...field}
                       value={field.value ?? ""}
@@ -160,7 +168,30 @@ export default function UserModal({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Email" type="email" {...field} />
+                    <Input
+                      className="bg-white border-none"   
+                      placeholder="Email" 
+                      type="email"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-white border-none"   
+                      placeholder="Password" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,15 +234,15 @@ export default function UserModal({
               render={({ field, fieldState: { error } }) => (
                 <FormItem>
                   <div className={cn("flex flex-col gap-y-2")}>
+                    <FormLabel>BMUs</FormLabel>
                     <VirtualizedCombobox
                       value={field.value}
                       options={
                         bmus?.map((bmu) => ({
-                          value: bmu.BMU,
+                          value: bmu._id.toString(),
                           label: bmu.BMU,
                         })) ?? []
                       }
-                      label="BMUs"
                       searchPlaceholder="Search for a BMU"
                       onSelect={field.onChange}
                       required={true}

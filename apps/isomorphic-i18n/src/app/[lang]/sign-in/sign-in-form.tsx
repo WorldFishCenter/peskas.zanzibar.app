@@ -17,8 +17,8 @@ import { loginSchema, LoginType } from "@/validators/login.schema";
 import { Form } from "@ui/form";
 
 const initialValues: LoginType = {
-  email: "anthony@mountaindev.com",
-  password: "1234qwer",
+  email: "test@test.com",
+  password: "12345",
   rememberMe: true,
 };
 

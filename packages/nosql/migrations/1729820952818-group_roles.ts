@@ -92,7 +92,7 @@ export async function up (): Promise<void> {
           _id: user._id,
         },
         {
-          bmus:bmus.map(bmu => bmu._id),
+          bmus: bmus.map(bmu => bmu._id),
         },
       )
     },

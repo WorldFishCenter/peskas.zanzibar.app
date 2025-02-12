@@ -30,8 +30,8 @@ interface VirtualizedCommandProps {
   options: Option[];
   label?: string;
   placeholder: string;
-  selectedOptions: string[];
-  onSelectOption?: (option: string) => void;
+  selectedOptions: Option[];
+  onSelectOption?: (option: Option) => void;
   onClear?: () => void;
 }
 
@@ -48,10 +48,10 @@ const VirtualizedCommand = ({
 
   const sortedFilteredOptions = useMemo(() => {
     return filteredOptions.sort((a, b) => {
-      if (selectedOptions.includes(a.value)) {
+      if (selectedOptions.find(opt => a.value === opt.value)) {
         return -1;
       }
-      if (selectedOptions.includes(b.value)) {
+      if (selectedOptions.find(opt => b.value === opt.value)) {
         return 1;
       }
       return 0;
@@ -70,7 +70,7 @@ const VirtualizedCommand = ({
   const handleSearch = (search: string) => {
     setFilteredOptions(
       options.filter((option) =>
-        option.value.toLowerCase().includes(search.toLowerCase() ?? [])
+        option.label.toLowerCase().includes(search.toLowerCase() ?? [])
       )
     );
   };
@@ -84,7 +84,13 @@ const VirtualizedCommand = ({
   return (
     <Command shouldFilter={false} onKeyDown={handleKeyDown}>
       {label ? <Label>{label}</Label> : null}
-      <CommandInput onValueChange={handleSearch} placeholder={placeholder} />
+      <CommandInput 
+        onValueChange={handleSearch} 
+        placeholder={placeholder}
+        className={cn(
+          "border-0"
+        )}
+      />
       <CommandEmpty>No item found.</CommandEmpty>
       <CommandGroup
         ref={parentRef}
@@ -114,16 +120,16 @@ const VirtualizedCommand = ({
               key={sortedFilteredOptions[virtualOption.index]?.value}
               value={sortedFilteredOptions[virtualOption.index]?.value}
               onSelect={(selectedItem) => {
-                const item = sortedFilteredOptions[virtualOption.index]?.value;
+                const item = sortedFilteredOptions[virtualOption.index];
                 onSelectOption?.(item ?? selectedItem);
               }}
               className="flex items-center justify-between"
             >
               <Check
                 className={cn("mr-2 h-4 w-4 opacity-0", {
-                  "opacity-100": selectedOptions.includes(
-                    sortedFilteredOptions[virtualOption.index]?.value ?? ""
-                  ),
+                  "opacity-100": selectedOptions.find(opt => 
+                    (opt.value === sortedFilteredOptions[virtualOption.index]?.value) 
+                  ) ?? "",
                 })}
               />
               <div className="line-clamp-1 flex flex-1 items-center justify-between leading-4">
@@ -144,11 +150,11 @@ const VirtualizedCommand = ({
 };
 
 interface VirtualizedComboboxProps {
-  value?: string | string[];
+  value?: Option[];
   options: Option[];
   label?: string;
   searchPlaceholder?: string;
-  onSelect?: (items: string | string[]) => void;
+  onSelect?: (items: Option[]) => void;
   required?: boolean;
   isMulti?: boolean;
 }
@@ -163,25 +169,27 @@ export function VirtualizedCombobox({
   isMulti,
 }: VirtualizedComboboxProps) {
   const [open, setOpen] = useState<boolean>(false);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(
-    typeof value === "string" ? [value] : value ?? []
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>(
+    value ?? []
   );
   const [buttonWidth, setButtonWidth] = useState(0);
 
   useEffect(() => {
-    setSelectedOptions(typeof value === "string" ? [value] : value ?? []);
+    if (!value) return
+
+    setSelectedOptions(value)
   }, [value]);
 
-  const handleSelect = (currentValue: string) => {
-    let newOptions: string[] = [];
+  const handleSelect = (currentValue: Option) => {
+    let newOptions: Option[] = [];
     if (isMulti) {
-      newOptions = selectedOptions.includes(currentValue)
-        ? selectedOptions.filter((option) => option !== currentValue)
+      newOptions = selectedOptions.find(opt => opt.value === currentValue.value)
+        ? selectedOptions.filter((option) => option.value !== currentValue.value)
         : [...selectedOptions, currentValue];
       onSelect?.(newOptions);
     } else {
       newOptions = [currentValue];
-      onSelect?.(currentValue);
+      onSelect?.([currentValue]);
     }
 
     // setOpen(false);
@@ -189,37 +197,45 @@ export function VirtualizedCombobox({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild className="group relative w-full">
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
+      <PopoverTrigger asChild className="group relative">
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="relative flex h-12 w-full rounded-md border border-gray-300 bg-white px-3 pb-1 pr-8 pt-5 text-left text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300 md:h-14 md:pt-6"
+          className={cn(
+            "relative flex w-full rounded-md border border-gray-300 bg-white px-3 pb-1 pr-8 text-left ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+            label ? 'h-12 md:h-14 md:pt-6 pt-5 text-sm' : 'h-10'
+          )}
           ref={(element) => setButtonWidth(element?.offsetWidth ?? 0)}
         >
-          <label
-            className={cn(
-              "absolute left-0 top-0 px-3 pt-1 text-sm font-semibold tracking-wide text-primary md:pt-2"
-            )}
-          >
-            {label}
-            {required ? <span className="text-red-500">*</span> : null}
-          </label>
-          <div className={cn("w-full text-left text-xs leading-3")}>
+          {label &&
+            <label
+              className={cn(
+                "absolute left-0 top-0 px-3 pt-1 text-sm font-semibold tracking-wide text-primary md:pt-2"
+              )}
+            >
+              {label}
+              {required ? <span className="text-red-500">*</span> : null}
+            </label>          
+          }
+          <div className={cn(
+            "w-full text-left leading-3",
+            label && 'text-xs'
+          )}>
             {selectedOptions.length === 0 ? (
               searchPlaceholder
             ) : selectedOptions.length === 1 ? (
-              selectedOptions[0]
+              selectedOptions[0].label
             ) : selectedOptions.length > 1 ? (
               <div>
-                {selectedOptions[0]}{" "}
+                {selectedOptions[0].label}{" "}
                 <span className="">+{selectedOptions.length - 1} </span>
               </div>
             ) : null}
           </div>
           <div className="absolute right-3 top-0 flex h-full items-center">
-            <ChevronDownIcon className="h-4 w-4 transition duration-200 group-data-[state=open]:rotate-180" />
+            <ChevronDownIcon className="h-4 w-4 transition duration-200 group-data-[state=open]:rotate-180 opacity-50" />
           </div>
         </Button>
       </PopoverTrigger>
@@ -228,7 +244,7 @@ export function VirtualizedCombobox({
         // https://www.radix-ui.com/primitives/docs/components/popover#content
         avoidCollisions={false}
         side="bottom"
-        className={cn("p-0")}
+        className={cn("p-0", "w-[--radix-popover-trigger-width]")}
         style={{ width: buttonWidth, minWidth: MIN_WIDTH, zIndex: 9999 }}
         align={buttonWidth < MIN_WIDTH ? "start" : "center"}
       >
@@ -254,7 +270,7 @@ type ControlledVirtualizedSearchbarProps<T extends FieldValues> = {
   options: Option[];
   label?: string;
   searchPlaceholder?: string;
-  onSelect?: (items: string | string[]) => void;
+  onSelect?: (items: Option[]) => void;
   className?: string;
   required?: boolean;
   isMulti?: boolean;

@@ -1492,3 +1492,7 @@ div[style="z-index: 1000001;"],
 [dir="rtl"] :is(.rizzui-checkbox-icon, .rizzui-switch-on-icon) {
   @apply -scale-x-100;
 }
+
+body {
+  pointer-events: auto !important;
+}

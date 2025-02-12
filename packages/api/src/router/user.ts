@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { z } from "zod";
+import bcryptjs from "bcryptjs";
+import isEmpty from "lodash/isEmpty"
 
 import type { TPermission } from "@repo/nosql/schema/auth";
 import { BmuModel, GroupModel, UserModel } from "@repo/nosql/schema/auth";
@@ -21,8 +23,13 @@ export const UpsertUserSchema = z.object({
     .optional(),
   name: z.string().min(1),
   email: z.string().email(),
+  password: z.string().optional(),
   role: z.string().min(1),
   status: z.string().min(1),
+  bmuNames: z.object({
+    label: z.string(),
+    value: z.string(),
+  }).array(),
 });
 
 export const userRouter = createTRPCRouter({
@@ -114,6 +121,8 @@ export const userRouter = createTRPCRouter({
           email: input.email,
           status: input.status,
           groups: [userGroup?._id],
+          ...(!isEmpty(input?.password) && { password: bcryptjs.hashSync(input?.password ?? '', 10)}),
+          bmus: input.bmuNames.map(bmu => bmu.value)
         },
         {
           new: true,

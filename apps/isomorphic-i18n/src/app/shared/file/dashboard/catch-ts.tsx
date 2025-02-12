@@ -327,16 +327,16 @@ function CustomYAxisTick({ x = 0, y = 0, payload = { value: 0 } }: TickProps) {
   );
 }
 
-const calculateTrendline = (data: { date: number; difference: number }[]) => {
+const calculateTrendline = (data: { date: number; difference?: number }[]) => {
   if (data.length === 0) return { slope: 0, intercept: 0 };
 
   // Calculate means
   const meanX = data.reduce((sum, point) => sum + point.date, 0) / data.length;
-  const meanY = data.reduce((sum, point) => sum + point.difference, 0) / data.length;
+  const meanY = data.reduce((sum, point) => sum + (point.difference ?? 0), 0) / data.length;
 
   // Calculate slope using covariance and variance
   const numerator = data.reduce((sum, point) => {
-    return sum + (point.date - meanX) * (point.difference - meanY);
+    return sum + (point.date - meanX) * ((point.difference ?? 0) - meanY);
   }, 0);
 
   const denominator = data.reduce((sum, point) => {
