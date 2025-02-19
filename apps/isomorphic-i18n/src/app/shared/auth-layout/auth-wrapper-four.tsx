@@ -59,7 +59,7 @@ export default function AuthWrapperFour({
 
   return (
     <div className="flex min-h-screen w-full flex-col justify-between">
-      <AuthHeader />
+      <AuthHeader lang={lang} />
 
       <div className="flex w-full flex-col justify-center px-5">
         <div
@@ -127,11 +127,11 @@ function AuthHeader({ lang }: { lang?: string }) {
         />
       </Link>
       <div className="flex items-center space-x-2 md:space-x-4">
-        <AuthNavLink href={routes.auth.signIn4}>
+        <AuthNavLink href={`/${lang}${routes.signIn}`}>
           <PiArrowLineRight className="h-4 w-4" />
           <span>{t('auth-login')}</span>
         </AuthNavLink>
-        <AuthNavLink href={routes.auth.signUp4}>
+        <AuthNavLink href={`/${lang}${routes.signIn}`}>
           <PiUserCirclePlus className="h-4 w-4" />
           <span>{t('auth-sign-up')}</span>
         </AuthNavLink>

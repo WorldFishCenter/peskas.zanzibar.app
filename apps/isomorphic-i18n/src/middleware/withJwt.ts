@@ -11,17 +11,16 @@ const withJwt: MiddlewareFactory = (next: NextMiddleware) => {
       .getAll()
       .filter((o) => o.name.indexOf(JWT_COOKIE_NAME) > -1)
 
-    //@ts-ignore
-    const loginPageMatches = /.*\/(?<page>(sign-in))$/gim.exec(
+    const pageMatches = /.*\/(?<page>(sign-in|forgot-password|reset-password))/gim.exec(
       request.nextUrl.pathname,
     )
-    if (loginPageMatches?.groups?.page &&
+    if (pageMatches?.groups?.page &&
       !cookieToken
     ) {
       return res
     }
 
-    if (loginPageMatches?.groups?.page &&
+    if (pageMatches?.groups?.page &&
       cookieToken
     ) {
       return NextResponse.redirect(

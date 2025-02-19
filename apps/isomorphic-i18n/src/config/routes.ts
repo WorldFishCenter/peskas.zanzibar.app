@@ -153,6 +153,7 @@ export const routes = {
     otp5: '/auth/otp-5',
   },
   signIn: '/signin',
+  forgotPassword: '/forgot-password',
   admin: {
     users: '/admin/users',
   }

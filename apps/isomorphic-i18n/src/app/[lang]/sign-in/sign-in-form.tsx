@@ -22,11 +22,10 @@ const initialValues: LoginType = {
   rememberMe: true,
 };
 
-export default function SignInForm() {
+export default function SignInForm({ lang }: { lang?: string }) {
   //TODO: why we need to reset it here
   const [loading, setLoading] = useState(false);
   const [loginErr, setLoginErr] = useState("");
-  const [changePassword, setChangePassword] = useState(false);
   const [reset] = useState({});
   const router = useRouter();
   const setBmus = useSetAtom(bmusAtom);
@@ -98,7 +97,7 @@ export default function SignInForm() {
                 className="[&>label>span]:font-medium"
               />
               <Link
-                href={routes.auth.forgotPassword1}
+                href={`/${lang}${routes.forgotPassword}`}
                 className="h-auto p-0 text-sm font-semibold text-blue underline transition-colors hover:text-gray-900 hover:no-underline"
               >
                 Forget Password?

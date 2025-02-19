@@ -6,7 +6,11 @@ export const metadata = {
   ...metaObject('Sign In'),
 };
 
-export default function SignIn() {
+export default function SignIn({
+  params: { lang },
+}: {
+  params: { lang?: string };
+}) {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gray-50">
       {/* Optional: Background Image with blur effect */}
@@ -29,8 +33,7 @@ export default function SignIn() {
             Enter your credentials to access your account
           </p>
         </div>
-
-        <SignInForm />
+        <SignInForm lang={lang}/>
       </div>
     </div>
   );
