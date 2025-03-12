@@ -1,12 +1,12 @@
 "use client";
 
-import { useTranslation } from "./client";
-import { USFlag } from "@components/icons/language/USFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
-import { useState } from "react";
+import { USFlag } from "@components/icons/language/USFlag";
 import { Listbox, Transition } from "@headlessui/react";
 import cn from "@utils/class-names";
+import { useState } from "react";
 import { PiCaretDownBold } from "react-icons/pi";
+import { useTranslation } from "./client";
 
 type LanguageMenuProps = {
   id: string;
@@ -60,12 +60,12 @@ export default function LanguageSwitcher({
           <div className="relative z-10">
             <Listbox.Button
               className={cn(
-                "relative flex h-[34px] w-14 items-center justify-center rounded-md p-1 shadow backdrop-blur-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30 focus-visible:ring-opacity-50 hover:enabled:text-gray-1000 active:enabled:translate-y-px dark:bg-gray-100",
+                "relative flex h-[34px] w-14 items-center justify-center p-1 shadow backdrop-blur-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30 focus-visible:ring-opacity-50 hover:enabled:text-gray-1000 active:enabled:translate-y-px bg-gray-100 rounded-full",
                 className
               )}
             >
               {variant === "text" ? (
-                <span className="block w-full truncate text-left uppercase underline underline-offset-4 rtl:text-right">
+                <span className="block w-full truncate text-center uppercase rtl:text-right font-medium">
                   {t(selectedItem?.value)}
                 </span>
               ) : (

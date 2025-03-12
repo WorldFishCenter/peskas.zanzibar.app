@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
-import { z } from "zod";
 import bcryptjs from "bcryptjs";
-import isEmpty from "lodash/isEmpty"
-import { encode, decode } from 'next-auth/jwt'
-import { createSecretKey } from 'node:crypto'
+import isEmpty from "lodash/isEmpty";
+import mongoose from "mongoose";
+import { decode, encode } from "next-auth/jwt";
+import { createSecretKey } from "node:crypto";
+import { z } from "zod";
 
 import type { TPermission } from "@repo/nosql/schema/auth";
 import { BmuModel, GroupModel, UserModel } from "@repo/nosql/schema/auth";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { MailService, Templates } from "../lib/mail";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const EXCLUDED_BMUS = ["Ngomeni"];
 
@@ -29,61 +29,58 @@ export const UpsertUserSchema = z.object({
   password: z.string().optional(),
   role: z.string().min(1),
   status: z.string().min(1),
-  bmuNames: z.object({
-    label: z.string(),
-    value: z.string(),
-  }).array(),
+  bmuNames: z.array(z.object({ value: z.string(), label: z.string() })),
 });
 
 export const GenerateResetPasswordTokenSchema = z.object({
-  email: z.string()
-    .min(1)
-    .email(),
+  email: z.string().min(1).email(),
 });
 
 const messages = {
-  passwordRequired: 'Password is required',
-  passwordLengthMin: 'Password must be at least 6 characters',
-  passwordOneUppercase: 'The Password must contain at least one uppercase character',
-  passwordOneLowercase: 'The Password must contain at least one lowercase character',
-  passwordOneNumeric: 'The password must contain at least one numerical character.',
-} as const
+  passwordRequired: "Password is required",
+  passwordLengthMin: "Password must be at least 6 characters",
+  passwordOneUppercase:
+    "The Password must contain at least one uppercase character",
+  passwordOneLowercase:
+    "The Password must contain at least one lowercase character",
+  passwordOneNumeric:
+    "The password must contain at least one numerical character.",
+} as const;
 
-export const ResetPasswordSchema = z.object({
-  newPassword: z
-    .string()
-    .min(1, { message: messages.passwordRequired })
-    .min(6, { message: messages.passwordLengthMin })
-    .regex(new RegExp('.*[A-Z].*'), {
-      message: messages.passwordOneUppercase,
-    })
-    .regex(new RegExp('.*[a-z].*'), {
-      message: messages.passwordOneLowercase,
-    })
-    .regex(new RegExp('.*\\d.*'), { message: messages.passwordOneNumeric })    
-  ,
-  confirmPassword: z
-    .string()
-    .min(1, { message: messages.passwordRequired })
-    .min(6, { message: messages.passwordLengthMin })
-    .regex(new RegExp('.*[A-Z].*'), {
-      message: messages.passwordOneUppercase,
-    })
-    .regex(new RegExp('.*[a-z].*'), {
-      message: messages.passwordOneLowercase,
-    })
-    .regex(new RegExp('.*\\d.*'), { message: messages.passwordOneNumeric })
-  ,
-  token: z.string().min(1),
-})
-.refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+export const ResetPasswordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(1, { message: messages.passwordRequired })
+      .min(6, { message: messages.passwordLengthMin })
+      .regex(new RegExp(".*[A-Z].*"), {
+        message: messages.passwordOneUppercase,
+      })
+      .regex(new RegExp(".*[a-z].*"), {
+        message: messages.passwordOneLowercase,
+      })
+      .regex(new RegExp(".*\\d.*"), { message: messages.passwordOneNumeric }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: messages.passwordRequired })
+      .min(6, { message: messages.passwordLengthMin })
+      .regex(new RegExp(".*[A-Z].*"), {
+        message: messages.passwordOneUppercase,
+      })
+      .regex(new RegExp(".*[a-z].*"), {
+        message: messages.passwordOneLowercase,
+      })
+      .regex(new RegExp(".*\\d.*"), { message: messages.passwordOneNumeric }),
+    token: z.string().min(1),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
-const secretKey = createSecretKey(process.env.NEXTAUTH_SECRET ?? '', 'utf-8');
+const secretKey = createSecretKey(process.env.NEXTAUTH_SECRET ?? "", "utf-8");
 
-const now = () => (Date.now() / 1000) | 0
+const now = () => (Date.now() / 1000) | 0;
 
 export const userRouter = createTRPCRouter({
   all: protectedProcedure.query(async ({ ctx }) => {
@@ -165,34 +162,38 @@ export const userRouter = createTRPCRouter({
     .input(UpsertUserSchema)
     .mutation(async ({ input }) => {
       const userGroup = await GroupModel.findOne({ name: input.role });
-      await UserModel.findOneAndUpdate(
-        {
-          _id: input._id ?? new mongoose.Types.ObjectId(),
-        },
+      const bmuGroups = await BmuModel.find({
+        BMU: { $in: input.bmuNames.map((bmu) => bmu.label) },
+      });
+      const findOne = input._id ? { _id: input._id } : { email: input.email };
+      const _user = await UserModel.findOneAndUpdate(
+        findOne,
         {
           name: input.name,
           email: input.email,
+          password: input.password
+            ? await bcryptjs.hash(input.password, 12)
+            : undefined,
           status: input.status,
           groups: [userGroup?._id],
-          ...(!isEmpty(input?.password) && { password: bcryptjs.hashSync(input?.password ?? '', 10)}),
-          bmus: input.bmuNames.map(bmu => bmu.value)
+          bmus: bmuGroups.map((bmu) => bmu._id),
+          ...(!isEmpty(input?.password) && {
+            password: bcryptjs.hashSync(input?.password ?? "", 10),
+          }),
         },
-        {
-          new: true,
-          upsert: true,
-        }
+        { new: true, upsert: true }
       );
     }),
   generateResetPasswordToken: publicProcedure
     .input(GenerateResetPasswordTokenSchema)
     .mutation(async ({ input }) => {
       const user = await UserModel.findOne({ email: input.email });
-      if (!user) throw new Error("User doesn't exist.")
+      if (!user) throw new Error("User doesn't exist.");
       const reset_token = await encode({
         token: { id: user._id.toString() },
-        secret: process.env.NEXTAUTH_SECRET ?? '',
-        maxAge:  60 * 60 // 1 hr
-      })
+        secret: process.env.NEXTAUTH_SECRET ?? "",
+        maxAge: 60 * 60, // 1 hr
+      });
 
       /**
        * TODO: Load lang dynamically
@@ -201,26 +202,27 @@ export const userRouter = createTRPCRouter({
       await mail.sendTemplateMessages(Templates.resetPassword, {
         to: user.email,
         subject: "Reset your password",
-        resetLink: `${process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3001'}/en/reset-password/${reset_token}`,
+        resetLink: `${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3001"}/en/reset-password/${reset_token}`,
       });
-
     }),
   resetPassword: publicProcedure
     .input(ResetPasswordSchema)
     .mutation(async ({ input }) => {
       try {
-        const payload = await decode({ token: input.token, secret: process.env.NEXTAUTH_SECRET ?? ''})
+        const payload = await decode({
+          token: input.token,
+          secret: process.env.NEXTAUTH_SECRET ?? "",
+        });
         await UserModel.findOneAndUpdate(
           {
             _id: new mongoose.Types.ObjectId(payload?.id as string),
           },
           {
-            password: bcryptjs.hashSync(input.newPassword ?? '', 10)
-          },
+            password: bcryptjs.hashSync(input.newPassword ?? "", 10),
+          }
         );
-
-      } catch(e) {
-        throw new Error("Invalid token.")
+      } catch (e) {
+        throw new Error("Invalid token.");
       }
-    }),    
+    }),
 });
