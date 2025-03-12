@@ -51,6 +51,11 @@ const nextConfig = {
   },
   reactStrictMode: true,
   transpilePackages: ["@isomorphic/core"],
+  webpack: (config, { webpack }) => {
+    // https://github.com/handlebars-lang/handlebars.js/issues/1174#issuecomment-229918935
+    config.resolve.alias.handlebars = 'handlebars/dist/handlebars.min.js'
+    return config
+  },
 };
 
 export default nextConfig;
