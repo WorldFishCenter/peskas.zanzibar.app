@@ -48,10 +48,10 @@ const VirtualizedCommand = ({
 
   const sortedFilteredOptions = useMemo(() => {
     return filteredOptions.sort((a, b) => {
-      if (selectedOptions.find(opt => a.value === opt.value)) {
+      if (selectedOptions.find((opt) => a.value === opt.value)) {
         return -1;
       }
-      if (selectedOptions.find(opt => b.value === opt.value)) {
+      if (selectedOptions.find((opt) => b.value === opt.value)) {
         return 1;
       }
       return 0;
@@ -84,12 +84,10 @@ const VirtualizedCommand = ({
   return (
     <Command shouldFilter={false} onKeyDown={handleKeyDown}>
       {label ? <Label>{label}</Label> : null}
-      <CommandInput 
-        onValueChange={handleSearch} 
+      <CommandInput
+        onValueChange={handleSearch}
         placeholder={placeholder}
-        className={cn(
-          "border-0"
-        )}
+        className={cn("border-0")}
       />
       <CommandEmpty>No item found.</CommandEmpty>
       <CommandGroup
@@ -127,9 +125,12 @@ const VirtualizedCommand = ({
             >
               <Check
                 className={cn("mr-2 h-4 w-4 opacity-0", {
-                  "opacity-100": selectedOptions.find(opt => 
-                    (opt.value === sortedFilteredOptions[virtualOption.index]?.value) 
-                  ) ?? "",
+                  "opacity-100":
+                    selectedOptions.find(
+                      (opt) =>
+                        opt.value ===
+                        sortedFilteredOptions[virtualOption.index]?.value
+                    ) ?? "",
                 })}
               />
               <div className="line-clamp-1 flex flex-1 items-center justify-between leading-4">
@@ -169,22 +170,24 @@ export function VirtualizedCombobox({
   isMulti,
 }: VirtualizedComboboxProps) {
   const [open, setOpen] = useState<boolean>(false);
-  const [selectedOptions, setSelectedOptions] = useState<Option[]>(
-    value ?? []
-  );
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>(value ?? []);
   const [buttonWidth, setButtonWidth] = useState(0);
 
   useEffect(() => {
-    if (!value) return
+    if (!value) return;
 
-    setSelectedOptions(value)
+    setSelectedOptions(value);
   }, [value]);
 
   const handleSelect = (currentValue: Option) => {
     let newOptions: Option[] = [];
     if (isMulti) {
-      newOptions = selectedOptions.find(opt => opt.value === currentValue.value)
-        ? selectedOptions.filter((option) => option.value !== currentValue.value)
+      newOptions = selectedOptions.find(
+        (opt) => opt.value === currentValue.value
+      )
+        ? selectedOptions.filter(
+            (option) => option.value !== currentValue.value
+          )
         : [...selectedOptions, currentValue];
       onSelect?.(newOptions);
     } else {
@@ -205,11 +208,11 @@ export function VirtualizedCombobox({
           aria-expanded={open}
           className={cn(
             "relative flex w-full rounded-md border border-gray-300 bg-white px-3 pb-1 pr-8 text-left ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
-            label ? 'h-12 md:h-14 md:pt-6 pt-5 text-sm' : 'h-10'
+            label ? "h-12 md:h-14 md:pt-6 pt-5 text-sm" : "h-10"
           )}
           ref={(element) => setButtonWidth(element?.offsetWidth ?? 0)}
         >
-          {label &&
+          {label && (
             <label
               className={cn(
                 "absolute left-0 top-0 px-3 pt-1 text-sm font-semibold tracking-wide text-primary md:pt-2"
@@ -217,12 +220,9 @@ export function VirtualizedCombobox({
             >
               {label}
               {required ? <span className="text-red-500">*</span> : null}
-            </label>          
-          }
-          <div className={cn(
-            "w-full text-left leading-3",
-            label && 'text-xs'
-          )}>
+            </label>
+          )}
+          <div className={cn("w-full text-left leading-3", label && "text-xs")}>
             {selectedOptions.length === 0 ? (
               searchPlaceholder
             ) : selectedOptions.length === 1 ? (

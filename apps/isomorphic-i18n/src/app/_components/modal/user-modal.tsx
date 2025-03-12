@@ -53,9 +53,14 @@ export default function UserModal({
       _id: user?._id?.toString() ?? undefined,
       name: user?.name ?? "",
       email: user?.email ?? "",
+      password: "",
       role: user?.role ?? "",
       status: user?.status ?? "active",
-      bmuNames: user?.bmus?.map(bmu => ({value: bmu._id.toString(), label: bmu.BMU})) ?? [],
+      bmuNames:
+        user?.bmus?.map((bmu) => ({
+          value: bmu._id.toString(),
+          label: bmu.BMU,
+        })) ?? [],
     },
   });
 
@@ -64,19 +69,21 @@ export default function UserModal({
       _id: user?._id?.toString() ?? undefined,
       name: user?.name ?? "",
       email: user?.email ?? "",
+      password: "",
       role: user?.role ?? "",
       status: user?.status ?? "active",
-      bmuNames: user?.bmus?.map(bmu => ({value: bmu._id.toString(), label: bmu.BMU})) ?? [],
+      bmuNames:
+        user?.bmus?.map((bmu) => ({
+          value: bmu._id.toString(),
+          label: bmu.BMU,
+        })) ?? [],
     });
   }, [form, user]);
 
   const upsertUser = api.user.upsert.useMutation({
     onSuccess: async () => {
       await utils.user.invalidate();
-      setModal({
-        open: false,
-        type: "",
-      });
+      setModal({ open: false, type: "" });
       toast.success("Successfully updated user");
       router.refresh();
     },
@@ -113,6 +120,13 @@ export default function UserModal({
           <form
             onSubmit={form.handleSubmit(
               (data) => {
+                if (!data._id && !data.password) {
+                  form.setError("password", {
+                    message: "Password is required for new users",
+                  });
+                  toast.error("Password is required for new users");
+                  return;
+                }
                 upsertUser.mutate(data);
               },
               (error) => {
@@ -122,7 +136,7 @@ export default function UserModal({
             )}
             className="space-y-4"
           >
-            {data?.id &&
+            {data?.id && (
               <FormField
                 control={form.control}
                 name="_id"
@@ -130,17 +144,18 @@ export default function UserModal({
                   <FormItem>
                     <FormLabel>ID</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="ID" 
-                        disabled 
-                        {...field} 
+                      <Input
+                        placeholder="ID"
+                        disabled
+                        {...field}
+                        className="bg-background"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            }
+            )}
 
             <FormField
               control={form.control}
@@ -150,10 +165,10 @@ export default function UserModal({
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-white border-none"
                       placeholder="Name"
                       {...field}
                       value={field.value ?? ""}
+                      className="bg-background"
                     />
                   </FormControl>
                   <FormMessage />
@@ -169,10 +184,10 @@ export default function UserModal({
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-white border-none"   
-                      placeholder="Email" 
+                      placeholder="Email"
                       type="email"
-                      {...field} 
+                      {...field}
+                      className="bg-background"
                     />
                   </FormControl>
                   <FormMessage />
@@ -188,9 +203,10 @@ export default function UserModal({
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-white border-none"   
-                      placeholder="Password" 
-                      {...field} 
+                      placeholder="Password"
+                      type="password"
+                      {...field}
+                      className="bg-background border-none"
                     />
                   </FormControl>
                   <FormMessage />
@@ -236,7 +252,10 @@ export default function UserModal({
                   <div className={cn("flex flex-col gap-y-2")}>
                     <FormLabel>BMUs</FormLabel>
                     <VirtualizedCombobox
-                      value={field.value}
+                      value={field.value.map((bmu) => ({
+                        value: bmu.value,
+                        label: bmu.label,
+                      }))}
                       options={
                         bmus?.map((bmu) => ({
                           value: bmu._id.toString(),

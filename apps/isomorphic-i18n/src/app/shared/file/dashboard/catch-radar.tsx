@@ -166,7 +166,7 @@ export default function CatchRadarChart({
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { data: meanCatch, isLoading: isFetching } =
+  const { data: meanCatch, isLoading: isFetching, error: queryError } =
     api.aggregatedCatch.meanCatchRadar.useQuery(
       { bmus, metric: selectedMetric },
       {
@@ -176,21 +176,29 @@ export default function CatchRadarChart({
       }
     );
 
+  // Handle query errors
   useEffect(() => {
-    if (isInitialLoad) {
-      setLoading(true);
+    if (queryError) {
+      console.error('Error fetching radar data:', queryError);
+      setError('Failed to fetch data');
+      setLoading(false);
+    }
+  }, [queryError]);
+
+  useEffect(() => {
+    // Set loading state when dependencies change
+    setLoading(true);
+    setError(null);
+
+    // Don't process data if we're still fetching or if data is not available
+    if (isFetching || !meanCatch) {
+      return;
     }
 
     const processData = async () => {
-      if (!meanCatch) {
-        console.warn("meanCatch is undefined");
-        return;
-      }
-
       try {
         if (!Array.isArray(meanCatch) || meanCatch.length === 0) {
           setError("No data available");
-          console.warn("meanCatch is not an array or is empty:", meanCatch);
           return;
         }
 
@@ -202,6 +210,12 @@ export default function CatchRadarChart({
           return sites;
         }, new Set<string>());
         const uniqueSites: string[] = Array.from(uniqueSitesSet);
+
+        // If no sites found, show error
+        if (uniqueSites.length === 0) {
+          setError("No BMU data available");
+          return;
+        }
 
         const newSiteColors = uniqueSites.reduce<Record<string, string>>(
           (acc: Record<string, string>, site: string, index: number) => {
@@ -282,17 +296,17 @@ export default function CatchRadarChart({
         setError("Error processing data");
       } finally {
         setLoading(false);
-        if (isInitialLoad) setIsInitialLoad(false);
       }
     };
 
     processData();
-  }, [meanCatch, selectedMetric, isInitialLoad, activeTab, bmu]);
+  }, [meanCatch, selectedMetric, activeTab, bmu, isFetching]);
 
-  // Handle bmus changes
+  // Remove the separate bmus effect since we handle loading in the main effect
   useEffect(() => {
-    if (bmus) {
-      setLoading(true);
+    if (!bmus || bmus.length === 0) {
+      setError("No BMUs selected");
+      setLoading(false);
     }
   }, [bmus]);
 
@@ -336,17 +350,21 @@ export default function CatchRadarChart({
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
             data={data}
-            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            className="w-full h-full"
           >
-            <PolarGrid gridType="polygon" />
+            <PolarGrid gridType="polygon" strokeWidth={0.8} />
             <PolarAngleAxis
               dataKey="month"
               tick={{ fill: "#666", fontSize: 12 }}
+              tickLine={false}
             />
             <PolarRadiusAxis
               angle={90}
               domain={activeTab === 'differenced' ? ['auto', 'auto'] : [0, 'auto']}
               tick={{ fill: "#666" }}
+              tickCount={5}
+              axisLine={false}
             />
             {Object.entries(siteColors).map(([site, color]) => {
               // In differenced mode, only show the selected BMU

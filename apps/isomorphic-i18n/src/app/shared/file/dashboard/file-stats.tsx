@@ -3,8 +3,6 @@
 import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
-import isEmpty from "lodash/isEmpty";
-
 import { Button, Text } from "rizzui";
 import cn from "@utils/class-names";
 import { useScrollableSlider } from "@hooks/use-scrollable-slider";
@@ -15,7 +13,8 @@ import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { bmusAtom } from "@/app/components/filter-selector";
-
+import { useSession } from "next-auth/react";
+import WidgetCard from "@components/cards/widget-card";
 
 type FileStatsType = {
   className?: string;
@@ -23,127 +22,174 @@ type FileStatsType = {
   bmu?: string;
 };
 
+interface ChartPoint {
+  day: string;
+  reference: number;
+  others?: number;
+}
+
 interface StatData {
   id: string;
   title: string;
   metric: string;
-  increased: boolean;
-  decreased: boolean;
-  percentage: string;
-  fill: string;
-  chart: Array<{
-    day: string;
-    sale: number;
-  }>;
+  increased?: boolean;
+  decreased?: boolean;
+  percentage?: string;
+  chart: ChartPoint[];
 }
 
-interface StatsData {
-  current: number;
-  percentage: number;
-  trend: Array<{ day: string; sale: number }>;
+interface StatsResponse {
+  effort: {
+    current: number;
+    percentage: number;
+    trend: Array<{ day: string; sale: number }>;
+  };
+  cpue: {
+    current: number;
+    percentage: number;
+    trend: Array<{ day: string; sale: number }>;
+  };
+  cpua: {
+    current: number;
+    percentage: number;
+    trend: Array<{ day: string; sale: number }>;
+  };
+  rpue: {
+    current: number;
+    percentage: number;
+    trend: Array<{ day: string; sale: number }>;
+  };
+  rpua: {
+    current: number;
+    percentage: number;
+    trend: Array<{ day: string; sale: number }>;
+  };
 }
 
-interface MonthlyStats {
-  effort: StatsData;
-  cpue: StatsData;
-  cpua: StatsData;
-  rpue: StatsData;
-  rpua: StatsData;
-}
-
-const CustomTooltip = ({ active, payload, onHover }: any) => {
-  if (active && payload && payload.length) {
-    const value = payload[0].value;
-    const month = payload[0].payload.day;
-
-    if (onHover) {
-      onHover(month);
-    }
-
-    return (
-      <div className="bg-white p-2 border border-gray-200 shadow-lg rounded-lg">
-        <p className="text-xs font-medium">
-          {Math.round(value).toLocaleString()} ({month})
-        </p>
-      </div>
-    );
-  }
-  return null;
+const LoadingState = () => {
+  return (
+    <MetricCard
+      title=""
+      metric=""
+      rounded="lg"
+      chart={
+        <div className="h-24 w-24 @[16.25rem]:h-28 @[16.25rem]:w-32 @xs:h-32 @xs:w-36 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
+            <span className="text-sm text-gray-500">Loading chart...</span>
+          </div>
+        </div>
+      }
+      chartClassName="flex flex-col w-auto h-auto text-center justify-center"
+      className="min-w-[292px] w-full max-w-full flex flex-col items-center justify-center"
+    />
+  );
 };
 
-export function FileStatGrid({
-  className,
-  lang,
-}: {
-  className?: string;
-  lang?: string;
-}) {
+export function FileStatGrid({ className, lang, bmu }: { className?: string; lang?: string; bmu?: string }) {
   const { t } = useTranslation(lang!, "common");
   const [statsData, setStatsData] = useState<StatData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredPercentages, setHoveredPercentages] = useState<{[key: string]: {percentage: string, increased: boolean, monthComparison: string}}>({});
   const [bmus] = useAtom(bmusAtom);
-  const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
-  const { data: monthlyData } = api.monthlyStats.allStats.useQuery({ bmus });
+  const { data: session } = useSession();
+
+  // Determine if the user is part of the CIA group or Admin group
+  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
+  const isAdminUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'Admin');
+  
+  // For admin users, we want all BMUs data together
+  // For CIA users, we only need their BMU's data
+  const { data: statsData1 } = api.monthlyStats.allStats.useQuery({ 
+    bmus: isAdminUser ? bmus : (bmu ? [bmu] : [])
+  }) as { data: StatsResponse | undefined };
+  
+  // Only fetch other BMUs data if not a CIA user and not an admin user
+  const { data: statsData2 } = api.monthlyStats.allStats.useQuery({ 
+    bmus: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
+  }) as { data: StatsResponse | undefined };
 
   useEffect(() => {
-    if (!monthlyData?.effort) {
-      setLoading(false);
+    if (!statsData1) {
+      setLoading(true);
       return;
     }
 
     try {
-      const transformedStats: StatData[] = [
-        {
-          id: "1",
-          title: t("text-metrics-effort"),
-          metric: Math.round(monthlyData.effort.current).toLocaleString(),
-          increased: monthlyData.effort.percentage > 0,
-          decreased: monthlyData.effort.percentage < 0,
-          percentage: monthlyData.effort.percentage > 0 ? `+${Math.round(monthlyData.effort.percentage)}%` : `${Math.round(monthlyData.effort.percentage)}%`,
-          fill: "#0c526e",
-          chart: monthlyData.effort.trend,
-        },
-        {
-          id: "2",
-          title: t("text-metrics-catch-rate"),
-          metric: Math.round(monthlyData.cpue.current).toLocaleString(),
-          increased: monthlyData.cpue.percentage > 0,
-          decreased: monthlyData.cpue.percentage < 0,
-          percentage: monthlyData.cpue.percentage > 0 ? `+${Math.round(monthlyData.cpue.percentage)}%` : `${Math.round(monthlyData.cpue.percentage)}%`,
-          fill: "#0c526e",
-          chart: monthlyData.cpue.trend,
-        },
-        {
-          id: "3",
-          title: t("text-metrics-catch-density"),
-          metric: Math.round(monthlyData.cpua.current).toLocaleString(),
-          increased: monthlyData.cpua.percentage > 0,
-          decreased: monthlyData.cpua.percentage < 0,
-          percentage: monthlyData.cpua.percentage > 0 ? `+${Math.round(monthlyData.cpua.percentage)}%` : `${Math.round(monthlyData.cpua.percentage)}%`,
-          fill: "#0c526e",
-          chart: monthlyData.cpua.trend,
-        },
-        {
-          id: "4",
-          title: t("text-metrics-fisher-revenue"),
-          metric: Math.round(monthlyData.rpue.current).toLocaleString(),
-          increased: monthlyData.rpue.percentage > 0,
-          decreased: monthlyData.rpue.percentage < 0,
-          percentage: monthlyData.rpue.percentage > 0 ? `+${Math.round(monthlyData.rpue.percentage)}%` : `${Math.round(monthlyData.rpue.percentage)}%`,
-          fill: "#0c526e",
-          chart: monthlyData.rpue.trend,
-        },
-        {
-          id: "5",
-          title: t("text-metrics-area-revenue"),
-          metric: Math.round(monthlyData.rpua.current).toLocaleString(),
-          increased: monthlyData.rpua.percentage > 0,
-          decreased: monthlyData.rpua.percentage < 0,
-          percentage: monthlyData.rpua.percentage > 0 ? `+${Math.round(monthlyData.rpua.percentage)}%` : `${Math.round(monthlyData.rpua.percentage)}%`,
-          fill: "#0c526e",
-          chart: monthlyData.rpua.trend,
+      const metrics = [
+        { id: 'effort', field: 'effort', title: t('text-metrics-effort') },
+        { id: 'catch-rate', field: 'cpue', title: t('text-metrics-catch-rate') },
+        { id: 'catch-density', field: 'cpua', title: t('text-metrics-catch-density') },
+        { id: 'fisher-revenue', field: 'rpue', title: t('text-metrics-fisher-revenue') },
+        { id: 'area-revenue', field: 'rpua', title: t('text-metrics-area-revenue') }
+      ] as const;
+
+      const getMonthName = (dateStr: string) => {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length < 2) return dateStr; // Already a month name
+        const year = parts[0];
+        const month = parts[1];
+        const date = new Date(parseInt(year), parseInt(month) - 1);
+        return date.toLocaleString('default', { month: 'short' });
+      };
+      
+      const transformedStats = metrics.map(metric => {
+        const referenceMetric = statsData1[metric.field];
+        const otherBmusMetric = statsData2?.[metric.field];
+        const trend = referenceMetric.trend;
+
+        // Calculate default percentage change between last two months
+        let defaultPercentage = '';
+        let defaultIncreased = false;
+        let monthComparison = '';
+        if (trend.length >= 2) {
+          const lastValue = trend[trend.length - 1].sale;
+          const previousValue = trend[trend.length - 2].sale;
+          const lastMonth = getMonthName(trend[trend.length - 1].day);
+          const prevMonth = getMonthName(trend[trend.length - 2].day);
+          monthComparison = `${prevMonth} → ${lastMonth}`;
+          
+          if (previousValue && previousValue !== 0) {
+            const change = ((lastValue - previousValue) / previousValue) * 100;
+            if (!isNaN(change)) {
+              defaultPercentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
+              defaultIncreased = change > 0;
+            }
+
+          }
         }
-      ];
+
+        // Set default percentage in hoveredPercentages
+        if (defaultPercentage) {
+          setHoveredPercentages(prev => ({
+            ...prev,
+            [metric.id]: {
+              percentage: defaultPercentage,
+              increased: defaultIncreased,
+              monthComparison
+            }
+          }));
+        }
+
+        // Transform the trend data
+        const chartData = trend.map((point, index) => ({
+          day: point.day,
+          reference: point.sale,
+          // Only include others for non-admin users
+          others: !isAdminUser && !isCiaUser && otherBmusMetric ? otherBmusMetric.trend[index]?.sale || 0 : undefined,
+          index,
+          data: trend,
+          metricId: metric.id
+        }));
+
+        return {
+          id: metric.id,
+          title: metric.title,
+          metric: Math.round(referenceMetric.current).toLocaleString(),
+          chart: chartData
+        };
+      });
 
       setStatsData(transformedStats);
     } catch (error) {
@@ -151,97 +197,162 @@ export function FileStatGrid({
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, bmus, t]);
+  }, [statsData1, statsData2, t, isCiaUser, isAdminUser]);
 
-  if (loading) return <div>{t("text-loading-stats")}</div>;
-  if (!statsData.length) return <div>{t("text-loading-chart")}</div>;
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white px-2 py-1.5 border border-gray-200 shadow-lg rounded-lg min-w-[150px]">
+          <div className="flex items-center gap-4">
+            <p className="text-xs font-medium text-gray-700">{payload[0].payload.day}</p>
+            <div className="flex items-center gap-3">
+              {payload.map((entry: any) => {
+                if (typeof entry.value !== 'number') return null;
+                return (
+                  <div key={entry.dataKey} className="flex items-center gap-1.5">
+                    <div 
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <p className="text-xs font-medium text-gray-600 whitespace-nowrap">
+                      {entry.name}: {Math.round(entry.value).toLocaleString()}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const handleMouseMove = (state: any) => {
+    if (state.activePayload && state.activePayload.length > 0) {
+      const entry = state.activePayload[0];
+      const currentIndex = entry.payload.index;
+      const data = entry.payload.data;
+      
+      if (currentIndex > 0 && data) {
+        const getMonthName = (dateStr: string) => {
+          if (!dateStr) return '';
+          const parts = dateStr.split('-');
+          if (parts.length < 2) return dateStr; // Already a month name
+          const year = parts[0];
+          const month = parts[1];
+          const date = new Date(parseInt(year), parseInt(month) - 1);
+          return date.toLocaleString('default', { month: 'short' });
+        };
+        
+        const currentMonth = getMonthName(data[currentIndex].day);
+        const prevMonth = getMonthName(data[currentIndex - 1].day);
+        const monthComparison = `${prevMonth} → ${currentMonth}`;
+        
+        const previousValue = data[currentIndex - 1].sale;
+        if (previousValue && previousValue !== 0) {
+          const change = ((entry.value - previousValue) / previousValue) * 100;
+          if (!isNaN(change)) {
+            const percentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
+            setHoveredPercentages(prev => ({
+              ...prev,
+              [entry.payload.metricId]: {
+                percentage,
+                increased: change > 0,
+                monthComparison
+              }
+            }));
+          }
+        }
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Don't clear percentages on mouse leave anymore
+  };
+
+  if (loading) return <LoadingState />;
+  if (!statsData.length) return <LoadingState />;
 
   return (
     <>
-      {statsData.map((stat) => {
-        const currentIdx = hoveredMonth
-          ? stat.chart.findIndex((d) => d.day === hoveredMonth)
-          : stat.chart.length - 1;
-
-        const currentMonth = stat.chart[currentIdx]?.day;
-        const currentValue = stat.chart[currentIdx]?.sale || 0;
-        const previousMonth = stat.chart[currentIdx - 1]?.day;
-        const previousValue = stat.chart[currentIdx - 1]?.sale || 0;
-        const percentChange = previousValue
-          ? ((currentValue - previousValue) / previousValue) * 100
-          : 0;
-        const isIncrease = percentChange > 0;
-
-        return (
-          <MetricCard
-            key={stat.title + stat.id}
-            title={t(stat.title)}
-            metric={stat.metric}
-            rounded="lg"
-            metricClassName="text-2xl mt-1"
-            info={
-              <Text className="mt-4 flex items-center text-sm">
-                <Text
-                  as="span"
-                  className={cn(
-                    "me-2 inline-flex items-center font-medium",
-                    isIncrease ? "text-green-500" : "text-red-500"
-                  )}
-                  >
-                  {isIncrease ? (
-                    <TrendingUpIcon className="me-1 h-4 w-4" />
-                  ) : (
-                    <TrendingDownIcon className="me-1 h-4 w-4" />
-                  )}
-                  {isIncrease ? "+" : ""}
-                  {Math.abs(percentChange).toFixed(2)}%
-                </Text>
-                {previousMonth && currentMonth && (
-                  <span
+      {statsData.map((stat) => (
+        <MetricCard
+          key={stat.id}
+          title={stat.title}
+          metric={stat.metric}
+          rounded="lg"
+          metricClassName="text-2xl mt-1"
+          info={
+            <div className="h-[40px] flex items-center">
+              {hoveredPercentages[stat.id] ? (
+                <Text className="flex items-center text-sm">
+                  <Text
+                    as="span"
                     className={cn(
-                      "text-xs",
-                      isIncrease ? "text-green-500" : "text-red-500"
+                      "me-2 inline-flex items-center font-medium",
+                      hoveredPercentages[stat.id].increased ? "text-green-500" : "text-red-500"
                     )}
                   >
-                    {previousMonth} → {currentMonth}
-                  </span>
-                )}
-              </Text>
-
-            }
-            chart={
-              <div className="h-12 w-20 @[16.25rem]:h-16 @[16.25rem]:w-24 @xs:h-20 @xs:w-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart barSize={6} barGap={5} data={stat.chart}>
+                    {hoveredPercentages[stat.id].increased ? (
+                      <TrendingUpIcon className="me-1 h-4 w-4" />
+                    ) : (
+                      <TrendingDownIcon className="me-1 h-4 w-4" />
+                    )}
+                    {hoveredPercentages[stat.id].percentage}
+                  </Text>
+                  <span className="text-xs text-gray-500">{hoveredPercentages[stat.id].monthComparison}</span>
+                </Text>
+              ) : null}
+            </div>
+          }
+          chart={
+            <div className="h-24 w-24 @[16.25rem]:h-28 @[16.25rem]:w-32 @xs:h-32 @xs:w-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={stat.chart}
+                  margin={{ top: 25, right: 2, bottom: 0, left: 2 }}
+                  barSize={6}
+                  barGap={2}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <Bar
+                    dataKey="reference"
+                    fill="#fc3468"
+                    name={isAdminUser ? "All BMUs" : (bmu || "Reference BMU")}
+                    radius={[2, 2, 0, 0]}
+                  />
+                  {(!isCiaUser && !isAdminUser) && (
                     <Bar
-                      dataKey="sale"
-                      fill={stat.fill}
+                      dataKey="others"
+                      fill="rgba(178, 216, 216, 0.75)"
+                      name="Other BMUs"
                       radius={[2, 2, 0, 0]}
                     />
-                    <Tooltip
-                      content={(props) => (
-                        <CustomTooltip {...props} onHover={setHoveredMonth} />
-                      )}
-                      cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            }
-            chartClassName="flex flex-col w-auto h-auto text-center"
-            className={cn(
-              "@container @7xl:text-[15px] [&>div]:items-end",
-              "w-full max-w-full",
-              className
-            )}
-          />
-        );
-      })}
+                  )}
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={false}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          }
+          chartClassName="flex flex-col w-auto h-auto text-center"
+          className={cn(
+            "@container @7xl:text-[15px] [&>div]:items-end",
+            "w-full max-w-full",
+            className
+          )}
+        />
+      ))}
     </>
   );
 }
 
-export default function FileStats({ className, lang }: FileStatsType) {
+export default function FileStats({ className, lang, bmu }: FileStatsType) {
   const {
     sliderEl,
     sliderPrevBtn,
@@ -251,12 +362,7 @@ export default function FileStats({ className, lang }: FileStatsType) {
   } = useScrollableSlider();
 
   return (
-    <div
-      className={cn(
-        "relative flex w-auto items-center overflow-hidden",
-        className
-      )}
-    >
+    <div className={cn("relative flex w-auto items-center overflow-hidden", className)}>
       <Button
         title="Prev"
         variant="text"
@@ -271,7 +377,7 @@ export default function FileStats({ className, lang }: FileStatsType) {
           ref={sliderEl}
           className="custom-scrollbar-x grid grid-flow-col gap-5 overflow-x-auto scroll-smooth 2xl:gap-6 3xl:gap-8"
         >
-          <FileStatGrid className="min-w-[292px]" lang={lang} />
+          <FileStatGrid className="min-w-[292px]" lang={lang} bmu={bmu} />
         </div>
       </div>
       <Button

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { string, z } from "zod";
+import { z } from "zod";
 
 // form zod validation schema
 export const UpsertUserSchema = z.object({
@@ -14,10 +14,7 @@ export const UpsertUserSchema = z.object({
   password: z.string().optional(),
   role: z.string().min(1),
   status: z.string().min(1),
-  bmuNames: z.object({
-    label: z.string(),
-    value: z.string(),
-  }).array(),
+  bmuNames: z.array(z.object({ value: z.string(), label: z.string() })),
 });
 
 // generate form types from zod validation schema
