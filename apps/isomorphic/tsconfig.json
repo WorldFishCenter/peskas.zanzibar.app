@@ -21,7 +21,7 @@
       "@ui/*": ["../../packages/isomorphic-core/src/ui/*"],
       "@components/*": ["../../packages/isomorphic-core/src/components/*"],
       "@hooks/*": ["../../packages/isomorphic-core/src/hooks/*"],
-      "@utils/*": ["../../packages/isomorphic-core/src/utils/*"],
+      "@utils/*": ["../../packages/isomorphic-core/src/utils/*"]
     },
     "plugins": [
       {

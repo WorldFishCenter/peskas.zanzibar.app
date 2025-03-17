@@ -1,4 +1,5 @@
 import type { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import type {
   Adapter,
   AdapterAccount,
@@ -6,7 +7,6 @@ import type {
   AdapterUser,
   VerificationToken,
 } from "next-auth/adapters";
-import mongoose from "mongoose";
 
 import getDb from "@repo/nosql";
 import {
@@ -59,7 +59,7 @@ export function MDMongooseAdapter(): Adapter {
   const { from, to } = format;
 
   return {
-    async createUser(data) {
+    async createUser(data: any) {
       await getDb();
       const user = await UserModel.create(data);
       return from<AdapterUser>(user);
@@ -109,7 +109,7 @@ export function MDMongooseAdapter(): Adapter {
       const result = await UserModel.findByIdAndUpdate(
         _id,
         { user },
-        { new: true },
+        { new: true }
       ).exec();
       return from<AdapterUser>(result!);
     },
@@ -122,7 +122,7 @@ export function MDMongooseAdapter(): Adapter {
 
       return from<AdapterSession>(session!);
     },
-    async linkAccount(data) {
+    async linkAccount(data: any) {
       await getDb();
       const account = await AccountModel.create(data);
 
@@ -167,7 +167,7 @@ export function MDMongooseAdapter(): Adapter {
         UserModel.findByIdAndDelete({ _id: new mongoose.Types.ObjectId(id) }),
       ]);
     },
-    async unlinkAccount(data) {
+    async unlinkAccount(data: any) {
       await getDb();
       const account = await AccountModel.findOneAndDelete(data);
       return from<AdapterAccount>(account!);
