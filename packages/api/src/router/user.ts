@@ -30,6 +30,7 @@ export const UpsertUserSchema = z.object({
   role: z.string().min(1),
   status: z.string().min(1),
   bmuNames: z.array(z.object({ value: z.string(), label: z.string() })),
+  userBmu: z.object({ value: z.string(), label: z.string() }).optional(),
 });
 
 export const GenerateResetPasswordTokenSchema = z.object({
@@ -98,6 +99,10 @@ export const userRouter = createTRPCRouter({
           path: "bmus",
           select: { BMU: true, group: true },
         },
+        {
+          path: "userBmu",
+          select: { BMU: true, group: true },
+        },
       ])
       .lean();
 
@@ -127,6 +132,12 @@ export const userRouter = createTRPCRouter({
         ...bmu,
         _id: bmu._id.toString(),
       })),
+      ...(user.userBmu && {
+        userBmu: {
+          ...user.userBmu,
+          _id: user.userBmu._id.toString(),
+        },
+      }),
     }));
   }),
   byId: protectedProcedure
@@ -144,6 +155,10 @@ export const userRouter = createTRPCRouter({
           },
           {
             path: "bmus",
+            select: { BMU: true, group: true },
+          },
+          {
+            path: "userBmu",
             select: { BMU: true, group: true },
           },
         ])
@@ -165,6 +180,9 @@ export const userRouter = createTRPCRouter({
       const bmuGroups = await BmuModel.find({
         BMU: { $in: input.bmuNames.map((bmu) => bmu.label) },
       });
+      const userBmu = input.userBmu ? await BmuModel.findOne({
+        BMU: input.userBmu.label,
+      }) : null;
       const findOne = input._id ? { _id: input._id } : { email: input.email };
       const _user = await UserModel.findOneAndUpdate(
         findOne,
@@ -177,6 +195,7 @@ export const userRouter = createTRPCRouter({
           status: input.status,
           groups: [userGroup?._id],
           bmus: bmuGroups.map((bmu) => bmu._id),
+          userBmu: userBmu?._id,
           ...(!isEmpty(input?.password) && {
             password: bcryptjs.hashSync(input?.password ?? "", 10),
           }),
@@ -202,7 +221,11 @@ export const userRouter = createTRPCRouter({
       await mail.sendTemplateMessages(Templates.resetPassword, {
         to: user.email,
         subject: "Reset your password",
-        resetLink: `${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3001"}/en/reset-password/${reset_token}`,
+        resetLink: `${
+          process.env.NODE_ENV === 'production'
+            ? 'https://peskas-next-umber.vercel.app'
+            : process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3001'
+        }/en/reset-password/${reset_token}`,
       });
     }),
   resetPassword: publicProcedure
