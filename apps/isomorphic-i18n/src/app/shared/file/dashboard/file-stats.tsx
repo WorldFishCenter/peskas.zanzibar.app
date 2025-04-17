@@ -97,9 +97,36 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   const [bmus] = useAtom(bmusAtom);
   const { data: session } = useSession();
 
-  // Determine if the user is part of the CIA group or Admin group
-  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
-  const isAdminUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'Admin');
+  // Check groups array exists before trying to use some()
+  const hasGroups = Array.isArray(session?.user?.groups);
+  const isCiaUser = hasGroups && session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
+  const isAdminUser = hasGroups && session?.user?.groups?.some((group: { name: string }) => group.name === 'Admin');
+  
+  // Log user session info for debugging
+  console.log('User Session Debug:', {
+    hasSession: !!session,
+    hasGroups: hasGroups,
+    groups: session?.user?.groups,
+    isAdmin: isAdminUser,
+    isCia: isCiaUser,
+    userBmu: session?.user?.userBmu
+  });
+  
+  // Get the active BMU from props or session
+  const activeBmu = bmu || session?.user?.userBmu?.BMU || "Vipingo";
+  
+  // Display name based on user role
+  const displayName = isAdminUser ? "All BMUs" : activeBmu;
+  
+  console.log('BMU Debug:', {
+    bmuProp: bmu,
+    activeBmu,
+    userBmuFromSession: session?.user?.userBmu?.BMU,
+    isAdmin: isAdminUser,
+    isCia: isCiaUser,
+    userBmuQuery: isAdminUser ? bmus : (bmu ? [bmu] : bmus),
+    otherBmusQuery: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
+  });
   
   // For admin users, we want all BMUs data together
   // For CIA users, we only need their BMU's data
@@ -120,6 +147,20 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !isCiaUser && !isAdminUser && !!bmu,
   }) as { data: StatsResponse | undefined, isLoading: boolean, error: any };
+
+  // Monitor API responses (keeping this from refactor-charts for debugging)
+  useEffect(() => {
+    console.log('API Responses:', {
+      statsData1,
+      statsData2,
+      isLoading1,
+      isLoading2,
+      error1,
+      error2,
+      userQuery: isAdminUser ? bmus : (bmu ? [bmu] : bmus),
+      otherQuery: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
+    });
+  }, [statsData1, statsData2, isLoading1, isLoading2, error1, error2, isAdminUser, bmus, activeBmu, bmu, isCiaUser]);
 
   useEffect(() => {
     // Set loading state based on API query states
@@ -376,7 +417,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
             <div className="flex items-center gap-3 text-2xs mt-2 mb-0.5">
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#fc3468]" />
-                <span>Kenyatta</span>
+                <span>{displayName}</span>
               </div>
               {(!isCiaUser && !isAdminUser) && (
                 <div className="flex items-center gap-1">
@@ -407,7 +448,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                 <Bar
                   dataKey="reference"
                   fill="#fc3468"
-                  name={isAdminUser ? "All BMUs" : (bmu || "Kenyatta")}
+                  name={displayName}
                   radius={[2, 2, 0, 0]}
                   maxBarSize={7}
                   minPointSize={3}
@@ -429,7 +470,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
           {/* Current Values */}
           <div className="px-3 py-2 border-t border-gray-100 bg-gray-50/30 flex justify-between text-xs">
             <div className="flex flex-col">
-              <span className="text-2xs text-gray-500">Kenyatta</span>
+              <span className="text-2xs text-gray-500">{displayName}</span>
               <span className="font-medium">{comparisonValues[stat.id]?.reference || "-"}</span>
             </div>
             {(!isCiaUser && !isAdminUser) && (
