@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { Button, Text } from "rizzui";
@@ -90,7 +90,10 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   const { t } = useTranslation(lang!, "common");
   const [statsData, setStatsData] = useState<StatData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [hoveredPercentages, setHoveredPercentages] = useState<{[key: string]: {percentage: string, increased: boolean, monthComparison: string}}>({});
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [comparisonValues, setComparisonValues] = useState<{[key: string]: {reference: number, others?: number, date: string}}>({});
   const [bmus] = useAtom(bmusAtom);
   const { data: session } = useSession();
 
@@ -100,16 +103,44 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   
   // For admin users, we want all BMUs data together
   // For CIA users, we only need their BMU's data
-  const { data: statsData1 } = api.monthlyStats.allStats.useQuery({ 
-    bmus: isAdminUser ? bmus : (bmu ? [bmu] : [])
-  }) as { data: StatsResponse | undefined };
+  const { data: statsData1, isLoading: isLoading1, error: error1 } = api.monthlyStats.allStats.useQuery({ 
+    bmus: isAdminUser ? bmus : (bmu ? [bmu] : bmus) // Fallback to all bmus if bmu is not provided
+  }, {
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  }) as { data: StatsResponse | undefined, isLoading: boolean, error: any };
   
   // Only fetch other BMUs data if not a CIA user and not an admin user
-  const { data: statsData2 } = api.monthlyStats.allStats.useQuery({ 
+  const { data: statsData2, isLoading: isLoading2, error: error2 } = api.monthlyStats.allStats.useQuery({ 
     bmus: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
-  }) as { data: StatsResponse | undefined };
+  }, {
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !isCiaUser && !isAdminUser && !!bmu,
+  }) as { data: StatsResponse | undefined, isLoading: boolean, error: any };
 
   useEffect(() => {
+    // Set loading state based on API query states
+    setLoading(isLoading1 || isLoading2);
+    
+    // Set error state if any API calls failed
+    if (error1 || error2) {
+      console.error("API error:", error1 || error2);
+      setError("Failed to load statistics data");
+      setLoading(false);
+      return;
+    }
+    
+    // Handle case when no data is returned
+    if (!isLoading1 && !statsData1) {
+      console.warn("No statistics data available");
+      setError("No statistics data available");
+      setLoading(false);
+      return;
+    }
+
     if (!statsData1) {
       setLoading(true);
       return;
@@ -135,9 +166,10 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
       };
       
       const transformedStats = metrics.map(metric => {
-        const referenceMetric = statsData1[metric.field];
+        // Safely access properties with fallbacks for missing data
+        const referenceMetric = statsData1?.[metric.field] || { current: 0, percentage: 0, trend: [] };
         const otherBmusMetric = statsData2?.[metric.field];
-        const trend = referenceMetric.trend;
+        const trend = referenceMetric.trend || [];
 
         // Calculate default percentage change between last two months
         let defaultPercentage = '';
@@ -156,7 +188,6 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
               defaultPercentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
               defaultIncreased = change > 0;
             }
-
           }
         }
 
@@ -172,12 +203,27 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
           }));
         }
 
-        // Transform the trend data
+        // Get the most recent month data for comparison values
+        if (trend.length > 0) {
+          const lastPoint = trend[trend.length - 1];
+          const lastOthersPoint = otherBmusMetric?.trend?.[otherBmusMetric.trend.length - 1];
+          
+          setComparisonValues(prev => ({
+            ...prev,
+            [metric.id]: {
+              reference: Math.round(lastPoint.sale || 0),
+              others: !isAdminUser && !isCiaUser ? Math.round(lastOthersPoint?.sale || 0) : undefined,
+              date: getMonthName(lastPoint.day)
+            }
+          }));
+        }
+
+        // Transform the trend data with safety checks for undefined values
         const chartData = trend.map((point, index) => ({
-          day: point.day,
-          reference: point.sale,
+          day: point.day || '',
+          reference: point.sale || 0,
           // Only include others for non-admin users
-          others: !isAdminUser && !isCiaUser && otherBmusMetric ? otherBmusMetric.trend[index]?.sale || 0 : undefined,
+          others: !isAdminUser && !isCiaUser && otherBmusMetric?.trend?.[index]?.sale || 0,
           index,
           data: trend,
           metricId: metric.id
@@ -186,48 +232,49 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
         return {
           id: metric.id,
           title: metric.title,
-          metric: Math.round(referenceMetric.current).toLocaleString(),
+          metric: Math.round(referenceMetric.current || 0).toLocaleString(),
           chart: chartData
         };
       });
 
       setStatsData(transformedStats);
+      setError(null);
     } catch (error) {
       console.error("Error transforming data:", error);
+      setError("Error processing statistics data");
     } finally {
       setLoading(false);
     }
-  }, [statsData1, statsData2, t, isCiaUser, isAdminUser]);
+  }, [statsData1, statsData2, isLoading1, isLoading2, error1, error2, t, isCiaUser, isAdminUser, bmus, bmu]);
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white px-2 py-1.5 border border-gray-200 shadow-lg rounded-lg min-w-[150px]">
-          <div className="flex items-center gap-4">
-            <p className="text-xs font-medium text-gray-700">{payload[0].payload.day}</p>
-            <div className="flex items-center gap-3">
-              {payload.map((entry: any) => {
-                if (typeof entry.value !== 'number') return null;
-                return (
-                  <div key={entry.dataKey} className="flex items-center gap-1.5">
-                    <div 
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: entry.color }}
-                    />
-                    <p className="text-xs font-medium text-gray-600 whitespace-nowrap">
-                      {entry.name}: {Math.round(entry.value).toLocaleString()}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
+  const handleBarClick = (data: any) => {
+    if (!data || !data.activePayload || data.activePayload.length === 0) return;
+    
+    const entry = data.activePayload[0];
+    const metricId = entry.payload.metricId;
+    const day = entry.payload.day;
+    
+    setSelectedMonth(day);
+    setComparisonValues(prev => ({
+      ...prev,
+      [metricId]: {
+        reference: Math.round(entry.payload.reference),
+        others: (!isAdminUser && !isCiaUser) ? Math.round(entry.payload.others || 0) : undefined,
+        date: getMonthName(day)
+      }
+    }));
   };
-
+  
+  const getMonthName = (dateStr: string) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length < 2) return dateStr; // Already a month name
+    const year = parts[0];
+    const month = parts[1];
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleString('default', { month: 'short' });
+  };
+  
   const handleMouseMove = (state: any) => {
     if (state.activePayload && state.activePayload.length > 0) {
       const entry = state.activePayload[0];
@@ -264,89 +311,135 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
             }));
           }
         }
+        
+        // Update comparison values
+        setComparisonValues(prev => ({
+          ...prev,
+          [entry.payload.metricId]: {
+            reference: Math.round(entry.payload.reference),
+            others: (!isAdminUser && !isCiaUser) ? Math.round(entry.payload.others || 0) : undefined,
+            date: currentMonth
+          }
+        }));
       }
     }
   };
 
-  const handleMouseLeave = () => {
-    // Don't clear percentages on mouse leave anymore
-  };
-
   if (loading) return <LoadingState />;
-  if (!statsData.length) return <LoadingState />;
+  if (error) return <div className="min-w-[292px] w-full p-4 text-center text-gray-500">{error}</div>;
+  if (!statsData.length) return <div className="min-w-[292px] w-full p-4 text-center text-gray-500">No data available</div>;
 
   return (
     <>
       {statsData.map((stat) => (
         <MetricCard
           key={stat.id}
-          title={stat.title}
-          metric={stat.metric}
+          title=""
+          metric={<></>}
           rounded="lg"
-          metricClassName="text-2xl mt-1"
-          info={
-            <div className="h-[40px] flex items-center">
-              {hoveredPercentages[stat.id] ? (
-                <Text className="flex items-center text-sm">
-                  <Text
-                    as="span"
-                    className={cn(
-                      "me-2 inline-flex items-center font-medium",
-                      hoveredPercentages[stat.id].increased ? "text-green-500" : "text-red-500"
-                    )}
-                  >
-                    {hoveredPercentages[stat.id].increased ? (
-                      <TrendingUpIcon className="me-1 h-4 w-4" />
-                    ) : (
-                      <TrendingDownIcon className="me-1 h-4 w-4" />
-                    )}
-                    {hoveredPercentages[stat.id].percentage}
-                  </Text>
-                  <span className="text-xs text-gray-500">{hoveredPercentages[stat.id].monthComparison}</span>
-                </Text>
-              ) : null}
-            </div>
-          }
-          chart={
-            <div className="h-24 w-24 @[16.25rem]:h-28 @[16.25rem]:w-32 @xs:h-32 @xs:w-36">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={stat.chart}
-                  margin={{ top: 25, right: 2, bottom: 0, left: 2 }}
-                  barSize={6}
-                  barGap={2}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <Bar
-                    dataKey="reference"
-                    fill="#fc3468"
-                    name={isAdminUser ? "All BMUs" : (bmu || "Reference BMU")}
-                    radius={[2, 2, 0, 0]}
-                  />
-                  {(!isCiaUser && !isAdminUser) && (
-                    <Bar
-                      dataKey="others"
-                      fill="rgba(178, 216, 216, 0.75)"
-                      name="Other BMUs"
-                      radius={[2, 2, 0, 0]}
-                    />
-                  )}
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    cursor={false}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          }
-          chartClassName="flex flex-col w-auto h-auto text-center"
           className={cn(
-            "@container @7xl:text-[15px] [&>div]:items-end",
-            "w-full max-w-full",
+            "@container text-[15px]",
+            "min-w-[260px] w-full max-w-full flex-1 p-0 overflow-hidden",
             className
           )}
-        />
+        >
+          <div className="p-4">
+            {/* Header: Title and Trend */}
+            <div className="flex justify-between items-center w-full">
+              <Text className="text-sm text-gray-700">{stat.title}</Text>
+              {hoveredPercentages[stat.id] && (
+                <span className={cn(
+                  "inline-flex items-center text-sm font-medium",
+                  hoveredPercentages[stat.id].increased ? "text-green-500" : "text-red-500"
+                )}>
+                  {hoveredPercentages[stat.id].increased ? (
+                    <TrendingUpIcon className="me-1 h-4 w-4" />
+                  ) : (
+                    <TrendingDownIcon className="me-1 h-4 w-4" />
+                  )}
+                  {hoveredPercentages[stat.id].percentage}
+                </span>
+              )}
+            </div>
+            
+            {/* Metric and Period */}
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <Text className="text-xl font-bold text-gray-900">{stat.metric}</Text>
+              {hoveredPercentages[stat.id] && (
+                <span className="text-2xs text-gray-500">
+                  {hoveredPercentages[stat.id].monthComparison}
+                </span>
+              )}
+            </div>
+            
+            {/* Legend */}
+            <div className="flex items-center gap-3 text-2xs mt-2 mb-0.5">
+              <div className="flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#fc3468]" />
+                <span>Kenyatta</span>
+              </div>
+              {(!isCiaUser && !isAdminUser) && (
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[rgba(178,216,216,0.75)]" />
+                  <span>Other BMUs</span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Chart */}
+          <div className="h-24 w-full bg-gray-50/50 transition-colors duration-200 hover:bg-gray-100/60">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={stat.chart}
+                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+                barSize={15}
+                barGap={2}
+                onMouseMove={handleMouseMove}
+                onClick={handleBarClick}
+                className="[&_.recharts-cartesian-grid]:hidden"
+              >
+                <XAxis dataKey="day" hide={true} scale="band" />
+                <YAxis 
+                  hide={true} 
+                  domain={[(dataMin: number) => 0, (dataMax: number) => dataMax * 1.1]} 
+                />
+                <Bar
+                  dataKey="reference"
+                  fill="#fc3468"
+                  name={isAdminUser ? "All BMUs" : (bmu || "Kenyatta")}
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={7}
+                  minPointSize={3}
+                />
+                {(!isCiaUser && !isAdminUser) && (
+                  <Bar
+                    dataKey="others"
+                    fill="rgba(178, 216, 216, 0.75)"
+                    name="Other BMUs"
+                    radius={[2, 2, 0, 0]}
+                    maxBarSize={7}
+                    minPointSize={3}
+                  />
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Current Values */}
+          <div className="px-3 py-2 border-t border-gray-100 bg-gray-50/30 flex justify-between text-xs">
+            <div className="flex flex-col">
+              <span className="text-2xs text-gray-500">Kenyatta</span>
+              <span className="font-medium">{comparisonValues[stat.id]?.reference || "-"}</span>
+            </div>
+            {(!isCiaUser && !isAdminUser) && (
+              <div className="flex flex-col">
+                <span className="text-2xs text-gray-500">Other BMUs</span>
+                <span className="font-medium">{comparisonValues[stat.id]?.others || "-"}</span>
+              </div>
+            )}
+          </div>
+        </MetricCard>
       ))}
     </>
   );

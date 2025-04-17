@@ -17,6 +17,7 @@ import { bmusAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
+import { useSession } from "next-auth/react";
 
 type MetricKey =
   | "mean_effort"
@@ -27,11 +28,13 @@ type MetricKey =
 
 interface RadarData {
   month: string;
-  [key: string]: number | string;
+  year?: number;
+  monthDisplay?: string;
+  [key: string]: number | string | undefined;
 }
 
 interface MetricInfo {
-  label: string;
+  translationKey: string;
   unit: string;
 }
 
@@ -40,15 +43,17 @@ interface VisibilityState {
 }
 
 const METRIC_INFO: Record<MetricKey, MetricInfo> = {
-  mean_effort: { label: "Effort", unit: "fishers/km²/day" },
-  mean_cpue: { label: "Catch Rate", unit: "kg/fisher/day" },
-  mean_cpua: { label: "Catch Density", unit: "kg/km²/day" },
-  mean_rpue: { label: "Fisher Revenue", unit: "KSH/fisher/day" },
-  mean_rpua: { label: "Area Revenue", unit: "KSH/km²/day" },
+  mean_effort: { translationKey: "text-metrics-effort", unit: "fishers/km²/day" },
+  mean_cpue: { translationKey: "text-metrics-catch-rate", unit: "kg/fisher/day" },
+  mean_cpua: { translationKey: "text-metrics-catch-density", unit: "kg/km²/day" },
+  mean_rpue: { translationKey: "text-metrics-fisher-revenue", unit: "KSH/fisher/day" },
+  mean_rpua: { translationKey: "text-metrics-area-revenue", unit: "KSH/km²/day" },
 };
 
-const getMetricLabel = (metric: string): string => {
-  return METRIC_INFO[metric as MetricKey]?.label || "Catch Metrics";
+const getMetricLabel = (metric: string, t: any): string => {
+  const metricKey = metric as MetricKey;
+  const translationKey = METRIC_INFO[metricKey]?.translationKey || "text-metrics-catch";
+  return t(translationKey);
 };
 
 const MONTH_ORDER = [
@@ -82,66 +87,82 @@ const generateColor = (index: number, site: string, referenceBmu: string | undef
   return colors[index % colors.length];
 };
 
-const CustomTooltip = ({ active, payload, metric }: any) => {
+const CustomTooltip = ({ active, payload, metric, t }: any) => {
   if (active && payload && payload.length) {
     const metricInfo = METRIC_INFO[metric as MetricKey];
     return (
       <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
         <p className="text-sm font-medium text-gray-600 mb-2">
-          {payload[0]?.payload?.month ?? ""}
+          {payload[0]?.payload?.monthDisplay || 
+            payload[0]?.payload?.month || ""}
         </p>
-        {payload.map((entry: any) => (
-          <div key={entry.dataKey} className="flex items-center gap-2">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <p className="text-sm">
-              <span className="font-medium">{entry.name}:</span>{" "}
-              {entry.value?.toFixed(1) ?? "N/A"} {metricInfo.unit}
-            </p>
-          </div>
-        ))}
+        <div className="space-y-1.5">
+          {payload.map((entry: any) => (
+            <div key={entry.dataKey} className="flex items-center gap-2">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <p className="text-sm">
+                <span className="font-medium">{entry.name}:</span>{" "}
+                <span className="font-semibold">{entry.value?.toFixed(1) ?? t("text-na")}</span>
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
   return null;
 };
 
-const LoadingState = () => {
+const LoadingState = ({ t }: { t: any }) => {
   return (
     <WidgetCard title="">
       <div className="h-96 w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">Loading chart...</span>
+          <span className="text-sm text-gray-500">{t("text-loading-chart")}</span>
         </div>
       </div>
     </WidgetCard>
   );
 };
 
-const CustomLegend = ({ payload, visibilityState, handleLegendClick }: any) => (
-  <div className="flex flex-wrap gap-4 justify-center mt-2">
-    {payload?.map((entry: any) => (
-      <div
-        key={entry.value}
-        className={cn(
-          "flex items-center gap-2 cursor-pointer select-none transition-all duration-200",
-          "hover:opacity-80"
-        )}
-        style={{ opacity: visibilityState[entry.dataKey]?.opacity ?? 1 }}
-        onClick={() => handleLegendClick(entry.dataKey)}
-      >
-        <div
-          className="w-3 h-3 rounded-full transition-all duration-200"
-          style={{ backgroundColor: entry.color }}
-        />
-        <span className="text-sm font-medium">{entry.value}</span>
-      </div>
-    ))}
-  </div>
-);
+const CustomLegend = ({ payload, visibilityState, handleLegendClick, siteColors, localActiveTab }: any) => {
+  // Helper function to safely get the site key from an entry
+  const getSiteKey = (entry: any): string => {
+    return entry.dataKey || entry.value || entry.name || '';
+  };
+  
+  // Helper function to safely get opacity
+  const getOpacity = (entry: any): number => {
+    const key = getSiteKey(entry);
+    return visibilityState[key]?.opacity ?? 1;
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2 justify-center mt-2">
+      {payload?.map((entry: any) => {
+        const siteKey = getSiteKey(entry);
+        return (
+          <div
+            key={siteKey || entry.value || Math.random().toString()}
+            className="flex items-center gap-2 cursor-pointer select-none transition-all duration-200"
+            onClick={() => handleLegendClick(siteKey)}
+            style={{ opacity: getOpacity(entry) }}
+          >
+            <div
+              className="w-3 h-3 rounded-full transition-all duration-200"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-sm font-medium">{entry.value}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export default function CatchRadarChart({
   className,
@@ -156,8 +177,12 @@ export default function CatchRadarChart({
   bmu?: string;
   activeTab?: string;
 }) {
-  const { t } = useTranslation(lang!);
+  const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
+  const { data: session } = useSession();
+  
+  // Determine if the user is part of the CIA group
+  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
 
   const [data, setData] = useState<RadarData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,10 +205,10 @@ export default function CatchRadarChart({
   useEffect(() => {
     if (queryError) {
       console.error('Error fetching radar data:', queryError);
-      setError('Failed to fetch data');
+      setError(t('text-failed-to-fetch-data'));
       setLoading(false);
     }
-  }, [queryError]);
+  }, [queryError, t]);
 
   useEffect(() => {
     // Set loading state when dependencies change
@@ -198,7 +223,7 @@ export default function CatchRadarChart({
     const processData = async () => {
       try {
         if (!Array.isArray(meanCatch) || meanCatch.length === 0) {
-          setError("No data available");
+          setError(t("text-no-data-available"));
           return;
         }
 
@@ -213,7 +238,7 @@ export default function CatchRadarChart({
 
         // If no sites found, show error
         if (uniqueSites.length === 0) {
-          setError("No BMU data available");
+          setError(t("text-no-bmu-data-available"));
           return;
         }
 
@@ -236,13 +261,49 @@ export default function CatchRadarChart({
           );
         setVisibilityState(newVisibilityState);
 
-        let processedData = [...meanCatch]
+        // Filter for data from 2023 onwards
+        // The data structure might not have a direct year field, or it might be in a different format
+        // First, let's check if we have any year fields in the data
+        const hasYearField = meanCatch.some(item => item.year !== undefined);
+        
+        let filteredMeanCatch = [...meanCatch];
+        
+        if (hasYearField) {
+          // If year field exists, filter by it
+          filteredMeanCatch = meanCatch.filter(item => {
+            const year = item.year ? Number(item.year) : 0;
+            return year >= 2023;
+          });
+          
+          // If filtering removed all data, use the original data
+          if (filteredMeanCatch.length === 0) {
+            console.warn("No data found from 2023 onwards, showing all available data");
+            filteredMeanCatch = [...meanCatch];
+          }
+        } else {
+          // If there's no year field, we can't filter by year
+          console.warn("Year field not found in data, showing all available data");
+        }
+
+        let processedData = [...filteredMeanCatch]
           .sort(
             (a, b) =>
               MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
           )
           .map((item) => {
-            const completeItem: RadarData = { month: item.month };
+            const completeItem: RadarData = { 
+              month: item.month,
+              // Preserve year field if it exists
+              ...(item.year !== undefined && { year: Number(item.year) })
+            };
+            
+            // Format the month to include year if available
+            if (item.year !== undefined) {
+              completeItem.monthDisplay = `${item.month} ${item.year}`;
+            } else {
+              completeItem.monthDisplay = item.month;
+            }
+            
             uniqueSites.forEach((site) => {
               completeItem[site] =
                 (item as Record<string, number | string>)[site] !== undefined
@@ -293,22 +354,22 @@ export default function CatchRadarChart({
         setError(null);
       } catch (e) {
         console.error("Error processing data:", e);
-        setError("Error processing data");
+        setError(t("text-error-processing-data"));
       } finally {
         setLoading(false);
       }
     };
 
     processData();
-  }, [meanCatch, selectedMetric, activeTab, bmu, isFetching]);
+  }, [meanCatch, selectedMetric, activeTab, bmu, isFetching, t]);
 
   // Remove the separate bmus effect since we handle loading in the main effect
   useEffect(() => {
     if (!bmus || bmus.length === 0) {
-      setError("No BMUs selected");
+      setError(t("text-no-bmus-selected"));
       setLoading(false);
     }
-  }, [bmus]);
+  }, [bmus, t]);
 
   const handleLegendClick = (site: string) => {
     setVisibilityState((prev) => ({
@@ -319,13 +380,13 @@ export default function CatchRadarChart({
     }));
   };
 
-  if (loading || isFetching) return <LoadingState />;
+  if (loading || isFetching) return <LoadingState t={t} />;
 
   if (error) {
     return (
-      <WidgetCard title="">
+      <WidgetCard title={getMetricLabel(selectedMetric, t)}>
         <div className="h-96 w-full flex items-center justify-center">
-          <span className="text-sm text-gray-500">Error: {error}</span>
+          <span className="text-sm text-gray-500">{t("text-error")}: {error}</span>
         </div>
       </WidgetCard>
     );
@@ -333,75 +394,118 @@ export default function CatchRadarChart({
 
   if (!data || data.length === 0) {
     return (
-      <WidgetCard title="">
+      <WidgetCard title={getMetricLabel(selectedMetric, t)}>
         <div className="h-96 w-full flex items-center justify-center">
-          <span className="text-sm text-gray-500">No data available</span>
+          <span className="text-sm text-gray-500">{t("text-no-data-available")}</span>
         </div>
       </WidgetCard>
     );
   }
 
   return (
-    <WidgetCard 
-      title="" 
-      className={cn(className)}
+    <WidgetCard
+      title={getMetricLabel(selectedMetric, t)}
+      className={cn("h-full", className)}
     >
-      <div className="mt-5 h-96 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart
-            data={data}
-            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            className="w-full h-full"
-          >
-            <PolarGrid gridType="polygon" strokeWidth={0.8} />
-            <PolarAngleAxis
-              dataKey="month"
-              tick={{ fill: "#666", fontSize: 12 }}
-              tickLine={false}
-            />
-            <PolarRadiusAxis
-              angle={90}
-              domain={activeTab === 'differenced' ? ['auto', 'auto'] : [0, 'auto']}
-              tick={{ fill: "#666" }}
-              tickCount={5}
-              axisLine={false}
-            />
-            {Object.entries(siteColors).map(([site, color]) => {
-              // In differenced mode, only show the selected BMU
-              if (activeTab === 'differenced' && site !== bmu) {
-                return null;
-              }
-              const opacity = visibilityState[site]?.opacity ?? 1;
-              return (
-                <Radar
-                  key={site}
-                  name={site}
-                  dataKey={site}
-                  stroke={activeTab === 'differenced' ? "#fc3468" : color}
-                  fill={activeTab === 'differenced' ? "#fc3468" : color}
-                  fillOpacity={opacity * 0.25}
-                  strokeOpacity={opacity}
-                />
-              );
-            })}
-            <Tooltip
-              content={(props) => (
-                <CustomTooltip {...props} metric={selectedMetric} />
-              )}
-            />
-            {activeTab !== 'differenced' && (
-              <Legend
-                content={(props) => (
-                  <CustomLegend
-                    {...props}
-                    visibilityState={visibilityState}
-                    handleLegendClick={handleLegendClick}
-                  />
-                )}
+      <div className="h-96 w-full flex items-center justify-center">
+        {/* Error state */}
+        {error && (
+          <div className="text-sm text-gray-500 flex items-center justify-center h-full">
+            {error}
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading && !error && (
+          <div className="flex items-center justify-center h-full">
+            <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* Render chart if data is available */}
+        {!loading && !error && data.length > 0 && (
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart
+              data={data}
+              margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              className="w-full h-full"
+              outerRadius="95%"
+              cx="50%"
+              cy="47%"
+            >
+              <PolarGrid 
+                gridType="polygon" 
+                strokeWidth={0.5} 
+                stroke="#e2e8f0" 
+                strokeDasharray="3 3"
               />
-            )}
-          </RadarChart>
-        </ResponsiveContainer>
+              <PolarAngleAxis
+                dataKey={data[0]?.monthDisplay ? "monthDisplay" : "month"}
+                tick={{ fill: "#64748b", fontSize: 11, fontWeight: 400 }}
+                tickLine={false}
+                stroke="#cbd5e1"
+                strokeWidth={0.5}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={activeTab === 'differenced' ? ['auto', 'auto'] : [0, 'auto']}
+                tick={{ fill: "#64748b", fontSize: 10 }}
+                tickCount={5}
+                axisLine={false}
+                stroke="#cbd5e1"
+                strokeDasharray="3 3"
+                strokeWidth={0.5}
+              />
+              {Object.entries(siteColors).map(([site, color]) => {
+                // In differenced mode, only show the selected BMU
+                if (activeTab === 'differenced' && site !== bmu) {
+                  return null;
+                }
+                const opacity = visibilityState[site]?.opacity ?? 1;
+                return (
+                  <Radar
+                    key={site}
+                    name={site}
+                    dataKey={site}
+                    stroke={activeTab === 'differenced' ? "#fc3468" : color}
+                    fill={activeTab === 'differenced' ? "#fc3468" : color}
+                    fillOpacity={opacity * 0.35}
+                    strokeOpacity={opacity}
+                    strokeWidth={2}
+                    dot
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    animationBegin={0}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                );
+              })}
+              <Tooltip
+                content={(props) => (
+                  <CustomTooltip {...props} metric={selectedMetric} t={t} />
+                )}
+                wrapperStyle={{ outline: 'none' }}
+              />
+              {activeTab !== 'differenced' && (
+                <Legend
+                  content={(props) => (
+                    <CustomLegend
+                      {...props}
+                      visibilityState={visibilityState}
+                      handleLegendClick={handleLegendClick}
+                      siteColors={siteColors}
+                      localActiveTab={activeTab}
+                      isCiaUser={isCiaUser}
+                    />
+                  )}
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ position: 'absolute', bottom: '-15px', left: 0, right: 0 }}
+                />
+              )}
+            </RadarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </WidgetCard>
   );

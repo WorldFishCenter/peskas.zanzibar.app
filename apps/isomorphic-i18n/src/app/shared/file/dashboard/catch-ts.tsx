@@ -1,6 +1,6 @@
 import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Area,
   AreaChart,
@@ -14,6 +14,7 @@ import {
   ReferenceLine,
   BarChart,
   Bar,
+  ComposedChart,
 } from "recharts";
 
 import { bmusAtom } from "@/app/components/filter-selector";
@@ -25,11 +26,20 @@ import cn from "@utils/class-names";
 import { ActionIcon, Popover } from "rizzui";
 import { useSession } from "next-auth/react";
 
+// Add local formatNumber function to replace the import
+const formatNumber = (num: number, precision = 0): string => {
+  if (isNaN(num)) return '0';
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: precision,
+    maximumFractionDigits: precision
+  });
+};
 
 type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
 interface ChartDataPoint {
   date: number;
+  average?: number;
   [key: string]: number | undefined;
 }
 
@@ -67,11 +77,16 @@ interface TooltipProps {
     name?: string;
     dataKey: string | number;
     color: string;
+    payload?: {
+      average?: number;
+      [key: string]: any;
+    };
   }>;
   label?: string | number;
   separator?: string;
   selectedMetric: MetricKey;
   selectedMetricOption: MetricOption | undefined;
+  visibilityState?: VisibilityState;
 }
 
 interface VisibilityState {
@@ -125,6 +140,9 @@ const generateColor = (index: number, site: string, referenceBmu: string | undef
   if (site === referenceBmu) {
     return "#fc3468"; // Red color for reference BMU
   }
+  if (site === "average") {
+    return "#000000"; // Black color for average line
+  }
   const colors = [
     "#0c526e", // Dark blue
     "#f09609", // Orange
@@ -135,6 +153,18 @@ const generateColor = (index: number, site: string, referenceBmu: string | undef
     "#0891b2", // Teal
   ];
   return colors[index % colors.length];
+};
+
+// Get positive and negative colors for each site
+const getBarColor = (baseColor: string, isPositive: boolean): string => {
+  // For positive values, use the original color
+  if (isPositive) {
+    return baseColor;
+  }
+  
+  // For negative values, use a darker shade of the color
+  // This creates better visual distinction while maintaining the color identity
+  return baseColor === "#fc3468" ? "#d71e50" : baseColor;
 };
 
 const LoadingState = () => {
@@ -276,43 +306,6 @@ const MetricSelector = ({
   );
 };
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-  selectedMetric,
-}: TooltipProps) => {
-  // Removed selectedMetricOption from props
-  if (active && payload?.length) {
-    const date = new Date(label as number);
-
-    return (
-      <div className="bg-white p-4 border border-gray-200 shadow-lg rounded-lg">
-        <p className="text-sm font-medium text-gray-600 mb-2">
-          {date.toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-          })}
-        </p>
-        {payload.map((entry) => (
-          <div key={entry.dataKey} className="flex items-center gap-2">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <p className="text-sm">
-              <span className="font-medium">
-                {entry.name || entry.dataKey}:
-              </span>{" "}
-              {entry.value?.toFixed(1) ?? "N/A"} {/* Removed the unit here */}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 function CustomYAxisTick({ x = 0, y = 0, payload = { value: 0 } }: TickProps) {
   return (
     <g transform={`translate(${x},${y})`}>
@@ -373,7 +366,22 @@ export default function CatchMetricsChart({
   const [fiveYearMarks, setFiveYearMarks] = useState<number[]>([]);
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
-  const [localActiveTab, setLocalActiveTab] = useState(activeTab);
+  const [selectedPoint, setSelectedPoint] = useState<{
+    date: string;
+    values: {name: string; value: number; color: string}[];
+    average?: number;
+  } | null>(null);
+
+  // Map old tab names to new ones for backwards compatibility
+  const getNewTabName = (oldTab: string) => {
+    if (oldTab === 'standard') return 'trends';
+    if (oldTab === 'recent') return 'comparison';
+    return oldTab;
+  };
+
+  // Initialize with mapped value to handle both old and new tab names
+  const [localActiveTab, setLocalActiveTab] = useState(() => getNewTabName(activeTab));
+  const [annualData, setAnnualData] = useState<ChartDataPoint[]>([]);
 
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation("common");
@@ -385,28 +393,66 @@ export default function CatchMetricsChart({
 
   const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus });
 
+  // Keep in sync with parent component, handling old tab names too
+  useEffect(() => {
+    const newTabName = getNewTabName(activeTab);
+    if (localActiveTab !== newTabName) {
+      setLocalActiveTab(newTabName);
+    }
+  }, [activeTab]);
+
   const handleLegendClick = (site: string) => {
-    setVisibilityState((prev) => ({
-      ...prev,
-      [site]: {
+    // Don't toggle visibility for the average line
+    if (site === "average") return;
+    
+    setVisibilityState((prev) => {
+      // Create a copy of the previous state
+      const newState = { ...prev };
+      
+      // Toggle the clicked site
+      newState[site] = {
         opacity: prev[site]?.opacity === 1 ? 0.2 : 1,
-      },
-    }));
+      };
+      
+      // For Comparison tab, we need to handle the Positive/Negative variants too
+      if ((localActiveTab === 'comparison' || localActiveTab === 'recent') && !isCiaUser) {
+        // Also update the positive and negative variants
+        const positiveKey = `${site}Positive`;
+        const negativeKey = `${site}Negative`;
+        
+        newState[positiveKey] = { opacity: newState[site].opacity };
+        newState[negativeKey] = { opacity: newState[site].opacity };
+      }
+      
+      return newState;
+    });
   };
 
   const handleTabChange = (tab: string) => {
     setLocalActiveTab(tab);
-    onTabChange?.(tab);
+    // Map back to old names when calling parent callback for backwards compatibility
+    const oldTabName = tab === 'trends' ? 'standard' : tab === 'comparison' ? 'recent' : tab;
+    onTabChange?.(oldTabName);
   };
+
+  // First-time render check
+  const [initialRenderComplete, setInitialRenderComplete] = useState(false);
+  
+  useEffect(() => {
+    // Set initial render complete after mounting
+    setInitialRenderComplete(true);
+  }, []);
 
   useEffect(() => {
     if (!monthlyData) return;
 
     try {
+      // Get unique sites from the data
       const uniqueSites = Array.from(
         new Set(monthlyData.map((item: ApiDataPoint) => item.landing_site))
       );
 
+      // Create color mapping for sites
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(
         (acc, site, index) => ({
           ...acc,
@@ -414,20 +460,48 @@ export default function CatchMetricsChart({
         }),
         {}
       );
+      
+      // Only add average for non-CIA users
+      if (!isCiaUser) {
+        // Add color for average line
+        newSiteColors["average"] = generateColor(0, "average", undefined);
+      }
+      
       setSiteColors(newSiteColors);
 
       // Set visibility state based on user's BMU
-      setVisibilityState(
-        uniqueSites.reduce<VisibilityState>(
+      const initialVisibility = uniqueSites.reduce<VisibilityState>(
           (acc, site) => ({
             ...acc,
             [site as string]: { opacity: site === bmu ? 1 : 0.2 },
           }),
           {}
-        )
       );
+      
+      // For Comparison tab, add visibility for positive and negative variants
+      if ((localActiveTab === 'comparison' || localActiveTab === 'recent') && !isCiaUser) {
+        uniqueSites.forEach(site => {
+          initialVisibility[`${site}Positive`] = { opacity: initialVisibility[site].opacity };
+          initialVisibility[`${site}Negative`] = { opacity: initialVisibility[site].opacity };
+        });
+      }
+      
+      // Only add average visibility for non-CIA users
+      if (!isCiaUser) {
+        // Always show average line
+        initialVisibility["average"] = { opacity: 1 };
+      }
+      
+      setVisibilityState(initialVisibility);
 
-      const groupedData = monthlyData.reduce<Record<string, ChartDataPoint>>(
+      // Filter data from 2023 onwards
+      const filteredData = monthlyData.filter((item: ApiDataPoint) => {
+        const year = new Date(item.date).getFullYear();
+        return year >= 2023;
+      });
+
+      // Group data by date
+      const groupedData = filteredData.reduce<Record<string, ChartDataPoint>>(
         (acc, item: ApiDataPoint) => {
           const date = new Date(item.date).getTime();
           if (!acc[date]) {
@@ -444,6 +518,24 @@ export default function CatchMetricsChart({
         },
         {}
       );
+
+      // Calculate average value for each date point - only for non-CIA users
+      if (!isCiaUser) {
+        Object.keys(groupedData).forEach(dateKey => {
+          const dateData = groupedData[dateKey];
+          const values = Object.entries(dateData)
+            .filter(([key, value]) => key !== "date" && value !== undefined)
+            .map(([_, value]) => value as number);
+          
+          if (values.length > 0) {
+            const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+            groupedData[dateKey].average = parseFloat(avg.toFixed(2));
+          } else {
+            // Ensure we have an average property even if it's 0
+            groupedData[dateKey].average = 0;
+          }
+        });
+      }
 
       const processedData = Object.values(groupedData).sort(
         (a, b) => a.date - b.date
@@ -471,9 +563,31 @@ export default function CatchMetricsChart({
   }, [monthlyData, selectedMetric, bmu]);
 
   const CustomLegend = ({ payload }: any) => {
+    // Filter out the auto-generated average entry from the payload
+    // This prevents duplicate average entries in the legend
+    const customPayload = payload?.filter((entry: any) => entry.dataKey !== "average");
+    const showAverage = !isCiaUser && (localActiveTab === 'trends' || localActiveTab === 'standard');
+    
     return (
       <div className="flex flex-wrap gap-4 justify-center mt-2">
-        {payload?.map((entry: any) => (
+        {/* Average entry first - only show for non-CIA users and only in Trends tab */}
+        {showAverage && (
+          <div
+            key="average"
+            className="flex items-center gap-2 cursor-default select-none"
+          >
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{
+                backgroundColor: "#000000",
+              }}
+            />
+            <span className="text-sm font-medium">Average of all BMUs</span>
+          </div>
+        )}
+        
+        {/* Other BMUs */}
+        {customPayload?.map((entry: any) => (
           <div
             key={entry.value}
             className="flex items-center gap-2 cursor-pointer select-none transition-all duration-200"
@@ -528,14 +642,177 @@ export default function CatchMetricsChart({
     };
   });
 
-  // Get last 6 months of data
+  // Get last 6 months of data with comparison to average
   const getRecentData = () => {
     if (!chartData.length) return [];
+    
     const sortedData = [...chartData].sort((a, b) => b.date - a.date);
-    return sortedData.slice(0, 6).reverse();
+    const lastSixMonths = sortedData.slice(0, 6).reverse();
+    
+    // For CIA users who don't have access to average, just return the data as is
+    if (isCiaUser) return lastSixMonths;
+    
+    // For regular users, transform the data to show difference from average
+    const result = lastSixMonths.map(item => {
+      const result: { [key: string]: any } = { date: item.date };
+      
+      // For each BMU, calculate the difference from average
+      Object.entries(item).forEach(([key, value]) => {
+        if (key !== 'date' && key !== 'average' && value !== undefined) {
+          const average = item.average || 0;
+          result[key] = parseFloat((value - average).toFixed(2));
+        }
+      });
+      
+      return result;
+    });
+    
+    // Sort by date to ensure chronological order
+    return result.sort((a, b) => a.date - b.date);
   };
 
+  // Get annual data by aggregating monthly data
+  const getAnnualData = useCallback((): ChartDataPoint[] => {
+    if (!chartData.length) return [];
+    
+    // Group data by year
+    const yearlyData: Record<number, { date: number; [key: string]: any }> = {};
+    
+    // First, ensure we have entries for all years in our dataset
+    const allYears = Array.from(new Set(chartData.map(item => new Date(item.date).getFullYear())));
+    const allSites = Object.keys(siteColors).filter(site => site !== "average");
+    
+    // Ensure we have entries for all years and all BMUs
+    allYears.forEach(year => {
+      const yearTimestamp = new Date(`${year}-01-01`).getTime();
+      yearlyData[year] = { date: yearTimestamp };
+      
+      // Initialize all BMUs with null values
+      allSites.forEach(site => {
+        yearlyData[year][`${site}_sum`] = 0;
+        yearlyData[year][`${site}_count`] = 0;
+      });
+    });
+    
+    // Now populate the data
+    chartData.forEach(item => {
+      const year = new Date(item.date).getFullYear();
+      
+      // Process each BMU value
+      Object.entries(item).forEach(([key, value]) => {
+        if (key !== 'date' && key !== 'average' && value !== undefined) {
+          if (!yearlyData[year][`${key}_sum`]) {
+            yearlyData[year][`${key}_sum`] = 0;
+            yearlyData[year][`${key}_count`] = 0;
+          }
+          yearlyData[year][`${key}_sum`] += value;
+          yearlyData[year][`${key}_count`] += 1;
+        }
+      });
+    });
+    
+    // Calculate averages for each year and BMU
+    const result: ChartDataPoint[] = Object.entries(yearlyData).map(([_, data]) => {
+      const yearResult: ChartDataPoint = { date: data.date };
+      
+      // Get all BMU keys (removing the _sum and _count suffix)
+      const bmuKeys = Object.keys(data)
+        .filter(key => key.endsWith('_sum'))
+        .map(key => key.replace('_sum', ''));
+      
+      bmuKeys.forEach(key => {
+        const sum = data[`${key}_sum`];
+        const count = data[`${key}_count`];
+        if (count > 0) {
+          yearResult[key] = sum / count;
+        } else {
+          // If no data for this BMU in this year, set to 0 or null
+          yearResult[key] = 0;
+        }
+      });
+      
+      // For non-CIA users, calculate the average across all BMUs
+      if (!isCiaUser) {
+        const bmuValues = Object.entries(yearResult)
+          .filter(([key]) => key !== 'date' && key !== 'average')
+          .map(([_, value]) => value as number)
+          .filter(val => val > 0); // Only consider positive values
+          
+        if (bmuValues.length > 0) {
+          yearResult.average = bmuValues.reduce((sum, val) => sum + val, 0) / bmuValues.length;
+        } else {
+          yearResult.average = 0;
+        }
+      }
+      
+      return yearResult;
+    });
+    
+    // Sort by year
+    return result.sort((a, b) => a.date - b.date);
+  }, [chartData, isCiaUser, siteColors]);
+
   const recentData = getRecentData();
+
+  // Update visibility state when changing tabs
+  useEffect(() => {
+    if ((localActiveTab === 'comparison' || localActiveTab === 'recent') && !isCiaUser) {
+      // Make sure all BMUs have proper visibility state
+      const newVisibilityState = { ...visibilityState };
+      Object.keys(siteColors).forEach(site => {
+        if (site !== 'average' && !newVisibilityState[site]) {
+          newVisibilityState[site] = { opacity: site === bmu ? 1 : 0.2 };
+        }
+      });
+      setVisibilityState(newVisibilityState);
+    }
+  }, [localActiveTab, isCiaUser, siteColors, bmu]);
+
+  // Calculate annual data when chart data changes
+  useEffect(() => {
+    if (chartData.length > 0) {
+      setAnnualData(getAnnualData());
+    }
+  }, [chartData, getAnnualData]);
+
+  // Add a handler for clicks on chart elements
+  const handleChartClick = (data: any) => {
+    if (!data || !data.activePayload || data.activePayload.length === 0) return;
+    
+    // Extract date and format it
+    const payload = data.activePayload[0].payload;
+    const date = new Date(payload.date);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+      month: 'short',
+      year: '2-digit'
+    });
+    
+    // Extract values for each visible site
+    const values = data.activePayload
+      .filter((entry: any) => 
+        entry.value && 
+        typeof entry.value === 'number' && 
+        entry.dataKey !== 'average'
+      )
+      .map((entry: any) => ({
+        name: entry.name || entry.dataKey,
+        value: entry.value,
+        color: entry.color
+      }))
+      .sort((a: any, b: any) => {
+        // Put the reference BMU first, then sort alphabetically
+        if (a.name === bmu) return -1;
+        if (b.name === bmu) return 1;
+        return a.name.localeCompare(b.name);
+      });
+    
+    // Set the selected point
+    setSelectedPoint({
+      date: formattedDate,
+      values,
+      average: payload.average
+    });
+  };
 
   if (loading) return <LoadingState />;
   if (!chartData || chartData.length === 0) {
@@ -552,6 +829,53 @@ export default function CatchMetricsChart({
     (m) => m.value === selectedMetric
   );
 
+  // Create data panel component
+  const DataPanel = () => {
+    if (!selectedPoint) {
+      // Create empty panel with placeholder content for consistent layout
+      return (
+        <div className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100 text-xs h-[80px] flex flex-col justify-between">
+          <div className="font-medium text-gray-700 border-b border-gray-100 pb-1">
+            Select a data point
+          </div>
+          <div className="text-center text-gray-400 py-2">
+            Click on the chart to view details
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100 text-xs min-h-[80px]">
+        <div className="font-medium text-gray-700 border-b border-gray-100 pb-1 mb-1">
+          {selectedPoint.date}
+        </div>
+        <div className="flex flex-col gap-0.5">
+          {selectedPoint.values.map(item => (
+            <div key={item.name} className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <div
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="font-medium">{item.name}</span>
+              </div>
+              <span>{Math.round(item.value).toLocaleString()}</span>
+            </div>
+          ))}
+          
+          {!isCiaUser && selectedPoint.average !== undefined && (
+            <div className="mt-0.5 pt-0.5 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-gray-500">Average</span>
+              <span className="font-medium text-gray-700">
+                {Math.round(selectedPoint.average).toLocaleString()}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <WidgetCard
@@ -565,16 +889,22 @@ export default function CatchMetricsChart({
           {!isCiaUser && (
             <div className="flex flex-wrap justify-end space-x-2">
               <button
-                className={`px-3 py-1 text-sm ${localActiveTab === 'standard' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
-                onClick={() => handleTabChange('standard')}
+                className={`px-3 py-1 text-sm ${localActiveTab === 'trends' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                onClick={() => handleTabChange('trends')}
               >
-                Standard
+                Trends
               </button>
               <button
-                className={`px-3 py-1 text-sm ${localActiveTab === 'recent' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
-                onClick={() => handleTabChange('recent')}
+                className={`px-3 py-1 text-sm ${localActiveTab === 'comparison' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                onClick={() => handleTabChange('comparison')}
               >
-                Recent
+                Comparison
+              </button>
+              <button
+                className={`px-3 py-1 text-sm ${localActiveTab === 'annual' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'} rounded shadow-sm transition duration-200 hover:bg-blue-600`}
+                onClick={() => handleTabChange('annual')}
+              >
+                Annual
               </button>
             </div>
           )}
@@ -582,7 +912,7 @@ export default function CatchMetricsChart({
       }
       className={className}
     >
-      {localActiveTab === 'standard' && (
+      {(localActiveTab === 'trends' || localActiveTab === 'standard') && (
         <SimpleBar>
           <div className="h-96 w-full pt-9">
             <ResponsiveContainer
@@ -590,7 +920,7 @@ export default function CatchMetricsChart({
               height="100%"
               {...(isTablet && { minWidth: "700px" })}
             >
-              <AreaChart
+              <ComposedChart
                 data={chartData}
                 margin={{
                   left: 35,
@@ -599,6 +929,7 @@ export default function CatchMetricsChart({
                   top: 20,
                 }}
                 className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+                onClick={handleChartClick}
               >
                 <defs>
                   {Object.entries(siteColors).map(([site, color]) => (
@@ -654,13 +985,10 @@ export default function CatchMetricsChart({
                     },
                   }}
                 />
-                <Tooltip
-                  content={(props: any) => (
-                    <CustomTooltip {...props} selectedMetric={selectedMetric} />
-                  )}
-                />
                 <Legend content={CustomLegend} />
-                {Object.entries(siteColors).map(([site, color]) => (
+                {Object.entries(siteColors)
+                  .filter(([site]) => site !== "average") // Skip average since we added it separately
+                  .map(([site, color]) => (
                   <Area
                     key={site}
                     type="monotone"
@@ -673,12 +1001,29 @@ export default function CatchMetricsChart({
                     fill={`url(#${site}_gradient)`}
                   />
                 ))}
-              </AreaChart>
+                {/* Only add the average line for the Trends tab and non-CIA users */}
+                {!isCiaUser && (String(localActiveTab) === 'trends' || String(localActiveTab) === 'standard') && (
+                  <Line
+                    key="average"
+                    type="monotone"
+                    dataKey="average"
+                    name="Average of all BMUs"
+                    stroke="#000000"
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    strokeDasharray="5 5"
+                    legendType="none" // Hide from auto-generated legend
+                    isAnimationActive={false}
+                  />
+                )}
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
+          <DataPanel />
         </SimpleBar>
       )}
-      {localActiveTab === 'recent' && (
+      {(localActiveTab === 'comparison' || localActiveTab === 'recent') && (
         <SimpleBar>
           <div className="h-96 w-full pt-9">
             <ResponsiveContainer
@@ -689,21 +1034,22 @@ export default function CatchMetricsChart({
               <BarChart
                 data={recentData}
                 margin={{
-                  left: 35,
-                  right: 35,
+                  left: 45,
+                  right: 45,
                   bottom: 20,
                   top: 20,
                 }}
-                barCategoryGap="20%"
-                barGap={4}
+                barSize={15}
+                barGap={1}
                 className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+                onClick={handleChartClick}
               >
                 <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
                 <XAxis
                   dataKey="date"
                   scale="time"
                   type="number"
-                  domain={['dataMin', 'dataMax']}
+                  domain={['dataMin - 86400000', 'dataMax + 86400000']}
                   tickFormatter={(unixTime) => {
                     const date = new Date(unixTime);
                     return date.toLocaleDateString('en-US', { 
@@ -711,6 +1057,7 @@ export default function CatchMetricsChart({
                       year: '2-digit'
                     });
                   }}
+                  ticks={recentData.map(item => item.date)}
                   interval={0}
                   angle={-45}
                   textAnchor="end"
@@ -718,7 +1065,96 @@ export default function CatchMetricsChart({
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12 }}
-                  padding={{ left: 30, right: 30 }}
+                  padding={{ left: 20, right: 20 }}
+                  minTickGap={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={CustomYAxisTick}
+                  width={60}
+                  label={{
+                    value: isCiaUser 
+                      ? selectedMetricOption?.unit 
+                      : `Diff. from mean (${selectedMetricOption?.unit})`,
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: -20,
+                    style: {
+                      fontSize: 14,
+                      fill: "#666666",
+                      textAnchor: "middle",
+                    },
+                  }}
+                />
+                <Legend content={CustomLegend} />
+                {!isCiaUser && (
+                  <ReferenceLine 
+                    y={0} 
+                    stroke="#666" 
+                    strokeWidth={1} 
+                    strokeDasharray="3 3"
+                  />
+                )}
+                
+                {Object.entries(siteColors)
+                  .filter(([site]) => site !== "average") // Skip average
+                  .map(([site, color]) => (
+                    <Bar
+                      key={site}
+                      dataKey={site}
+                      name={site}
+                      fill={color}
+                      // Simple opacity based on visibility state
+                      opacity={visibilityState[site]?.opacity ?? 1}
+                      // Use isAnimationActive={false} to prevent transition issues
+                      isAnimationActive={false}
+                      // Shape corners based on positive/negative values
+                      radius={[4, 4, 0, 0]}
+                    />
+                  ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <DataPanel />
+        </SimpleBar>
+      )}
+      {localActiveTab === 'annual' && (
+        <SimpleBar>
+          <div className="h-96 w-full pt-9">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              {...(isTablet && { minWidth: "700px" })}
+            >
+              <BarChart
+                data={annualData}
+                margin={{
+                  left: 45,
+                  right: 45,
+                  bottom: 20,
+                  top: 20,
+                }}
+                barSize={30}
+                barGap={2}
+                className="[&_.recharts-cartesian-axis-tick-value]:fill-gray-500 [&_.recharts-cartesian-axis.yAxis]:-translate-y-3 rtl:[&_.recharts-cartesian-axis.yAxis]:-translate-x-12 [&_.recharts-cartesian-grid-vertical]:opacity-0"
+                onClick={handleChartClick}
+              >
+                <CartesianGrid strokeDasharray="8 10" strokeOpacity={0.435} />
+                <XAxis
+                  dataKey="date"
+                  type="category"
+                  tickFormatter={(unixTime) => {
+                    const date = new Date(unixTime);
+                    return date.getFullYear().toString();
+                  }}
+                  interval={0}
+                  textAnchor="middle"
+                  height={30}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                  tickCount={annualData.length}
                 />
                 <YAxis
                   axisLine={false}
@@ -737,25 +1173,41 @@ export default function CatchMetricsChart({
                     },
                   }}
                 />
-                <Tooltip
-                  content={(props: any) => (
-                    <CustomTooltip {...props} selectedMetric={selectedMetric} />
-                  )}
-                />
                 <Legend content={CustomLegend} />
-                {Object.entries(siteColors).map(([site, color]) => (
+                
+                {/* Add the average line if not a CIA user and only in trends tab */}
+                {!isCiaUser && (String(localActiveTab) === 'trends' || String(localActiveTab) === 'standard') && (
+                  <Line
+                    type="monotone"
+                    dataKey="average"
+                    name="Average of all BMUs"
+                    stroke="#000000"
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    strokeDasharray="5 5"
+                    isAnimationActive={false}
+                  />
+                )}
+                
+                {/* Render the bars for each BMU */}
+                {Object.entries(siteColors)
+                  .filter(([site]) => site !== "average") // Skip average
+                  .map(([site, color]) => (
                   <Bar
                     key={site}
                     dataKey={site}
                     name={site}
                     fill={color}
                     opacity={visibilityState[site]?.opacity ?? 1}
+                      isAnimationActive={false}
                     radius={[4, 4, 0, 0]}
                   />
                 ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <DataPanel />
         </SimpleBar>
       )}
     </WidgetCard>
