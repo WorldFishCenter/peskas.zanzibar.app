@@ -185,18 +185,20 @@ export default function CatchMetricsChart({
     });
   };
 
+  // Handle tab changes while preserving language state
   const handleTabChange = (tab: string) => {
-    // Create a snapshot of the current state to preserve it
-    const currentLanguage = i18n.language;
-    const currentResources = i18n.getResourceBundle(currentLanguage, 'common');
+    // Save current language before tab change
+    const currentClientLang = getClientLanguage();
     
     // Set a data attribute on document to immediately communicate language
     if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-language', currentLanguage);
+      document.documentElement.setAttribute('data-language', currentClientLang);
       document.documentElement.setAttribute('data-language-ready', 'true');
     }
     
+    // Update local tab state
     setLocalActiveTab(tab);
+    
     // Map back to old names when calling parent callback for backwards compatibility
     const oldTabName = tab === 'trends' ? 'standard' : tab === 'comparison' ? 'recent' : tab;
     
@@ -204,11 +206,19 @@ export default function CatchMetricsChart({
     if (onTabChange) {
       onTabChange(oldTabName);
       
-      // Ensure language is maintained after tab change by immediately re-applying it
-      // This is important to avoid the flash of English content
-      if (currentLanguage && i18n.language !== currentLanguage) {
-        i18n.changeLanguage(currentLanguage);
-      }
+      // Ensure language doesn't revert during tab change
+      // This is crucial for Vercel/production environment
+      setTimeout(() => {
+        // Force the language to stay as selected by user
+        if (i18n.language !== currentClientLang) {
+          i18n.changeLanguage(currentClientLang);
+        }
+        
+        // Re-trigger a language change event to ensure all components update
+        window.dispatchEvent(new CustomEvent('i18n-language-changed', {
+          detail: { language: currentClientLang }
+        }));
+      }, 10);
     }
   };
 
