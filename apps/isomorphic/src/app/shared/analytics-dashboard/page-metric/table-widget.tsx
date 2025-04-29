@@ -61,7 +61,7 @@ export default function PageMetrics({
         <ButtonGroupAction
           options={filterOptions}
           defaultActive={filterOptions[0]}
-          onChange={(data) => console.log('Page metric filter', data)}
+          onChange={(data) => }
           activeClassName="bg-gray-900 text-gray-0 dark:bg-gray-100"
           className="hidden @lg:flex"
         />

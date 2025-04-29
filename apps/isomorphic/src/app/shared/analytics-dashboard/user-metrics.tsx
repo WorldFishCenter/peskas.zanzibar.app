@@ -99,7 +99,7 @@ export default function UserMetrics({ className }: { className?: string }) {
   const isMediumScreen = useMedia('(max-width: 1200px)', false);
   const isTablet = useMedia('(max-width: 800px)', false);
   function handleFilterBy(data: string) {
-    console.log('Audience Metrics Filter:', data);
+    
   }
 
   return (

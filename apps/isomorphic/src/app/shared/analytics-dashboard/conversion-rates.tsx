@@ -43,7 +43,7 @@ const filterOptions = ['Week', 'Month', 'Year'];
 
 export default function ConversionRates({ className }: { className?: string }) {
   function handleFilterBy(data: string) {
-    console.log('Conversion Rates Filter:', data);
+    
   }
 
   return (

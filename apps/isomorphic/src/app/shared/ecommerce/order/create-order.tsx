@@ -54,7 +54,7 @@ export default function CreateOrder({
   });
 
   const onSubmit: SubmitHandler<CreateOrderInput> = (data) => {
-    // console.log('data', data);
+    // 
 
     // set timeout ony required to display loading state of the create order button
     if (sameShippingAddress) {
@@ -71,7 +71,7 @@ export default function CreateOrder({
 
     setTimeout(() => {
       setLoading(false);
-      console.log('createOrder data ->', data);
+      
       router.push(routes.eCommerce.orderDetails(DUMMY_ID));
       toast.success(
         <Text as="b">Order {id ? 'Updated' : 'placed'} successfully!</Text>

@@ -35,9 +35,7 @@ export default function PersonalInfoView({ lang }: { lang?: string }) {
   const { t } = useTranslation(lang!, 'form');
   const onSubmit: SubmitHandler<PersonalInfoFormTypes> = (data) => {
     toast.success(<Text as="b">Successfully added!</Text>);
-    console.log('Profile settings data ->', {
-      ...data,
-    });
+    
   };
 
   return (

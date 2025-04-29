@@ -19,7 +19,7 @@ function convertToWebP(inputFilePath, outputFilePath) {
       if (err) {
         console.error(`Error converting ${inputFilePath} to WebP: ${err}`);
       } else {
-        console.log(`Converted ${inputFilePath} to WebP at ${outputFilePath}`);
+        
       }
     });
 }

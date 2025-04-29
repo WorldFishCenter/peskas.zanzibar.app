@@ -17,7 +17,7 @@ const initialValues: LoginSchema = {
 export default function SignInForm() {
   const isMedium = useMedia('(max-width: 1200px)', false);
   const onSubmit: SubmitHandler<LoginSchema> = (data) => {
-    console.log('Sign in data ->', data);
+    
   };
 
   return (

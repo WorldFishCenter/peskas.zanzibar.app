@@ -44,7 +44,7 @@ export default function EmailTemplateForm({ template }: { template: string }) {
       closeModal();
       toast.success(messages.emailSentSuccessfully);
     } catch (error) {
-      console.log('error', error);
+      
       setIsLoading(false);
     }
   };

@@ -32,7 +32,7 @@ export default function ProfileSettingsView({ lang }: { lang?: string }) {
   const { t } = useTranslation(lang!, "form");
   const onSubmit: SubmitHandler<ProfileFormTypes> = (data) => {
     toast.success(<Text as="b">Profile successfully updated!</Text>);
-    console.log("Profile settings data ->", data);
+    
   };
 
   return (

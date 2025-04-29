@@ -40,7 +40,7 @@ export const createTRPCContext = async (opts: {
 
   const ip = xForwardedFor ?? xRealIp;
 
-  console.log(">>> tRPC Request from", source, "at", ip);
+  
 
   await getDb();
   return {

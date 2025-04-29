@@ -32,7 +32,7 @@ export default function AddBillingCardModalView() {
     closeModal();
     setTimeout(() => {
       setLoading(false);
-      console.log(' data ->', data);
+      
       setReset({
         cardHolder: '',
       });

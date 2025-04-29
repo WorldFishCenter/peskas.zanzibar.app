@@ -95,7 +95,7 @@ export function NavMenuItemWrapper(props: NavMenuItemWrapperProps) {
   const triggers = items.current.map((item) => item?.trigger);
   const contents = items.current.map((item) => item?.content);
 
-  // console.log({ triggers, contents });
+  // 
 
   return (
     <nav

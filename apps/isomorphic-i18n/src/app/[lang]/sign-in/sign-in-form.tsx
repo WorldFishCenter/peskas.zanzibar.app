@@ -47,10 +47,10 @@ export default function SignInForm({ lang }: { lang?: string }) {
       !resp?.ok &&
       resp?.error === "No password is set for this user."
     ) {
-      console.log(resp?.error);
+      
       setLoginErr(resp?.error);
     } else if (!resp?.ok && resp?.error) {
-      console.log(resp?.error);
+      
       setLoginErr(resp?.error);
     }
     setLoading(false);

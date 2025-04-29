@@ -33,9 +33,7 @@ const QuillEditor = dynamic(() => import('@ui/quill-editor'), {
 export default function PersonalInfoView() {
   const onSubmit: SubmitHandler<PersonalInfoFormTypes> = (data) => {
     toast.success(<Text as="b">Successfully added!</Text>);
-    console.log('Profile settings data ->', {
-      ...data,
-    });
+    
   };
 
   return (

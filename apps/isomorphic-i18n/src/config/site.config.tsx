@@ -1,22 +1,28 @@
 import { Metadata } from 'next';
-import logoImg from '@public/doc-icon.svg';
+import logoImg from '@public/logo.svg';
 import { LAYOUT_OPTIONS } from '@/config/enums';
 import logoIconImg from '@public/logo-short.svg';
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types';
+import sailboatIcon from '@public/sailboat-icon.svg';
 
 enum MODE {
-  DARK = 'dark',
   LIGHT = 'light',
+  DARK = 'dark',
 }
 
 export const siteConfig = {
-  title: 'Peskas | Kenya',
-  description: `Kenya small scale monitoring dashboard`,
+  title: 'PESKAS | KENYA FISHERIES',
+  description: 'Peskas | Kenya Fisheries Dashboard',
   logo: logoImg,
   icon: logoIconImg,
   mode: MODE.LIGHT,
   layout: LAYOUT_OPTIONS.LITHIUM,
-  // TODO: favicon
+  favicon: sailboatIcon,
+  author: {
+    name: 'E-Global Labs LTD',
+    url: 'https://www.e-globallabs.com',
+  },
+  headerLinks: [],
 };
 
 export const metaObject = (

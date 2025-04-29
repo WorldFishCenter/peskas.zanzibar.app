@@ -151,13 +151,13 @@ export default function StepTwo() {
   }, [errors]);
 
   const onSubmit: SubmitHandler<FormStep6Schema> = (data) => {
-    console.log('data', data);
+    
     setFormData((prev) => ({
       ...prev,
       indoorAmenities: data.indoorAmenities,
       outdoorAmenities: data.outdoorAmenities,
     }));
-    // console.log('formData', formData);
+    // 
     gotoNextStep();
   };
 

@@ -55,13 +55,13 @@ export default function CreateEditShipment({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('create_shipping_data', data);
+      
       toast.success('Shipment Created Successfully');
       methods.reset();
     }, 600);
   };
 
-  console.log('errors', methods.formState.errors);
+  
 
   return (
     <div className="@container">

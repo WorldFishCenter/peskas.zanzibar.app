@@ -62,7 +62,7 @@ const viewOptions = [
 export default function ExpenseHistory({ className }: { className?: string }) {
   const isTablet = useMedia('(max-width: 820px)', false);
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

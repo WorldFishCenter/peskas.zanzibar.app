@@ -77,7 +77,7 @@ function EmailForm({ template }: { template: string }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit: SubmitHandler<NewsLetterFormSchema> = async (data) => {
-    console.log(data);
+    
 
     setIsLoading(true);
     try {
@@ -91,7 +91,7 @@ function EmailForm({ template }: { template: string }) {
       setIsLoading(false);
       toast.success(messages.emailSentSuccessfully);
     } catch (error) {
-      console.log('error', error);
+      
       setIsLoading(false);
     }
   };

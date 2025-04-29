@@ -44,13 +44,13 @@ export default function ProductDetailsSummery({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('createOrder data ->', data);
+      
       addItemToCart(item, 1);
       toast.success(<Text as="b">Product added to the cart</Text>);
     }, 600);
   };
 
-  // console.log('errors', methods.formState.errors?.productColor);
+  // 
 
   return (
     <>

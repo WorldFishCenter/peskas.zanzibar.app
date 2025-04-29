@@ -19,7 +19,7 @@ export default function NewsLetterForm({ lang }: { lang?: string }) {
   const { t } = useTranslation(lang!, "form");
 
   const onSubmit: SubmitHandler<NewsLetterFormSchema> = (data) => {
-    console.log(data);
+    
     setReset(initialValues);
   };
   return (

@@ -30,7 +30,7 @@ const QuillEditor = dynamic(() => import('@ui/quill-editor'), {
 export default function ProfileSettingsView() {
   const onSubmit: SubmitHandler<ProfileFormTypes> = (data) => {
     toast.success(<Text as="b">Profile successfully updated!</Text>);
-    console.log('Profile settings data ->', data);
+    
   };
 
   return (

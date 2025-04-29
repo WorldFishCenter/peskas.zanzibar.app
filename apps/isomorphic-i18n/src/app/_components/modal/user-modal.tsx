@@ -537,7 +537,7 @@ export default function UserModal({
                 },
                 (error) => {
                   toast.error("Failed to update user");
-                  console.log(error);
+                  
                 }
               )}
               className="space-y-4"

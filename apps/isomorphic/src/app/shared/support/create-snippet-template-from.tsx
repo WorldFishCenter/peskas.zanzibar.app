@@ -83,7 +83,7 @@ export default function CreateSnippetTemplateForm({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log(title, data);
+      
       setReset(initialValues);
       toast.success(
         <Text as="b" fontWeight="medium">

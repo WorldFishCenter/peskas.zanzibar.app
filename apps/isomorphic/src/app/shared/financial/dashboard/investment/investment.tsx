@@ -202,7 +202,7 @@ export default function Investment({ className }: InvestmentProps) {
   ).toFixed(2);
 
   function handleChange(date: Date) {
-    console.log('date', date);
+    
     setStartDate(date);
     if (activeIndex == 4) {
       setActiveIndex(0);

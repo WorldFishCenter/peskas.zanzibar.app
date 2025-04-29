@@ -25,7 +25,7 @@ export default function PasswordSettingsView({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('Password settings data ->', data);
+      
       setReset({
         currentPassword: '',
         newPassword: '',

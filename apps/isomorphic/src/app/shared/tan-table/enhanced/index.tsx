@@ -31,17 +31,17 @@ export default function EnhancedTanTable() {
         },
         priceFilter: (row, columnId, value) => {
           if (!value) return false;
-          // console.log('custom filter conditions', row, columnId, value);
+          // 
           return true;
         },
         createdDate: (row, columnId, value) => {
           if (!value) return false;
-          // console.log('custom filter conditions', row, columnId, value);
+          // 
           return true;
         },
         dueDate: (row, columnId, value) => {
           if (!value) return false;
-          // console.log('custom filter conditions', row, columnId, value);
+          // 
           return true;
         },
       },

@@ -28,7 +28,7 @@ function PostSidebar({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('createOrder data ->', orderedItems);
+      
       toast.success(<Text as="b">Order created successfully</Text>);
     }, 600);
   }

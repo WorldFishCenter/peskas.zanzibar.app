@@ -27,7 +27,7 @@ export default function EditRole() {
     // set timeout ony required to display loading state of the create category button
     setLoading(true);
     setTimeout(() => {
-      console.log('data', data);
+      
       setLoading(false);
       closeModal();
     }, 600);

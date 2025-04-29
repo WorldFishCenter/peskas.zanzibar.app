@@ -134,7 +134,7 @@ export default function TicketsTable() {
               options={statuses}
               value={filters['status']}
               onChange={(value: string) => {
-                console.log('value', value);
+                
                 updateFilter('status', value);
               }}
               getOptionValue={(option: { value: any }) => option.value}

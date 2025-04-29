@@ -14,7 +14,7 @@ type ReviewFormValues = {
 export default function ProductReviewForm() {
   const [reset, setReset] = useState({});
   const onSubmit: SubmitHandler<ReviewFormValues> = (data) => {
-    console.log(data);
+    
     setReset({ rating: '', review: '' });
   };
   return (

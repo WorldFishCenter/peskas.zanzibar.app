@@ -120,7 +120,7 @@ function CustomLegend({ className }: { className?: string }) {
 
 export default function CashFlow({ className }: Props) {
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

@@ -21,7 +21,7 @@ export default function SignInForm() {
   const [reset, setReset] = useState({});
 
   const onSubmit: SubmitHandler<LoginType> = (data) => {
-    console.log(data);
+    
     signIn('credentials', {
       ...data,
     });

@@ -40,7 +40,7 @@ export default function CreateInvoice({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('createInvoice data ->', data);
+      
       setReset({
         fromName: '',
         fromAddress: '',

@@ -25,7 +25,7 @@ export default function LocationSelection({
   const [selected, setSelected] = useState(locationData[0]);
   const [query, setQuery] = useState('');
 
-  console.log('value', value);
+  
 
   const filteredLocation =
     query === ''

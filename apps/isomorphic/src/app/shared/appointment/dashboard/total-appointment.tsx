@@ -92,7 +92,7 @@ export default function TotalAppointment({
   const isTablet = useMedia('(max-width: 800px)', false);
 
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

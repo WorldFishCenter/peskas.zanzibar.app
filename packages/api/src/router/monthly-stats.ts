@@ -17,7 +17,7 @@ export const monthlyStatsRouter = createTRPCRouter({
       
       if (isEmpty(input.bmus)) return null;
 
-      console.log('Querying BMUs:', input.bmus);
+      
 
       const data = await MonthlyStatsModel.aggregate([
         {
@@ -46,10 +46,8 @@ export const monthlyStatsRouter = createTRPCRouter({
         }
       ]);
 
-      console.log('Aggregated data:', JSON.stringify(data, null, 2));
-
       if (isEmpty(data)) {
-        console.log('No data found for BMUs:', input.bmus);
+        
         return null;
       }
 

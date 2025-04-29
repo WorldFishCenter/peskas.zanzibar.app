@@ -107,7 +107,7 @@ export default function CustomizedMixChart({
   const isMediumScreen = useMedia("(max-width: 1200px)", false);
   const isTablet = useMedia("(max-width: 800px)", false);
   function handleFilterBy(data: string) {
-    console.log("Audience Metrics Filter:", data);
+    
   }
 
   return (

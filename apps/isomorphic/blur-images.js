@@ -19,9 +19,7 @@ function applyBlur(inputFilePath, outputFilePath, blurAmount) {
       if (err) {
         console.error(`Error applying blur to ${inputFilePath}: ${err}`);
       } else {
-        console.log(
-          `Applied blur to ${inputFilePath} and saved at ${outputFilePath}`
-        );
+        
       }
     });
 }

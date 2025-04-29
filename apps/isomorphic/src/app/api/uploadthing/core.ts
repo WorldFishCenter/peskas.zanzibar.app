@@ -11,7 +11,7 @@ export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
   avatar: f({ image: { maxFileSize: '4MB' } })
     .middleware(({ req }) => auth(req))
-    .onUploadComplete((data) => console.log('file', data)),
+    .onUploadComplete((data) => ),
 
   generalMedia: f({
     'application/pdf': { maxFileSize: '4MB', maxFileCount: 4 },
@@ -19,7 +19,7 @@ export const ourFileRouter = {
     video: { maxFileSize: '256MB', maxFileCount: 1 },
   })
     .middleware(({ req }) => auth(req))
-    .onUploadComplete((data) => console.log('file', data)),
+    .onUploadComplete((data) => ),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

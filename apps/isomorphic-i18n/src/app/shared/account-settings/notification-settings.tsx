@@ -74,7 +74,7 @@ export default function NotificationSettingsView({ lang }: { lang?: string }) {
                 {t(opt.title)}
               </Text>
               <ButtonGroup
-                onChange={(option) => console.log(opt.title, option)}
+                onChange={(option) => }
               />
             </div>
           ))}
@@ -95,7 +95,7 @@ export default function NotificationSettingsView({ lang }: { lang?: string }) {
                 {t(opt.title)}
               </Text>
               <ButtonGroup
-                onChange={(option) => console.log(opt.title, option)}
+                onChange={(option) => }
               />
             </div>
           ))}

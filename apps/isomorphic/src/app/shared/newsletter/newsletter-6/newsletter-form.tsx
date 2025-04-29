@@ -17,7 +17,7 @@ export default function NewsLetterForm({ className }: { className?: string }) {
   const [reset, setReset] = useState({});
 
   const onSubmit: SubmitHandler<NewsLetterFormSchema> = (data) => {
-    console.log(data);
+    
     setReset(initialValues);
   };
   return (

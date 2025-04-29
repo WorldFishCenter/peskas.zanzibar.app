@@ -75,13 +75,13 @@ export default function CheckoutPageWrapper({
 
     setTimeout(() => {
       setLoading(false);
-      console.log('checkout_data', data);
+      
       router.push(routes.eCommerce.orderDetails(DUMMY_ID));
       toast.success(<Text as="b">Order placed successfully!</Text>);
     }, 600);
   };
 
-  // console.log('errors', methods.formState.errors);
+  // 
 
   return (
     <FormProvider {...methods}>

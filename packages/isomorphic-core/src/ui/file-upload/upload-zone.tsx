@@ -43,7 +43,7 @@ export default function UploadZone({
 
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
-      console.log('acceptedFiles', acceptedFiles);
+      
       setFiles([
         ...acceptedFiles.map((file) =>
           Object.assign(file, {
@@ -82,7 +82,7 @@ export default function UploadZone({
       onClientUploadComplete: (
         res: ClientUploadedFileData<any>[] | undefined
       ) => {
-        console.log('res', res);
+        
         if (setValue) {
           // const respondedUrls = res?.map((r) => r.url);
           setFiles([]);

@@ -169,11 +169,7 @@ export function CarbonSidebarMenu({ lang }: { lang?: string }) {
                                         const subMenuItemUrl = `/${lang}${subMenuItem?.href}`;
                                         const isChildActive =
                                           pathname === subMenuItemUrl;
-                                        console.log(
-                                          pathname,
-                                          isChildActive,
-                                          subMenuItemUrl
-                                        );
+                                        
 
                                         return (
                                           <Menu.Item

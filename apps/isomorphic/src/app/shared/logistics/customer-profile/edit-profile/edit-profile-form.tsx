@@ -48,7 +48,7 @@ export default function EditProfileForm({ className }: EditProfileFormProps) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('editProfile', data);
+      
       setReset(initialValues);
       toast.success('Profile updated successfully');
     }, 600);

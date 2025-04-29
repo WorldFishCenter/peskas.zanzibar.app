@@ -44,7 +44,7 @@ async function getDb() {
     cached.promise = mongoose
       .connect(databaseUrl as string, opts)
       .then((mongoose) => {
-        console.log('MongoDB connected successfully');
+        
         return mongoose;
       })
       .catch((error) => {

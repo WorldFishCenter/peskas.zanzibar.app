@@ -62,7 +62,7 @@ export default function CreateEditProduct({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('product_data', data);
+      
       toast.success(
         <Text as="b">Product successfully {slug ? 'updated' : 'created'}</Text>
       );

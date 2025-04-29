@@ -103,30 +103,13 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   const isAdminUser = hasGroups && session?.user?.groups?.some((group: { name: string }) => group.name === 'Admin');
   
   // Log user session info for debugging
-  console.log('User Session Debug:', {
-    hasSession: !!session,
-    hasGroups: hasGroups,
-    groups: session?.user?.groups,
-    isAdmin: isAdminUser,
-    isCia: isCiaUser,
-    userBmu: session?.user?.userBmu
-  });
+  
   
   // Get the active BMU from props or session
   const activeBmu = bmu || session?.user?.userBmu?.BMU || "Vipingo";
   
   // Display name based on user role
   const displayName = isAdminUser ? "All BMUs" : activeBmu;
-  
-  console.log('BMU Debug:', {
-    bmuProp: bmu,
-    activeBmu,
-    userBmuFromSession: session?.user?.userBmu?.BMU,
-    isAdmin: isAdminUser,
-    isCia: isCiaUser,
-    userBmuQuery: isAdminUser ? bmus : (bmu ? [bmu] : bmus),
-    otherBmusQuery: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
-  });
   
   // For admin users, we want all BMUs data together
   // For CIA users, we only need their BMU's data
@@ -150,16 +133,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
 
   // Monitor API responses (keeping this from refactor-charts for debugging)
   useEffect(() => {
-    console.log('API Responses:', {
-      statsData1,
-      statsData2,
-      isLoading1,
-      isLoading2,
-      error1,
-      error2,
-      userQuery: isAdminUser ? bmus : (bmu ? [bmu] : bmus),
-      otherQuery: (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : []
-    });
+    const otherQuery = (!isCiaUser && !isAdminUser && bmu) ? bmus.filter(b => b !== bmu) : [];
   }, [statsData1, statsData2, isLoading1, isLoading2, error1, error2, isAdminUser, bmus, activeBmu, bmu, isCiaUser]);
 
   useEffect(() => {

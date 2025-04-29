@@ -67,7 +67,7 @@ export default function StepTwo() {
   }, [errors]);
 
   const onSubmit: SubmitHandler<PlaceTypeSchema> = (data) => {
-    console.log('data', data);
+    
     setFormData((prev) => ({
       ...prev,
       placeType: data.placeType,

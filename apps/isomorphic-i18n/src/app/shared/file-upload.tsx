@@ -108,7 +108,7 @@ export const FileInput = ({
 
   function handleFileUpload() {
     if (files.length) {
-      console.log('uploaded files:', files);
+      
       toast.success(<Text as="b">File successfully added</Text>);
 
       setTimeout(() => {

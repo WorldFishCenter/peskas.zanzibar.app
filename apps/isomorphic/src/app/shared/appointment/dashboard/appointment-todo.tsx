@@ -63,7 +63,7 @@ const viewOptions = [
 
 export default function AppointmentTodo({ className }: { className?: string }) {
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

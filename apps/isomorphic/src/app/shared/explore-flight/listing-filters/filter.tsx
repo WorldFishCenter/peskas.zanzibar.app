@@ -13,7 +13,7 @@ export default function Filter({
   state: InitialStateType;
   applyFilter: (query: string, value: any) => void;
 }) {
-  // console.log(state['filter']);
+  // 
 
   return (
     <div className={cn('flex', className)}>

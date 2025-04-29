@@ -175,7 +175,7 @@ export default function ShipmentListTable() {
               options={paymentStatusOptions}
               value={filters['status']}
               onChange={(value: string) => {
-                console.log('value', value);
+                
                 updateFilter('status', value);
               }}
               getOptionValue={(option: { label: any }) => option.label}

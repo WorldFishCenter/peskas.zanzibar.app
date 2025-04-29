@@ -35,7 +35,7 @@ export default function EventForm({
   const onSubmit: SubmitHandler<EventFormInput> = (data) => {
     const isNewEvent = data.id === '' || data.id === undefined;
 
-    console.log('event_data', data);
+    
 
     toast.success(
       <Text as="b">

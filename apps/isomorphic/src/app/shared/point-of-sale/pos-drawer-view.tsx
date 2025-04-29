@@ -32,7 +32,7 @@ export default function POSDrawerView({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('createOrder data ->', orderedItems);
+      
       toast.success(<Text as="b">Order created successfully</Text>);
       onOrderSuccess && onOrderSuccess();
     }, 600);

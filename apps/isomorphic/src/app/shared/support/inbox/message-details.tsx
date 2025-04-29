@@ -150,7 +150,7 @@ export default function MessageDetails({ className }: { className?: string }) {
   }, [message]);
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
+    
   };
 
   if (isLoading) {

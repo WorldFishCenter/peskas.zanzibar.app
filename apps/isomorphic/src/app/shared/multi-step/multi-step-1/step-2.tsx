@@ -68,7 +68,7 @@ export default function StepTwo() {
   }, [errors]);
 
   const onSubmit: SubmitHandler<PropertyTypeSchema> = (data) => {
-    console.log('data', data);
+    
     setFormData((prev) => ({
       ...prev,
       propertyType: data.propertyType,

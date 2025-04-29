@@ -14,7 +14,7 @@ type FormValues = {
 function CheckDelivery() {
   const [reset, setReset] = useState({});
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
+    
     setReset({ pinCode: '' });
   };
 

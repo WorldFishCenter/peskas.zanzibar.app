@@ -19,7 +19,7 @@ export default function CreateFolder({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      console.log('data', data);
+      
       setReset({
         name: '',
       });

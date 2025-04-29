@@ -137,7 +137,7 @@ export default function Forecast({ className }: { className?: string }) {
   const [data, setData] = useState(dailyData);
 
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
     if (viewType === 'Daily') {
       setData(dailyData);
     } else {

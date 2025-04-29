@@ -17,7 +17,7 @@ const initialValues: LoginType = {
 export default function SignInForm() {
   const isMedium = useMedia('(max-width: 1200px)', false);
   const onSubmit: SubmitHandler<LoginType> = (data) => {
-    console.log('Sign in form data', data);
+    
   };
 
   return (

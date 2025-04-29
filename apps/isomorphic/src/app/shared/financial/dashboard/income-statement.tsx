@@ -168,7 +168,7 @@ function Legend({ className }: { className?: string }) {
 export default function IncomeStatement({ className }: { className?: string }) {
   const { theme } = useTheme();
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

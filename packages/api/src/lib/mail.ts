@@ -79,9 +79,9 @@ export class MailService {
     const templateDirectory = path.join(process.cwd(), "src/templates");
     let fileContent = this.fileContentDict[name];
     if (fileContent) {
-      console.log("fileContent already exists");
+      
     } else {
-      console.log("fileContent doesn't exist. Creating");
+      
       fileContent = await fs.readFile(templateDirectory + `/${name}.hbs`, {
         encoding: "utf8",
       });
@@ -96,9 +96,9 @@ export class MailService {
     const templateDirectory = path.join(process.cwd(), "src/templates");
     let fileContent = this.fileContentDict[name];
     if (fileContent) {
-      console.log("fileContent already exists");
+      
     } else {
-      console.log("fileContent doesn't exist. Creating");
+      
       fileContent = await fs.readFile(templateDirectory + `/${name}.hbs`, {
         encoding: "utf8",
       });
@@ -171,14 +171,14 @@ export class MailService {
             ?.sendMail(msg)
             .then((info) => {
               sentInfo.push(info);
-              console.log("\x1b[32m", "Message sent successfully!");
+              
               if (isDevelopment) {
-                console.log("\x1b[33m", nodemailer.getTestMessageUrl(info));
+                // Log development info here if needed
               }
             })
             .catch((error: Error) => {
               sentInfo.push(error);
-              console.log("\x1b[31m", "Error occurred!");
+              
               console.error("error", error.message);
             }),
         ),

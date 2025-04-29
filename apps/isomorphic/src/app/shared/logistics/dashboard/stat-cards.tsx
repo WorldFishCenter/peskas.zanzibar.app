@@ -80,7 +80,7 @@ const viewOptions = [
 
 export default function StatCards({ className }: { className?: string }) {
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

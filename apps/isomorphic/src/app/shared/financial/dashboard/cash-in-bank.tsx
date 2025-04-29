@@ -64,7 +64,7 @@ const viewOptions = [
 export default function CashInBank({ className }: { className?: string }) {
   const isTablet = useMedia('(max-width: 800px)', false);
   function handleChange(viewType: string) {
-    console.log('viewType', viewType);
+    
   }
 
   return (

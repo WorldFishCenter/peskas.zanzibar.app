@@ -6,6 +6,11 @@ export type TCatchMonthly = {
   _id: Types.ObjectId;
   BMU: string;
   date: Date;
+  mean_effort?: number;
+  mean_cpue?: number;
+  mean_cpua?: number;
+  mean_rpue?: number;
+  mean_rpua?: number;
 };
 
 /**
@@ -15,6 +20,11 @@ const catchMonthlySchema = new Schema<TCatchMonthly>(
   {
     BMU: String,
     date: Date,
+    mean_effort: Number,
+    mean_cpue: Number,
+    mean_cpua: Number,
+    mean_rpue: Number,
+    mean_rpua: Number,
   },
   {
     collection: "catch_monthly",

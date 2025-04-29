@@ -52,7 +52,7 @@ export default function TopReferrers({ className }: { className?: string }) {
             options={viewOptions}
             dropdownClassName="!z-0"
             className="rounded-md border"
-            onChange={(v) => console.log(v)}
+            onChange={(v) => }
           />
         </div>
       }
