@@ -14,13 +14,13 @@ import {
 
 const generalOptions = [
   {
-    title: 'I’m mentioned in a message',
+    title: "I'm mentioned in a message",
   },
   {
     title: 'Someone replies to any message',
   },
   {
-    title: 'I’m assigned a task',
+    title: "I'm assigned a task",
   },
   {
     title: 'A task is overdue',
@@ -59,7 +59,7 @@ export default function NotificationSettingsView() {
       />
       <HorizontalFormBlockWrapper
         title="General notifications"
-        description="Select when you’ll be notified when the following changes occur."
+        description="Select when you'll be notified when the following changes occur."
         descriptionClassName="max-w-[344px]"
       >
         <div className="col-span-2">
@@ -72,7 +72,9 @@ export default function NotificationSettingsView() {
                 {opt.title}
               </Text>
               <ButtonGroup
-                onChange={(option) => }
+                onChange={(option) => {
+                  console.log(`${opt.title} option changed to: ${option}`);
+                }}
               />
             </div>
           ))}
@@ -80,7 +82,7 @@ export default function NotificationSettingsView() {
       </HorizontalFormBlockWrapper>
       <HorizontalFormBlockWrapper
         title="Summary notifications"
-        description="Select when you’ll be notified when the following summaries or report are ready."
+        description="Select when you'll be notified when the following summaries or report are ready."
         descriptionClassName="max-w-[344px]"
       >
         <div className="col-span-2">
@@ -93,7 +95,9 @@ export default function NotificationSettingsView() {
                 {opt.title}
               </Text>
               <ButtonGroup
-                onChange={(option) => }
+                onChange={(option) => {
+                  console.log(`${opt.title} option changed to: ${option}`);
+                }}
               />
             </div>
           ))}
