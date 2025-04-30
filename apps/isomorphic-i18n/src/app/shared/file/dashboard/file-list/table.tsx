@@ -12,6 +12,7 @@ import { bmusAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import { Info } from "lucide-react";
 import MetricCard from "@components/cards/metric-card";
+import { useSession } from "next-auth/react";
 
 type ColumnType = {
   title: React.ReactNode;
@@ -163,10 +164,11 @@ export default function PerformanceTable({
   const [pageSize, setPageSize] = useState(10);
   const { t } = useTranslation(lang!, "table");
   const [bmus] = useAtom(bmusAtom);
-
+  const { data: session } = useSession();
   const { data: performanceData, isLoading: isDataLoading } =
     api.aggregatedCatch.performance.useQuery({ bmus });
 
+  // Move all hooks before the conditional return
   const memoizedData = useMemo(() => performanceData || [], [performanceData]);
 
   const {
@@ -182,7 +184,8 @@ export default function PerformanceTable({
   const memoizedHandleSort = useCallback((key: string) => {
     handleSort(key);
   }, [handleSort]);
-
+  
+  // Move columns definition before the conditional return
   const columns = useMemo<ColumnType[]>(
     () => [
       {
@@ -382,6 +385,17 @@ export default function PerformanceTable({
     ],
     [t, sortConfig, memoizedHandleSort]
   );
+
+  // Check if user is in CIA mode
+  const isCiaUser = session?.user?.groups?.some(
+    (group: { name: string }) => group.name === 'CIA'
+  );
+
+  // If in CIA mode, don't render the table as it doesn't make sense to show a comparison
+  // table with just one BMU
+  if (isCiaUser) {
+    return null;
+  }
 
   return (
     <div className={className}>

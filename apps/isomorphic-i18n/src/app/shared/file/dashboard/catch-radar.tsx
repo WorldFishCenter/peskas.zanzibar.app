@@ -2,7 +2,7 @@
 
 import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Legend,
   PolarAngleAxis,
@@ -18,6 +18,10 @@ import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
 import { useSession } from "next-auth/react";
+// Import shared permissions hook
+import useUserPermissions from "./hooks/useUserPermissions";
+// Import shared color function
+import { generateColor } from "./charts/utils";
 
 type MetricKey =
   | "mean_effort"
@@ -28,7 +32,6 @@ type MetricKey =
 
 interface RadarData {
   month: string;
-  year?: number;
   monthDisplay?: string;
   [key: string]: number | string | undefined;
 }
@@ -70,22 +73,6 @@ const MONTH_ORDER = [
   "Nov",
   "Dec",
 ];
-
-const generateColor = (index: number, site: string, referenceBmu: string | undefined): string => {
-  if (site === referenceBmu) {
-    return "#fc3468"; // Red color for reference BMU
-  }
-  const colors = [
-    "#0c526e", // Dark blue
-    "#f09609", // Orange
-    "#2563eb", // Blue
-    "#16a34a", // Green
-    "#9333ea", // Purple
-    "#ea580c", // Dark orange
-    "#0891b2", // Teal
-  ];
-  return colors[index % colors.length];
-};
 
 const CustomTooltip = ({ active, payload, metric, t }: any) => {
   if (active && payload && payload.length) {
@@ -179,10 +166,21 @@ export default function CatchRadarChart({
 }) {
   const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
-  const { data: session } = useSession();
   
-  // Determine if the user is part of the CIA group
-  const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
+  // Use centralized permissions hook
+  const {
+    userBMU,
+    isCiaUser,
+    isWbciaUser,
+    isAdmin,
+    getAccessibleBMUs,
+    hasRestrictedAccess,
+    shouldShowAggregated,
+    canCompareWithOthers
+  } = useUserPermissions();
+  
+  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
+  const effectiveBMU = bmu || userBMU;
 
   const [data, setData] = useState<RadarData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,15 +189,37 @@ export default function CatchRadarChart({
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { data: meanCatch, isLoading: isFetching, error: queryError } =
+  // Add ref to track bmus changes
+  const previousBmus = useRef<string[]>([]);
+  const previousMetric = useRef<string>(selectedMetric);
+
+  // Force refetch when bmus or metric changes
+  const { data: meanCatch, isLoading: isFetching, error: queryError, refetch } =
     api.aggregatedCatch.meanCatchRadar.useQuery(
       { bmus, metric: selectedMetric },
       {
         refetchOnMount: true,
         refetchOnWindowFocus: false,
         retry: 3,
+        enabled: bmus.length > 0,
       }
     );
+
+  // Force refetch when bmus or metric changes
+  useEffect(() => {
+    // Check if bmus array or metric has changed
+    const bmusChanged = JSON.stringify(previousBmus.current) !== JSON.stringify(bmus);
+    const metricChanged = previousMetric.current !== selectedMetric;
+    
+    if (bmusChanged || metricChanged) {
+      console.log('BMUs or metric changed, refetching data');
+      setData([]);
+      setIsInitialLoad(true);
+      previousBmus.current = [...bmus];
+      previousMetric.current = selectedMetric;
+      refetch();
+    }
+  }, [bmus, selectedMetric, refetch]);
 
   // Handle query errors
   useEffect(() => {
@@ -212,11 +232,15 @@ export default function CatchRadarChart({
 
   useEffect(() => {
     // Set loading state when dependencies change
+    if (!isInitialLoad && !isFetching && bmus.length > 0 && 
+        JSON.stringify(previousBmus.current) === JSON.stringify(bmus) &&
+        previousMetric.current === selectedMetric) return;
+    
     setLoading(true);
     setError(null);
 
     // Don't process data if we're still fetching or if data is not available
-    if (isFetching || !meanCatch) {
+    if (isFetching || !meanCatch || bmus.length === 0) {
       return;
     }
 
@@ -242,9 +266,14 @@ export default function CatchRadarChart({
           return;
         }
 
+        // Apply user permissions to filter BMUs
+        const accessibleSites = hasRestrictedAccess 
+          ? getAccessibleBMUs(uniqueSites) 
+          : uniqueSites;
+
         const newSiteColors = uniqueSites.reduce<Record<string, string>>(
           (acc: Record<string, string>, site: string, index: number) => {
-            acc[site] = generateColor(index, site, bmu);
+            acc[site] = generateColor(index, site, effectiveBMU);
             return acc;
           },
           {}
@@ -255,37 +284,18 @@ export default function CatchRadarChart({
           uniqueSites.reduce<VisibilityState>(
             (acc: VisibilityState, site: string) => ({
               ...acc,
-              [site]: { opacity: site === bmu ? 1 : 0.2 },
+              [site]: { 
+                opacity: hasRestrictedAccess
+                  ? accessibleSites.includes(site) ? 1 : 0.2
+                  : site === effectiveBMU ? 1 : 0.2 
+              },
             }),
             {}
           );
         setVisibilityState(newVisibilityState);
 
-        // Filter for data from 2023 onwards
-        // The data structure might not have a direct year field, or it might be in a different format
-        // First, let's check if we have any year fields in the data
-        const hasYearField = meanCatch.some(item => item.year !== undefined);
-        
-        let filteredMeanCatch = [...meanCatch];
-        
-        if (hasYearField) {
-          // If year field exists, filter by it
-          filteredMeanCatch = meanCatch.filter(item => {
-            const year = item.year ? Number(item.year) : 0;
-            return year >= 2023;
-          });
-          
-          // If filtering removed all data, use the original data
-          if (filteredMeanCatch.length === 0) {
-            console.warn("No data found from 2023 onwards, showing all available data");
-            filteredMeanCatch = [...meanCatch];
-          }
-        } else {
-          // If there's no year field, we can't filter by year
-          console.warn("Year field not found in data, showing all available data");
-        }
-
-        let processedData = [...filteredMeanCatch]
+        // Process and sort the data by month
+        let processedData = [...meanCatch]
           .sort(
             (a, b) =>
               MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
@@ -293,16 +303,8 @@ export default function CatchRadarChart({
           .map((item) => {
             const completeItem: RadarData = { 
               month: item.month,
-              // Preserve year field if it exists
-              ...(item.year !== undefined && { year: Number(item.year) })
+              monthDisplay: item.month
             };
-            
-            // Format the month to include year if available
-            if (item.year !== undefined) {
-              completeItem.monthDisplay = `${item.month} ${item.year}`;
-            } else {
-              completeItem.monthDisplay = item.month;
-            }
             
             uniqueSites.forEach((site) => {
               completeItem[site] =
@@ -314,19 +316,19 @@ export default function CatchRadarChart({
           });
 
         // Calculate differenced data if needed
-        if (activeTab === 'differenced' && bmu) {
+        if (activeTab === 'differenced' && effectiveBMU) {
           processedData = processedData.map(item => {
-            const userValue = Number(item[bmu]);
+            const userValue = Number(item[effectiveBMU]);
             // Only calculate difference if the BMU has data for this month
             if (isNaN(userValue) || userValue === 0) {
               return {
                 month: item.month,
-                [bmu]: 0
+                [effectiveBMU]: 0
               };
             }
 
             const otherBMUs = uniqueSites.filter(site => 
-              site !== bmu && 
+              site !== effectiveBMU && 
               !isNaN(Number(item[site])) && 
               Number(item[site]) !== 0
             );
@@ -335,7 +337,7 @@ export default function CatchRadarChart({
             if (otherBMUs.length === 0) {
               return {
                 month: item.month,
-                [bmu]: 0
+                [effectiveBMU]: 0
               };
             }
 
@@ -345,13 +347,16 @@ export default function CatchRadarChart({
 
             return {
               month: item.month,
-              [bmu]: userValue - otherAverage
+              [effectiveBMU]: userValue - otherAverage
             };
-          }).filter(item => Number(item[bmu]) !== 0); // Remove months with no valid difference
+          }).filter(item => Number(item[effectiveBMU]) !== 0); // Remove months with no valid difference
         }
 
+        previousBmus.current = [...bmus];
+        previousMetric.current = selectedMetric;
         setData(processedData);
         setError(null);
+        setIsInitialLoad(false);
       } catch (e) {
         console.error("Error processing data:", e);
         setError(t("text-error-processing-data"));
@@ -361,24 +366,16 @@ export default function CatchRadarChart({
     };
 
     processData();
-  }, [meanCatch, selectedMetric, activeTab, bmu, isFetching, t]);
+  }, [meanCatch, selectedMetric, activeTab, effectiveBMU, isFetching, isInitialLoad, bmus]);
 
-  // Remove the separate bmus effect since we handle loading in the main effect
-  useEffect(() => {
-    if (!bmus || bmus.length === 0) {
-      setError(t("text-no-bmus-selected"));
-      setLoading(false);
-    }
-  }, [bmus, t]);
-
-  const handleLegendClick = (site: string) => {
+  const handleLegendClick = useCallback((site: string) => {
     setVisibilityState((prev) => ({
       ...prev,
       [site]: {
         opacity: prev[site]?.opacity === 1 ? 0.2 : 1,
       },
     }));
-  };
+  }, []);
 
   if (loading || isFetching) return <LoadingState t={t} />;
 
@@ -440,7 +437,7 @@ export default function CatchRadarChart({
                 strokeDasharray="3 3"
               />
               <PolarAngleAxis
-                dataKey={data[0]?.monthDisplay ? "monthDisplay" : "month"}
+                dataKey="month"
                 tick={{ fill: "#64748b", fontSize: 11, fontWeight: 400 }}
                 tickLine={false}
                 stroke="#cbd5e1"
@@ -458,7 +455,7 @@ export default function CatchRadarChart({
               />
               {Object.entries(siteColors).map(([site, color]) => {
                 // In differenced mode, only show the selected BMU
-                if (activeTab === 'differenced' && site !== bmu) {
+                if (activeTab === 'differenced' && site !== effectiveBMU) {
                   return null;
                 }
                 const opacity = visibilityState[site]?.opacity ?? 1;
@@ -474,9 +471,7 @@ export default function CatchRadarChart({
                     strokeWidth={2}
                     dot
                     activeDot={{ r: 6, strokeWidth: 0 }}
-                    animationBegin={0}
-                    animationDuration={1000}
-                    animationEasing="ease-out"
+                    isAnimationActive={false}
                   />
                 );
               })}

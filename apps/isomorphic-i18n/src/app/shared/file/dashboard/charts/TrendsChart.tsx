@@ -76,7 +76,13 @@ export default function TrendsChart({
 
   // Generate areas for each BMU
   const renderAreas = () => {
-    const sites = Object.keys(siteColors).filter(site => site !== "average");
+    // For CIA users, only show their BMU and not "average" or "historical_average"
+    const sites = Object.keys(siteColors).filter(site => {
+      if (isCiaUser) {
+        return site !== "average" && site !== "historical_average";
+      }
+      return site !== "average";
+    });
     
     return sites.map((site) => (
       <Area
@@ -91,6 +97,7 @@ export default function TrendsChart({
         activeDot={{ r: 6, strokeWidth: 0 }}
         hide={visibilityState[site]?.opacity === 0}
         strokeOpacity={visibilityState[site]?.opacity}
+        isAnimationActive={false}
       />
     ));
   };
@@ -190,7 +197,7 @@ export default function TrendsChart({
           
           {renderAreas()}
           
-          {/* Add average line for non-CIA users */}
+          {/* Add average line for non-CIA users only */}
           {!isCiaUser && (
             <Area
               type="monotone"
@@ -203,6 +210,7 @@ export default function TrendsChart({
               strokeOpacity={visibilityState["average"]?.opacity}
               strokeDasharray="5 5"
               name={getTranslation("text-average-of-all-bmus")}
+              isAnimationActive={false}
             />
           )}
           
