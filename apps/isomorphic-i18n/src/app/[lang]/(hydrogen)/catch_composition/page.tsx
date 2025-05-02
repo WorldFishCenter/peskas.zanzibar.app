@@ -1,55 +1,67 @@
-import { Title, Text } from 'rizzui';
-import PageHeader from '@/app/shared/page-header';
-import cn from '@utils/class-names';
+"use client";
+import { useState } from "react";
+import { useTranslation } from "@/app/i18n/client";
+import { useSession } from "next-auth/react";
+import type { DefaultSession } from "next-auth";
+import type { TBmu } from "@repo/nosql/schema/bmu";
+import FileStats from "@/app/shared/file/dashboard/file-stats";
+import FishCompositionChart from "@/app/shared/file/dashboard/fish-composition-chart";
+import FishCompositionComparison from "@/app/shared/file/dashboard/fish-composition-comparison";
 
-const pageHeader = {
-  title: 'Catch Composition',
-  breadcrumb: [
-    {
-      href: '/',
-      name: 'Home',
-    },
-    {
-      name: 'Catch',
-    },
-  ],
-};
-
-function SectionBlock({
-  title,
-  children,
-  className,
-}: React.PropsWithChildren<{
-  title: string;
-  className?: string;
-}>) {
-  return (
-    <section className={cn('mb-8 last:mb-0', className)}>
-      <Title as="h3" className="mb-4 text-xl font-semibold lg:text-2xl">
-        {title}
-      </Title>
-      {children}
-    </section>
-  );
+type SerializedBmu = {
+  _id: string;
+  BMU: string;
+  group: string;
 }
 
-export default function AboutPage({
-  params: { lang },
-}: {
-  params: { lang?: string };
-}) {
+type CustomSession = {
+  user?: {
+    bmus?: Omit<TBmu, "lat" | "lng" | "treatments">[];
+    userBmu?: SerializedBmu;
+  } & DefaultSession["user"]
+}
+
+// Fix for Next.js 14: Use proper param typing for app router pages
+interface PageProps {
+  params: {
+    lang: string;
+  };
+}
+
+export default function CatchCompositionPage({ params }: PageProps) {
+  const lang = params.lang;
+  // Use simple useState like in index.tsx
+  const [selectedCategory, setSelectedCategory] = useState("Octopus");
+  const [activeTab, setActiveTab] = useState("trends");
+  const { t } = useTranslation("common");
+  const { data: session } = useSession();
+
+  // Use userBmu from session
+  const userBmu = session?.user?.userBmu?.BMU;
+
   return (
-    <>
-      <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />
-      <div className="@container">
-        <div className="mx-auto max-w-[1200px] space-y-10 py-6">
-          <div className="prose mx-auto max-w-full dark:prose-invert lg:prose-lg">
-            <Text className="mb-8 text-lg leading-loose text-gray-600 lg:text-xl">
-              Work in progress...
-            </Text>
+    <div className="w-full">
+      <div className="grid grid-cols-1 gap-5 xl:gap-6">
+        <div className="grid grid-cols-12 gap-5 xl:gap-6">
+          <div className="col-span-12">
+            <FishCompositionChart 
+              lang={lang}
+              bmu={userBmu} 
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+          </div>
+          
+          <div className="col-span-12">
+            <FishCompositionComparison
+              lang={lang}
+              bmu={userBmu}
+            />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
-} 
+}
