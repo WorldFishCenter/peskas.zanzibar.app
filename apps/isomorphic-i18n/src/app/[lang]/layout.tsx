@@ -40,6 +40,19 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
   return (
     <html lang={lang} dir={dir(lang)} suppressHydrationWarning>
+      {/* Google Analytics Tracking Code */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-8VBFKQ4E01"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-8VBFKQ4E01');
+        `}
+      </Script>
       <body
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, "font-inter")}
