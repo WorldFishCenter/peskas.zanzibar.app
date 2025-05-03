@@ -14,7 +14,7 @@ import { languages } from "../i18n/settings";
 import { GlobalFilterProvider } from "../components/global-filter-provider";
 import { TRPCReactProvider } from "@/trpc/react";
 import LanguageInitializer from "../i18n/language-initializer";
-import Script from "next/script";
+import GoogleAnalytics from "../_components/google-analytics";
 import ModalSwitcher from "@/app/_components/modal/modal-switcher";
 
 const NextProgress = dynamic(() => import("@components/next-progress"), {
@@ -40,23 +40,11 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
   return (
     <html lang={lang} dir={dir(lang)} suppressHydrationWarning>
-      {/* Google Analytics Tracking Code */}
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-8VBFKQ4E01"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-8VBFKQ4E01');
-        `}
-      </Script>
       <body
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, "font-inter")}
       >
+        <GoogleAnalytics />
         <GlobalFilterProvider>
           <TRPCReactProvider>
             <AuthProvider session={session}>
