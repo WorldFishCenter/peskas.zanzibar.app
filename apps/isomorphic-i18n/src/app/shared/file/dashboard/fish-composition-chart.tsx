@@ -29,6 +29,68 @@ import useUserPermissions from "./hooks/useUserPermissions";
 // Import the fish category selector component
 import FishCategorySelector from "./charts/FishCategorySelector";
 
+// Custom function to prepare data for CIA users' comparison view
+const prepareDataForCiaComparison = (chartData: ChartDataPoint[], bmuName: string) => {
+  if (!chartData.length) return [];
+  
+  // Need at least 6 data points to calculate 6-month average
+  if (chartData.length < 6) return chartData;
+  
+  // Calculate a single historical average using the most recent 6 months of data
+  // Sort the data by date (descending) to get most recent data first
+  const sortedData = [...chartData].sort((a, b) => b.date - a.date);
+  const recentSixMonths = sortedData.slice(0, 6);
+  
+  // Calculate the average from these 6 months
+  let sum = 0;
+  let count = 0;
+  
+  for (let i = 0; i < recentSixMonths.length; i++) {
+    const value = recentSixMonths[i][bmuName];
+    if (value !== undefined && !isNaN(Number(value))) {
+      sum += Number(value);
+      count++;
+    }
+  }
+  
+  // Calculate the fixed historical average
+  const historicalAverage = count > 0 ? sum / count : 0;
+  
+  // Create result array with the fixed historical average
+  let result: ChartDataPoint[] = [];
+  
+  // Process each data point with the fixed historical average
+  for (const point of chartData) {
+    // Clone the current point
+    const currentPoint = { ...point };
+    
+    // Set the same historical average for all points
+    currentPoint['historical_average'] = historicalAverage;
+    
+    // Calculate the difference from the historical average
+    if (currentPoint[bmuName] !== undefined) {
+      const actualValue = Number(currentPoint[bmuName]);
+      const difference = actualValue - historicalAverage;
+      
+      // Store the difference directly
+      currentPoint['difference'] = difference;
+      
+      // Store whether this is above or below average (as a number 1/0)
+      currentPoint['isAboveAverage'] = difference > 0 ? 1 : 0;
+      
+      // Also store the actual BMU value for reference
+      currentPoint['actualValue'] = actualValue;
+      
+      result.push(currentPoint);
+    }
+  }
+  
+  // Sort the result by date for chronological display
+  result = result.sort((a, b) => a.date - b.date);
+  
+  return result;
+};
+
 // Define FishCategoryKey type and options
 export type FishCategoryKey = string;
 
@@ -183,6 +245,7 @@ export default function FishCompositionChart({
   const [fiveYearMarks, setFiveYearMarks] = useState<number[]>([]);
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
+  const [ciaComparisonData, setCiaComparisonData] = useState<ChartDataPoint[]>([]);
   
   // Add refs to track initialization states
   const visibilityInitialized = useRef<boolean>(false);
@@ -247,23 +310,33 @@ export default function FishCompositionChart({
     getAccessibleBMUs,
     hasRestrictedAccess,
     shouldShowAggregated,
-    canCompareWithOthers
+    canCompareWithOthers,
+    referenceBMU,
+    getLimitedBMUs
   } = useUserPermissions();
 
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = useMemo(() => bmu || userBMU, [bmu, userBMU]);
+  // Determine which BMU to use for filtering - prefer passed prop, then reference BMU for admin users, then user's BMU
+  const effectiveBMU = useMemo(() => bmu || referenceBMU || userBMU, [bmu, userBMU, referenceBMU]);
+
+  // For admin users, limit the number of BMUs shown
+  const effectiveBmus = useMemo(() => {
+    if (isAdmin) {
+      return getLimitedBMUs(bmus, 8);
+    }
+    return bmus;
+  }, [isAdmin, bmus, getLimitedBMUs]);
 
   // Force refetch when bmus changes by adding bmus to the query key
   const { data: monthlyData, refetch } = api.fishDistribution.monthlyTrends.useQuery(
     { 
-      bmus,
+      bmus: effectiveBmus,
       categories: [selectedCategory]
     },
     {
       refetchOnMount: true, 
       refetchOnWindowFocus: false,
       retry: 3,
-      enabled: bmus.length > 0 && selectedCategory.length > 0,
+      enabled: effectiveBmus.length > 0 && selectedCategory.length > 0,
     }
   );
 
@@ -283,16 +356,16 @@ export default function FishCompositionChart({
   // Force refetch when bmus changes
   useEffect(() => {
     // Check if bmus array has changed
-    if (JSON.stringify(previousBmus.current) !== JSON.stringify(bmus)) {
+    if (JSON.stringify(previousBmus.current) !== JSON.stringify(effectiveBmus)) {
       console.log('BMUs changed, refetching data');
       setChartData([]);
       setRecentData([]);
       setAnnualData([]);
       dataProcessed.current = false;
-      previousBmus.current = [...bmus];
+      previousBmus.current = [...effectiveBmus];
       refetch();
     }
-  }, [bmus, refetch]);
+  }, [effectiveBmus, refetch]);
 
   // Keep in sync with parent component, handling old tab names too
   useEffect(() => {
@@ -340,6 +413,9 @@ export default function FishCompositionChart({
 
   // Handle tab changes while preserving language state
   const handleTabChange = useCallback((tab: string) => {
+    // Save current scroll position
+    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+    
     // Save current language before tab change
     const currentClientLang = getClientLanguage();
     
@@ -374,6 +450,14 @@ export default function FishCompositionChart({
         window.dispatchEvent(new CustomEvent('i18n-language-changed', {
           detail: { language: currentClientLang }
         }));
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollPosition);
+      }, 10);
+    } else {
+      // Restore scroll position even if no parent callback
+      setTimeout(() => {
+        window.scrollTo(0, scrollPosition);
       }, 10);
     }
   }, [i18n, onTabChange]);
@@ -421,7 +505,7 @@ export default function FishCompositionChart({
 
   // Process main data when monthlyData changes
   useEffect(() => {
-    if (!monthlyData || bmus.length === 0) return;
+    if (!monthlyData || effectiveBmus.length === 0) return;
     
     // Reset processing flag if category changed
     if (previousCategoryRef.current !== selectedCategory) {
@@ -431,7 +515,7 @@ export default function FishCompositionChart({
     
     // Prevent re-processing data unnecessarily
     if (chartData.length > 0 && !loading && 
-        JSON.stringify(previousBmus.current) === JSON.stringify(bmus) && 
+        JSON.stringify(previousBmus.current) === JSON.stringify(effectiveBmus) && 
         previousCategoryRef.current === selectedCategory) return;
 
     try {
@@ -477,7 +561,7 @@ export default function FishCompositionChart({
         const landingSite = month.landing_site;
         
         // Skip if this BMU isn't in our list
-        if (!bmus.includes(landingSite)) return;
+        if (!effectiveBmus.includes(landingSite)) return;
         
         // Find the category that matches our selected category
         const categoryData = month.categories.find((cat: any) => cat.category === selectedCategory);
@@ -498,7 +582,7 @@ export default function FishCompositionChart({
         };
         
         // Add data for each BMU - use undefined instead of 0 for missing data
-        bmus.forEach(site => {
+        effectiveBmus.forEach(site => {
           const monthData = dataMap[timestamp];
           groupedByDate[timestamp][site] = monthData && monthData[site] !== undefined ? 
             monthData[site] : undefined;
@@ -510,7 +594,7 @@ export default function FishCompositionChart({
       
       // Get unique sites (BMUs) from the data
       const uniqueSites = Array.from(
-        new Set(bmus)
+        new Set(effectiveBmus)
       );
       
       // Apply user permissions
@@ -610,14 +694,14 @@ export default function FishCompositionChart({
 
       setFiveYearMarks(marks);
       setChartData(sortedData);
-      previousBmus.current = [...bmus];
+      previousBmus.current = [...effectiveBmus];
       previousCategoryRef.current = selectedCategory;
     } catch (error) {
       console.error("Error processing data:", error);
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, selectedCategory, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, bmus, isCiaUser, localActiveTab]);
+  }, [monthlyData, selectedCategory, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, effectiveBmus, isCiaUser, localActiveTab]);
 
   // Calculate derived data when chartData changes
   useEffect(() => {
@@ -630,7 +714,11 @@ export default function FishCompositionChart({
     if (canCompareWithOthers) {
       setRecentData(getRecentData(chartData, false) as ChartDataPoint[]);
     } 
-    
+    // For CIA users, create comparison against historical average if they have a BMU
+    else if (isCiaUser && effectiveBMU) {
+      setCiaComparisonData(prepareDataForCiaComparison(chartData, effectiveBMU));
+    }
+      
     // Annual data is the same for all users
     setAnnualData(getAnnualData(chartData, !canCompareWithOthers, siteColors));
     
@@ -648,14 +736,14 @@ export default function FishCompositionChart({
       switch(tab) {
         case 'trends':
         case 'standard':
-          return t("text-monthly-trends-over-time");
+          return t("text-monthly-trends-over-time") + " (kg)";
         case 'comparison':
         case 'recent':
-          return t("text-performance-vs-6-month-average") || "Performance vs 6-Month Average";
+          return t("text-performance-vs-6-month-average") + " (kg)" || "Performance vs 6-Month Average (kg)";
         case 'annual':
-          return t("text-yearly-summary");
+          return t("text-yearly-summary") + " (kg)";
         default:
-          return t("text-monthly-trends-over-time");
+          return t("text-monthly-trends-over-time") + " (kg)";
       }
     }
     
@@ -663,14 +751,14 @@ export default function FishCompositionChart({
     switch(tab) {
       case 'trends':
       case 'standard':
-        return t("text-monthly-trends-over-time");
+        return t("text-monthly-trends-over-time") + " (kg)";
       case 'comparison':
       case 'recent':
-        return t("text-performance-vs-average");
+        return t("text-performance-vs-average") + " (kg)";
       case 'annual':
-        return t("text-yearly-summary");
+        return t("text-yearly-summary") + " (kg)";
       default:
-        return t("text-monthly-trends-over-time");
+        return t("text-monthly-trends-over-time") + " (kg)";
     }
   };
   
@@ -680,14 +768,14 @@ export default function FishCompositionChart({
       switch(tab) {
         case 'trends':
         case 'standard':
-          return t("text-trends-explanation");
+          return t("text-trends-explanation") || "Shows how fish catch weight changes month by month";
         case 'comparison':
         case 'recent':
-          return t("text-cia-comparison-explanation") || "Shows values compared to your 6-month average";
+          return t("text-cia-comparison-explanation") || "Shows fish catch weight compared to your 6-month average";
         case 'annual':
-          return t("text-yearly-explanation");
+          return t("text-yearly-explanation") || "Shows average fish catch weight for each year";
         default:
-          return t("text-trends-explanation");
+          return t("text-trends-explanation") || "Shows how fish catch weight changes month by month";
       }
     }
     
@@ -695,21 +783,21 @@ export default function FishCompositionChart({
     switch(tab) {
       case 'trends':
       case 'standard':
-        return t("text-trends-explanation");
+        return t("text-trends-explanation") || "Shows how fish catch weight changes month by month";
       case 'comparison':
       case 'recent':
-        return t("text-comparison-explanation");
+        return t("text-comparison-explanation") || "Shows fish catch weight compared to the average";
       case 'annual':
-        return t("text-yearly-explanation");
+        return t("text-yearly-explanation") || "Shows average fish catch weight for each year";
       default:
-        return t("text-trends-explanation");
+        return t("text-trends-explanation") || "Shows how fish catch weight changes month by month";
     }
   };
 
   if (loading) return <LoadingState />;
   if (!chartData || chartData.length === 0) {
     return (
-      <WidgetCard title={t("text-fish-distribution")}>
+      <WidgetCard title={t("text-fish-distribution") + " (kg)"}>
         <div className="h-96 w-full flex items-center justify-center">
           <span className="text-sm text-gray-500">{t("text-no-data")}</span>
         </div>
@@ -722,12 +810,15 @@ export default function FishCompositionChart({
       title={
         <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between w-full gap-3">
           <div className="w-full sm:w-auto">
-            <FishCategorySelector
-              selectedCategory={selectedCategory}
-              onCategoryChange={onCategoryChange}
-              selectedCategoryOption={selectedCategoryOption}
-              fishCategories={FISH_CATEGORIES}
-            />
+            <div className="flex items-center">
+              <FishCategorySelector
+                selectedCategory={selectedCategory}
+                onCategoryChange={onCategoryChange}
+                selectedCategoryOption={selectedCategoryOption}
+                fishCategories={FISH_CATEGORIES}
+              />
+              <span className="ml-2 text-xs text-gray-500">(kg)</span>
+            </div>
           </div>
           <div className="hidden sm:block text-base font-medium text-gray-800 mx-auto">
             <div className="text-center">
@@ -840,9 +931,9 @@ export default function FishCompositionChart({
                 )}
               />
             ) : (
-              // CIA users get a different view
+              // CIA users get a historical comparison view
               <ComparisonChart
-                chartData={recentData}
+                chartData={ciaComparisonData}
                 selectedMetricOption={toMetricOption(selectedCategoryOption)}
                 siteColors={siteColors}
                 visibilityState={visibilityState}

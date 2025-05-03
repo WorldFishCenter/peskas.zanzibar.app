@@ -10,6 +10,7 @@ import { useTranslation } from "@/app/i18n/client";
 import SimpleBar from "@ui/simplebar";
 import useUserPermissions from "./hooks/useUserPermissions";
 import { generateFishCategoryColor } from "./charts/utils";
+import { adminReferenceBmuAtom } from "./hooks/useUserPermissions";
 
 // Define fish category display data
 interface CategoryDisplay {
@@ -59,18 +60,27 @@ export default function FishCompositionComparison({
   const [bmus] = useAtom(bmusAtom);
   
   // Get BMUs based on permissions
-  const { userBMU, isAdmin, hasRestrictedAccess } = useUserPermissions();
-  const effectiveBMU = bmu || userBMU;
+  const { userBMU, isAdmin, hasRestrictedAccess, referenceBMU, getLimitedBMUs } = useUserPermissions();
+  const effectiveBMU = bmu || referenceBMU || userBMU;
   
   // Memoize queryBmus to prevent it from recalculating on every render
   const queryBmus = useMemo(() => {
-    return isAdmin 
-      ? bmus 
-      : (hasRestrictedAccess ? [effectiveBMU].filter(Boolean) as string[] : bmus);
+    // For admin users, use a limited set of BMUs (max 8)
+    if (isAdmin) {
+      return getLimitedBMUs(bmus, 8);
+    }
+    
+    // For restricted users, only show their BMU
+    if (hasRestrictedAccess) {
+      return effectiveBMU ? [effectiveBMU] : [];
+    }
+    
+    // For others, show all selected BMUs
+    return bmus;
   }, [isAdmin, hasRestrictedAccess, effectiveBMU, bmus]);
   
-  // Get fish distribution data from the API
-  const { data: fishDistributionData, isLoading: isLoadingData, error: apiError } = api.fishDistribution.monthlyTrends.useQuery({ 
+  // Memoize the API query to prevent re-fetching on every render
+  const fishDistributionQuery = api.fishDistribution.monthlyTrends.useQuery({ 
     bmus: queryBmus,
   }, {
     retry: 3,
@@ -78,6 +88,11 @@ export default function FishCompositionComparison({
     staleTime: 1000 * 60 * 5,
     enabled: queryBmus.length > 0,
   });
+  
+  // Extract data from the query
+  const fishDistributionData = fishDistributionQuery.data;
+  const isLoadingData = fishDistributionQuery.isLoading;
+  const apiError = fishDistributionQuery.error;
 
   // Handle legend item click
   const handleLegendClick = (categoryId: string) => {
@@ -102,7 +117,7 @@ export default function FishCompositionComparison({
       });
       setVisibilityState(initialVisibility);
     }
-  }, [categoryDisplays, visibilityState]);
+  }, [categoryDisplays.length, Object.keys(visibilityState).length]);
   
   // Process data when it changes
   useEffect(() => {
@@ -246,7 +261,7 @@ export default function FishCompositionComparison({
       setError("Error processing data");
       setLoading(false);
     }
-  }, [fishDistributionData, isLoadingData, apiError, queryBmus]);
+  }, [fishDistributionData, isLoadingData, apiError, queryBmus.join(',')]);
   
   // Custom tooltip for the chart
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -317,10 +332,16 @@ export default function FishCompositionComparison({
           <div className="flex items-center justify-center w-full">
             <div className="text-base font-medium text-gray-800">
               <div className="text-center">
-                {t("text-fish-composition-by-bmu") || "Fish Composition by BMU"}
+                {hasRestrictedAccess && effectiveBMU
+                  ? t("text-fish-composition-for-bmu", { bmuName: effectiveBMU }) || `Fish Composition for ${effectiveBMU}`
+                  : t("text-fish-composition-by-bmu") || "Fish Composition by BMU"}
               </div>
               <div className="text-xs text-gray-500 text-center mt-1">
-                {t("text-comparison-chart-description") || "Compare fish group distribution across BMUs"}
+                {isAdmin 
+                  ? t("text-admin-chart-description") || "Showing limited BMU selection. Use reference selector to highlight a BMU."
+                  : hasRestrictedAccess
+                    ? t("text-cia-chart-description") || "Distribution of fish groups in your BMU"
+                    : t("text-comparison-chart-description") || "Compare fish group distribution across BMUs"}
               </div>
             </div>
           </div>
@@ -343,13 +364,26 @@ export default function FishCompositionComparison({
         <SimpleBar className="h-full">
           <div className="p-4 md:p-6 h-full">
             {/* Main Chart */}
-            <div className="h-[400px] md:h-[450px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div 
+              className={`w-full ${chartData.length === 1 ? 'flex items-center justify-center' : ''}`}
+              style={{ 
+                height: chartData.length === 1 
+                  ? '160px' // Much smaller fixed height for single BMU
+                  : `${Math.max(300, Math.min(450, chartData.length * 75 + 100))}px` 
+              }}
+            >
+              <ResponsiveContainer 
+                width={chartData.length === 1 ? "75%" : "100%"} 
+                height="100%"
+              >
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  barSize={75} 
+                  margin={chartData.length === 1 
+                    ? { top: 15, right: 30, left: 20, bottom: 15 } 
+                    : { top: 5, right: 30, left: 20, bottom: 5 }
+                  }
+                  barSize={chartData.length === 1 ? 90 : 75} 
                   barGap={1}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
@@ -364,8 +398,11 @@ export default function FishCompositionComparison({
                   <YAxis 
                     dataKey="bmuName" 
                     type="category" 
-                    width={100}
-                    tick={{ fontSize: 12 }}
+                    width={chartData.length === 1 ? 80 : 100}
+                    tick={{ 
+                      fontSize: chartData.length === 1 ? 11 : 12,
+                      fontWeight: chartData.length === 1 ? '500' : 'normal',
+                    }}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -383,7 +420,7 @@ export default function FishCompositionComparison({
                         name={category.name}
                         stackId="a"
                         fill={categoryColor}
-                        radius={[0, 0, 0, 0]}
+                        radius={chartData.length === 1 ? [2, 2, 0, 0] : [0, 0, 0, 0]}
                         fillOpacity={visibilityState[category.id]?.opacity ?? 1}
                         hide={visibilityState[category.id]?.opacity === 0}
                         isAnimationActive={false}

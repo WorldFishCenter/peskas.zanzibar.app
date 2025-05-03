@@ -29,6 +29,7 @@ import { FilterSelector } from "@/app/components/filter-selector";
 import { useSession } from "next-auth/react";
 import type { TBmu } from "@repo/nosql/schema/bmu";
 import LanguageLink from "@/app/i18n/language-link";
+import useUserPermissions from "@/app/shared/file/dashboard/hooks/useUserPermissions";
 
 type SerializedBmu = {
   _id: string;

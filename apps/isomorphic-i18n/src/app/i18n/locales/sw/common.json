@@ -753,6 +753,8 @@
   "text-metrics-area-revenue": "Mapato ya Eneo",
   "text-fish-composition-by-bmu": "Mgawanyiko wa Aina za Samaki",
   "text-comparison-chart-description": "Uchambuzi wa mgawanyiko wa vikundi vya samaki",
+  "text-fish-composition-for-bmu": "Mgawanyiko wa Samaki kwa {{bmuName}}",
+  "text-cia-chart-description": "Mgawanyiko wa vikundi vya samaki kwenye BMU yako",
   "text-monthly-trends-over-time": "Mwenendo wa Kila Mwezi",
   "text-performance-vs-average": "Utendaji Dhidi ya Wastani",
   "text-performance-vs-historical-average": "Utendaji Dhidi ya Wastani wa Miezi 6",
@@ -770,7 +772,6 @@
   "text-unit-kg-km2-day": "kg/km²/siku",
   "text-unit-kes-fisher-day": "KES/mvuvi/siku",
   "text-unit-kes-km2-day": "KES/km²/siku",
-  
   "text-loading-chart": "Inapakia chati...",
   "text-failed-to-fetch-data": "Imeshindwa kupata data",
   "text-no-data-available": "Hakuna data inayopatikana",
@@ -792,7 +793,6 @@
   "text-comparison-tab-description": "Inalinganisha utendaji wa vifaa vya BMU iliyochaguliwa na wastani wa wengine",
   "text-average-of-other-bmus": "Wastani wa BMUs nyingine",
   "text-gear-distribution": "Utendaji wa Vifaa vya Uvuvi",
-  
   "text-distribution-tab-title-cia": "Utendaji wa Vifaa vya Uvuvi katika BMU Yako",
   "text-distribution-tab-description-cia": "Inaonyesha vipimo vya utendaji kwa aina tofauti za vifaa vya uvuvi katika Kitengo chako cha BMU",
   "text-ranking-tab-title-cia": "Umuhimu wa Vifaa vya Uvuvi katika BMU Yako",

@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAtom } from "jotai";
 import { Button, Text } from "rizzui";
 import cn from "@utils/class-names";
@@ -13,8 +13,6 @@ import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { bmusAtom } from "@/app/components/filter-selector";
-import { useSession } from "next-auth/react";
-import WidgetCard from "@components/cards/widget-card";
 import useUserPermissions from "./hooks/useUserPermissions";
 
 type FileStatsType = {
@@ -25,17 +23,16 @@ type FileStatsType = {
 
 interface ChartPoint {
   day: string;
-  reference: number;
-  others?: number;
+  reference: number | null;
+  others?: number | null;
+  index: number;
+  metricId: string;
 }
 
 interface StatData {
   id: string;
   title: string;
   metric: string;
-  increased?: boolean;
-  decreased?: boolean;
-  percentage?: string;
   chart: ChartPoint[];
 }
 
@@ -43,29 +40,52 @@ interface StatsResponse {
   effort: {
     current: number;
     percentage: number;
-    trend: Array<{ day: string; sale: number }>;
+    trend: Array<{ day: string; sale: number | null }>;
   };
   cpue: {
     current: number;
     percentage: number;
-    trend: Array<{ day: string; sale: number }>;
+    trend: Array<{ day: string; sale: number | null }>;
   };
   cpua: {
     current: number;
     percentage: number;
-    trend: Array<{ day: string; sale: number }>;
+    trend: Array<{ day: string; sale: number | null }>;
   };
   rpue: {
     current: number;
     percentage: number;
-    trend: Array<{ day: string; sale: number }>;
+    trend: Array<{ day: string; sale: number | null }>;
   };
   rpua: {
     current: number;
     percentage: number;
-    trend: Array<{ day: string; sale: number }>;
+    trend: Array<{ day: string; sale: number | null }>;
   };
 }
+
+interface ComparisonValue {
+  reference: number | null;
+  others?: number | null;
+  date: string;
+}
+
+interface HoveredPercentage {
+  percentage: string;
+  increased: boolean;
+  monthComparison: string;
+}
+
+// Utility function to get month name from date string
+const getMonthName = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length < 2) return dateStr;
+  const year = parts[0];
+  const month = parts[1];
+  const date = new Date(parseInt(year), parseInt(month) - 1);
+  return date.toLocaleString('default', { month: 'short' });
+};
 
 const LoadingState = () => {
   return (
@@ -92,47 +112,152 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   const [statsData, setStatsData] = useState<StatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hoveredPercentages, setHoveredPercentages] = useState<{[key: string]: {percentage: string, increased: boolean, monthComparison: string}}>({});
+  const [hoveredPercentages, setHoveredPercentages] = useState<{[key: string]: HoveredPercentage}>({});
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [comparisonValues, setComparisonValues] = useState<{[key: string]: {reference: number, others?: number, date: string}}>({});
+  const [comparisonValues, setComparisonValues] = useState<{[key: string]: ComparisonValue}>({});
   const [bmus] = useAtom(bmusAtom);
   
+  // Get user permissions
   const {
     userBMU,
-    isCiaUser,
-    isWbciaUser,
     isAdmin,
-    getAccessibleBMUs,
     hasRestrictedAccess,
-    shouldShowAggregated,
-    canCompareWithOthers
+    canCompareWithOthers,
+    referenceBMU
   } = useUserPermissions();
   
-  const effectiveBMU = bmu || userBMU;
+  // Determine effective BMU and display name
+  const effectiveBMU = useMemo(() => bmu || referenceBMU || userBMU, [bmu, referenceBMU, userBMU]);
+  const displayName = useMemo(() => effectiveBMU || "All BMUs", [effectiveBMU]);
   
-  const displayName = isAdmin ? "All BMUs" : effectiveBMU || "Selected BMU";
+  // Memoize query parameters to prevent unnecessary refetches
+  const referenceBmus = useMemo(() => 
+    effectiveBMU ? [effectiveBMU] : (isAdmin ? bmus : (hasRestrictedAccess ? [effectiveBMU].filter(Boolean) as string[] : bmus)),
+    [effectiveBMU, isAdmin, hasRestrictedAccess, bmus]
+  );
   
-  const { data: statsData1, isLoading: isLoading1, error: error1 } = api.monthlyStats.allStats.useQuery({ 
-    bmus: isAdmin ? bmus : (hasRestrictedAccess ? [effectiveBMU].filter(Boolean) as string[] : bmus)
-  }, {
+  const otherBmus = useMemo(() => 
+    canCompareWithOthers && effectiveBMU ? bmus.filter(b => b !== effectiveBMU) : [],
+    [bmus, canCompareWithOthers, effectiveBMU]
+  );
+  
+  // Fetch reference BMU data
+  const { 
+    data: statsData1, 
+    isLoading: isLoading1, 
+    error: error1 
+  } = api.monthlyStats.allStats.useQuery({ bmus: referenceBmus }, {
     retry: 3,
     retryDelay: 1000,
     staleTime: 1000 * 60 * 5,
   }) as { data: StatsResponse | undefined, isLoading: boolean, error: any };
   
-  const { data: statsData2, isLoading: isLoading2, error: error2 } = api.monthlyStats.allStats.useQuery({ 
-    bmus: canCompareWithOthers && effectiveBMU ? bmus.filter(b => b !== effectiveBMU) : []
-  }, {
+  // Fetch other BMUs data (only if needed)
+  const { 
+    data: statsData2, 
+    isLoading: isLoading2, 
+    error: error2 
+  } = api.monthlyStats.allStats.useQuery({ bmus: otherBmus }, {
     retry: 3,
     retryDelay: 1000,
     staleTime: 1000 * 60 * 5,
-    enabled: canCompareWithOthers && !!effectiveBMU,
+    enabled: otherBmus.length > 0,
   }) as { data: StatsResponse | undefined, isLoading: boolean, error: any };
 
-  useEffect(() => {
-    const otherQuery = canCompareWithOthers && effectiveBMU ? bmus.filter(b => b !== effectiveBMU) : [];
-  }, [statsData1, statsData2, isLoading1, isLoading2, error1, error2, isAdmin, bmus, effectiveBMU, canCompareWithOthers]);
+  // Define metrics once
+  const metrics = useMemo(() => [
+    { id: 'effort', field: 'effort', title: t('text-metrics-effort') },
+    { id: 'catch-rate', field: 'cpue', title: t('text-metrics-catch-rate') },
+    { id: 'catch-density', field: 'cpua', title: t('text-metrics-catch-density') },
+    { id: 'fisher-revenue', field: 'rpue', title: t('text-metrics-fisher-revenue') },
+    { id: 'area-revenue', field: 'rpua', title: t('text-metrics-area-revenue') }
+  ] as const, [t]);
 
+  // Process data with useMemo to avoid unnecessary recalculations
+  const processedData = useMemo(() => {
+    if (!statsData1 || isLoading1) return null;
+    
+    try {
+      return metrics.map(metric => {
+        const referenceMetric = statsData1?.[metric.field] || { current: 0, percentage: 0, trend: [] };
+        const otherBmusMetric = statsData2?.[metric.field];
+        const trend = referenceMetric.trend || [];
+
+        // Initialize default percentage and comparison for the last two months
+        let defaultPercentage = '';
+        let defaultIncreased = false;
+        let monthComparison = '';
+        if (trend.length >= 2) {
+          const lastValue = trend[trend.length - 1].sale;
+          const previousValue = trend[trend.length - 2].sale;
+          const lastMonth = getMonthName(trend[trend.length - 1].day);
+          const prevMonth = getMonthName(trend[trend.length - 2].day);
+          monthComparison = `${prevMonth} → ${lastMonth}`;
+          
+          if (previousValue !== null && previousValue !== undefined && previousValue !== 0 && 
+              lastValue !== null && lastValue !== undefined) {
+            const change = ((lastValue - previousValue) / previousValue) * 100;
+            if (!isNaN(change)) {
+              defaultPercentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
+              defaultIncreased = change > 0;
+            }
+          }
+        }
+
+        // Initialize hover percentages
+        if (defaultPercentage) {
+          setHoveredPercentages(prev => ({
+            ...prev,
+            [metric.id]: {
+              percentage: defaultPercentage,
+              increased: defaultIncreased,
+              monthComparison
+            }
+          }));
+        }
+
+        // Initialize comparison values
+        if (trend.length > 0) {
+          const lastPoint = trend[trend.length - 1];
+          const lastOthersPoint = otherBmusMetric?.trend?.[otherBmusMetric.trend.length - 1];
+          
+          setComparisonValues(prev => ({
+            ...prev,
+            [metric.id]: {
+              reference: lastPoint.sale === null || lastPoint.sale === undefined ? null : Math.round(lastPoint.sale),
+              others: canCompareWithOthers && lastOthersPoint ? 
+                (lastOthersPoint.sale === null || lastOthersPoint.sale === undefined ? 
+                null : Math.round(lastOthersPoint.sale)) : undefined,
+              date: getMonthName(lastPoint.day)
+            }
+          }));
+        }
+
+        // Create chart data points
+        const chartData = trend.map((point, index) => ({
+          day: point.day || '',
+          reference: point.sale === null || point.sale === undefined ? null : point.sale,
+          others: canCompareWithOthers && otherBmusMetric?.trend?.[index] ? 
+            (otherBmusMetric.trend[index].sale === null || otherBmusMetric.trend[index].sale === undefined ? 
+              null : otherBmusMetric.trend[index].sale) : null,
+          index,
+          metricId: metric.id
+        }));
+
+        return {
+          id: metric.id,
+          title: metric.title,
+          metric: Math.round(referenceMetric.current || 0).toLocaleString(),
+          chart: chartData
+        };
+      });
+    } catch (error) {
+      console.error("Error transforming data:", error);
+      return null;
+    }
+  }, [statsData1, statsData2, metrics, canCompareWithOthers]);
+
+  // Update state based on processed data
   useEffect(() => {
     setLoading(isLoading1 || isLoading2);
     
@@ -150,112 +275,22 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
       return;
     }
 
-    if (!statsData1) {
-      setLoading(true);
-      return;
-    }
-
-    try {
-      const metrics = [
-        { id: 'effort', field: 'effort', title: t('text-metrics-effort') },
-        { id: 'catch-rate', field: 'cpue', title: t('text-metrics-catch-rate') },
-        { id: 'catch-density', field: 'cpua', title: t('text-metrics-catch-density') },
-        { id: 'fisher-revenue', field: 'rpue', title: t('text-metrics-fisher-revenue') },
-        { id: 'area-revenue', field: 'rpua', title: t('text-metrics-area-revenue') }
-      ] as const;
-
-      const getMonthName = (dateStr: string) => {
-        if (!dateStr) return '';
-        const parts = dateStr.split('-');
-        if (parts.length < 2) return dateStr;
-        const year = parts[0];
-        const month = parts[1];
-        const date = new Date(parseInt(year), parseInt(month) - 1);
-        return date.toLocaleString('default', { month: 'short' });
-      };
-      
-      const transformedStats = metrics.map(metric => {
-        const referenceMetric = statsData1?.[metric.field] || { current: 0, percentage: 0, trend: [] };
-        const otherBmusMetric = statsData2?.[metric.field];
-        const trend = referenceMetric.trend || [];
-
-        let defaultPercentage = '';
-        let defaultIncreased = false;
-        let monthComparison = '';
-        if (trend.length >= 2) {
-          const lastValue = trend[trend.length - 1].sale;
-          const previousValue = trend[trend.length - 2].sale;
-          const lastMonth = getMonthName(trend[trend.length - 1].day);
-          const prevMonth = getMonthName(trend[trend.length - 2].day);
-          monthComparison = `${prevMonth} → ${lastMonth}`;
-          
-          if (previousValue && previousValue !== 0) {
-            const change = ((lastValue - previousValue) / previousValue) * 100;
-            if (!isNaN(change)) {
-              defaultPercentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
-              defaultIncreased = change > 0;
-            }
-          }
-        }
-
-        if (defaultPercentage) {
-          setHoveredPercentages(prev => ({
-            ...prev,
-            [metric.id]: {
-              percentage: defaultPercentage,
-              increased: defaultIncreased,
-              monthComparison
-            }
-          }));
-        }
-
-        if (trend.length > 0) {
-          const lastPoint = trend[trend.length - 1];
-          const lastOthersPoint = otherBmusMetric?.trend?.[otherBmusMetric.trend.length - 1];
-          
-          setComparisonValues(prev => ({
-            ...prev,
-            [metric.id]: {
-              reference: Math.round(lastPoint.sale || 0),
-              others: canCompareWithOthers ? Math.round(lastOthersPoint?.sale || 0) : undefined,
-              date: getMonthName(lastPoint.day)
-            }
-          }));
-        }
-
-        const chartData = trend.map((point, index) => ({
-          day: point.day || '',
-          reference: point.sale || 0,
-          others: canCompareWithOthers && otherBmusMetric?.trend?.[index]?.sale || 0,
-          index,
-          data: trend,
-          metricId: metric.id
-        }));
-
-        return {
-          id: metric.id,
-          title: metric.title,
-          metric: Math.round(referenceMetric.current || 0).toLocaleString(),
-          chart: chartData
-        };
-      });
-
-      setStatsData(transformedStats);
+    if (processedData) {
+      setStatsData(processedData);
       setError(null);
-    } catch (error) {
-      console.error("Error transforming data:", error);
-      setError("Error processing statistics data");
-    } finally {
       setLoading(false);
     }
-  }, [statsData1, statsData2, isLoading1, isLoading2, error1, error2, t, canCompareWithOthers]);
+  }, [processedData, isLoading1, isLoading2, error1, error2, statsData1]);
 
-  const handleBarClick = (data: any) => {
+  // Memoized handlers to prevent unnecessary recreations
+  const handleBarClick = useCallback((data: any) => {
     if (!data || !data.activePayload || data.activePayload.length === 0) return;
     
     const entry = data.activePayload[0];
     const metricId = entry.payload.metricId;
     const day = entry.payload.day;
+    const currentIndex = entry.payload.index;
+    const chartData = statsData.find(s => s.id === metricId)?.chart || [];
     
     setSelectedMonth(day);
     setComparisonValues(prev => ({
@@ -266,57 +301,69 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
         date: getMonthName(day)
       }
     }));
-  };
-  
-  const getMonthName = (dateStr: string) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length < 2) return dateStr;
-    const year = parts[0];
-    const month = parts[1];
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleString('default', { month: 'short' });
-  };
-  
-  const handleMouseMove = (state: any) => {
+
+    // Update hoveredPercentages for clicked bar
+    if (currentIndex > 0 && chartData.length > 0) {
+      const currentMonth = getMonthName(day);
+      const prevMonth = getMonthName(chartData[currentIndex - 1].day);
+      const monthComparison = `${prevMonth} → ${currentMonth}`;
+      
+      const currentValue = entry.payload.reference;
+      const previousValue = chartData[currentIndex - 1].reference;
+      
+      if (previousValue !== null && previousValue !== undefined && previousValue !== 0 && 
+          currentValue !== null && currentValue !== undefined) {
+        const change = ((currentValue - previousValue) / previousValue) * 100;
+        if (!isNaN(change)) {
+          const percentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
+          setHoveredPercentages(prev => ({
+            ...prev,
+            [metricId]: {
+              percentage,
+              increased: change > 0,
+              monthComparison
+            }
+          }));
+        }
+      }
+    }
+  }, [canCompareWithOthers, statsData]);
+
+  const handleMouseMove = useCallback((state: any) => {
     if (state.activePayload && state.activePayload.length > 0) {
       const entry = state.activePayload[0];
       const currentIndex = entry.payload.index;
-      const data = entry.payload.data;
+      const metricId = entry.payload.metricId;
+      const chartData = statsData.find(s => s.id === metricId)?.chart || [];
       
-      if (currentIndex >= 0 && data) {
-        const getMonthName = (dateStr: string) => {
-          if (!dateStr) return '';
-          const parts = dateStr.split('-');
-          if (parts.length < 2) return dateStr;
-          const year = parts[0];
-          const month = parts[1];
-          const date = new Date(parseInt(year), parseInt(month) - 1);
-          return date.toLocaleString('default', { month: 'short' });
-        };
-        
+      if (currentIndex >= 0 && chartData.length > 0) {
+        // Update comparison values
         setComparisonValues(prev => ({
           ...prev,
-          [entry.payload.metricId]: {
+          [metricId]: {
             reference: Math.round(entry.payload.reference),
             others: canCompareWithOthers ? Math.round(entry.payload.others || 0) : undefined,
             date: getMonthName(entry.payload.day)
           }
         }));
         
+        // Calculate percentage change
         if (currentIndex > 0) {
-          const currentMonth = getMonthName(data[currentIndex].day);
-          const prevMonth = getMonthName(data[currentIndex - 1].day);
+          const currentMonth = getMonthName(entry.payload.day);
+          const prevMonth = getMonthName(chartData[currentIndex - 1].day);
           const monthComparison = `${prevMonth} → ${currentMonth}`;
           
-          const previousValue = data[currentIndex - 1].sale;
-          if (previousValue && previousValue !== 0) {
-            const change = ((entry.value - previousValue) / previousValue) * 100;
+          const currentValue = entry.payload.reference;
+          const previousValue = chartData[currentIndex - 1].reference;
+          
+          if (previousValue !== null && previousValue !== undefined && previousValue !== 0 && 
+              currentValue !== null && currentValue !== undefined) {
+            const change = ((currentValue - previousValue) / previousValue) * 100;
             if (!isNaN(change)) {
               const percentage = change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
               setHoveredPercentages(prev => ({
                 ...prev,
-                [entry.payload.metricId]: {
+                [metricId]: {
                   percentage,
                   increased: change > 0,
                   monthComparison
@@ -327,7 +374,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
         }
       }
     }
-  };
+  }, [canCompareWithOthers, statsData]);
 
   if (loading) return <LoadingState />;
   if (error) return <div className="min-w-[292px] w-full p-4 text-center text-gray-500">{error}</div>;
@@ -367,9 +414,9 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
             
             <div className="flex items-baseline gap-2 mt-0.5">
               <Text className="text-xl font-bold text-gray-900">
-                {comparisonValues[stat.id]?.reference ? 
-                  comparisonValues[stat.id].reference.toLocaleString() : 
-                  stat.metric}
+                {!comparisonValues[stat.id] ? stat.metric : 
+                  (comparisonValues[stat.id]?.reference === null || comparisonValues[stat.id]?.reference === undefined ? 
+                  "N/A" : comparisonValues[stat.id]?.reference?.toLocaleString() || "-")}
               </Text>
               {hoveredPercentages[stat.id] && (
                 <span className="text-2xs text-gray-500">
@@ -383,7 +430,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                 <div className="w-1.5 h-1.5 rounded-full bg-[#fc3468]" />
                 <span>{displayName}</span>
               </div>
-              {canCompareWithOthers && (
+              {canCompareWithOthers && effectiveBMU && (
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-[rgba(178,216,216,0.75)]" />
                   <span>Other BMUs</span>
@@ -408,6 +455,10 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                   hide={true} 
                   domain={[(dataMin: number) => 0, (dataMax: number) => dataMax * 1.1]} 
                 />
+                <Tooltip 
+                  content={<></>}
+                  isAnimationActive={false}
+                />
                 <Bar
                   dataKey="reference"
                   fill="#fc3468"
@@ -415,8 +466,9 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                   radius={[2, 2, 0, 0]}
                   maxBarSize={7}
                   minPointSize={3}
+                  activeBar={{ fill: '#d81b4a', stroke: '#d81b4a', strokeWidth: 1 }}
                 />
-                {canCompareWithOthers && (
+                {canCompareWithOthers && effectiveBMU && (
                   <Bar
                     dataKey="others"
                     fill="rgba(178, 216, 216, 0.75)"
@@ -424,6 +476,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                     radius={[2, 2, 0, 0]}
                     maxBarSize={7}
                     minPointSize={3}
+                    activeBar={{ fill: 'rgba(128, 188, 188, 1)', stroke: 'rgba(128, 188, 188, 1)', strokeWidth: 1 }}
                   />
                 )}
               </BarChart>
@@ -433,12 +486,20 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
           <div className="px-3 py-2 border-t border-gray-100 bg-gray-50/30 flex justify-between text-xs">
             <div className="flex flex-col">
               <span className="text-2xs text-gray-500">{displayName}</span>
-              <span className="font-medium">{comparisonValues[stat.id]?.reference || "-"}</span>
+              <span className="font-medium">
+                {!comparisonValues[stat.id] ? "-" : 
+                  (comparisonValues[stat.id]?.reference === null || comparisonValues[stat.id]?.reference === undefined ? 
+                  "N/A" : comparisonValues[stat.id]?.reference?.toLocaleString() || "-")}
+              </span>
             </div>
-            {canCompareWithOthers && (
+            {canCompareWithOthers && effectiveBMU && (
               <div className="flex flex-col">
                 <span className="text-2xs text-gray-500">Other BMUs</span>
-                <span className="font-medium">{comparisonValues[stat.id]?.others || "-"}</span>
+                <span className="font-medium">
+                  {!comparisonValues[stat.id] ? "-" : 
+                    (comparisonValues[stat.id]?.others === null || comparisonValues[stat.id]?.others === undefined ? 
+                    "N/A" : comparisonValues[stat.id]?.others?.toLocaleString() || "-")}
+                </span>
               </div>
             )}
           </div>
