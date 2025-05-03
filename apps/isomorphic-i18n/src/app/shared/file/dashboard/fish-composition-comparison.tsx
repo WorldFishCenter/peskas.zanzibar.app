@@ -8,9 +8,8 @@ import { api } from "@/trpc/react";
 import { bmusAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import SimpleBar from "@ui/simplebar";
-import useUserPermissions from "./hooks/useUserPermissions";
+import useUserPermissions, { adminReferenceBmuAtom } from "./hooks/useUserPermissions";
 import { generateFishCategoryColor } from "./charts/utils";
-import { adminReferenceBmuAtom } from "./hooks/useUserPermissions";
 
 // Define fish category display data
 interface CategoryDisplay {

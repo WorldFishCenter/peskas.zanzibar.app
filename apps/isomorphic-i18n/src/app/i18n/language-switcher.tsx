@@ -96,7 +96,7 @@ export default function LanguageSwitcher({
     if (clientLang !== activeLang) {
       setActiveLang(clientLang);
     }
-  }, [lang]);
+  }, [lang, activeLang]);
 
   // Handle language button click
   const handleLanguageChange = (newLang: string) => {

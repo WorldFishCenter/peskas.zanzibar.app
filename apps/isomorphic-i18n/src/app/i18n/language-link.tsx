@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { default as NextLink } from 'next/link';
-import { ReactNode, forwardRef, ComponentProps } from 'react';
-import { useEffect, useState } from 'react';
+import NextLink from 'next/link';
+import type { LinkProps as NextLinkProps } from 'next/link';
+import { ReactNode, forwardRef, ComponentProps, useEffect, useState } from 'react';
+import { languages } from '../i18n/settings';
 
 // Global variable to store client-side language state
 let clientSideLanguage: string | null = null;
@@ -53,8 +54,8 @@ if (typeof window !== 'undefined') {
   }) as EventListener);
 }
 
-type LinkProps = ComponentProps<typeof NextLink> & {
-  children: ReactNode;
+type LinkProps = NextLinkProps & {
+  children: React.ReactNode;
   lang?: string;
 };
 
@@ -109,7 +110,7 @@ const LanguageLink = forwardRef<HTMLAnchorElement, LinkProps>(
       if (langPrefixPattern.test(cleanHref)) {
         // Extract the path after all language prefixes
         const pathParts = cleanHref.split('/').filter(Boolean);
-        const nonLangIndex = pathParts.findIndex(part => !['en', 'sw'].includes(part));
+        const nonLangIndex = pathParts.findIndex((part: string) => !['en', 'sw'].includes(part));
         
         if (nonLangIndex !== -1) {
           // Rebuild path without language prefixes

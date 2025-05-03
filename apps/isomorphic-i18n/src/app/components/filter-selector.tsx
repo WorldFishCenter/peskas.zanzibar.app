@@ -122,7 +122,7 @@ export const FilterSelector = () => {
       }
     }
 
-  }, [ session, status, bmus, dropdown, isAdmin ]);
+  }, [ session, status, bmus, dropdown, isAdmin, setBmus, setBmusDropdown ]);
   
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fuse) return

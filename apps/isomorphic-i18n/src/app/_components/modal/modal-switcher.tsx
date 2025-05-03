@@ -1,20 +1,22 @@
 "use client";
 
-import { useAtom } from 'jotai';
-
-import type { DataType, Modal } from "@/store/modal";
-import { modalStoreAtom, ModalEnum } from "@/store/modal";
+import { useAtom } from "jotai";
+import type { Modal, DataType } from "@/store/modal";
+import { ModalEnum, modalStoreAtom } from "@/store/modal";
 import UserModal from "./user-modal";
 
 export default function ModalSwitcher() {
-  const [ modal ] = useAtom(modalStoreAtom)
+  const [modalState] = useAtom(modalStoreAtom);
+  
+  // Type cast the modal state
+  const typedModal = modalState as Modal<ModalEnum>;
 
-  const type = (modal as Modal<ModalEnum>).type
-  const data = (modal as Modal<ModalEnum>).data
+  // If modal is not open or not defined, don't render anything
+  if (!typedModal?.open) return null;
 
-  switch (type) {
+  switch (typedModal.type) {
     case ModalEnum.USER:
-      return <UserModal data={data as DataType[ModalEnum.USER]} />;
+      return <UserModal data={typedModal.data as DataType[ModalEnum.USER]} />;
     default:
       return null;
   }
