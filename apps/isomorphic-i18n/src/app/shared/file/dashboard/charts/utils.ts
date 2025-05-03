@@ -1,5 +1,6 @@
-import { ChartDataPoint } from "./types";
-import { TickProps } from "./types";
+import { ChartDataPoint, TickProps } from "./types";
+// Imported above already
+// import { TickProps } from "./types";
 import { CustomYAxisTick } from "./components";
 
 // Standard color function for all charts - using consistent mapping without hardcoding BMUs

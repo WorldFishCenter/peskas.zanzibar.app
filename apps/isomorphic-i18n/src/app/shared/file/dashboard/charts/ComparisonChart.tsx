@@ -15,8 +15,7 @@ import { ChartDataPoint, MetricOption, VisibilityState } from "./types";
 import { CustomYAxisTick } from "./components";
 import { getBarColor } from "./utils";
 import { useTranslation } from "@/app/i18n/client";
-import { useCallback, useEffect, useRef } from "react";
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 interface ComparisonChartProps {
   chartData: ChartDataPoint[];

@@ -1,7 +1,8 @@
+"use client";
+
 import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import React, { createContext, useContext } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo, createContext, useContext } from "react";
 
 import { bmusAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";

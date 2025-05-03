@@ -1,7 +1,6 @@
 "use client";
 
-import NextLink from 'next/link';
-import type { LinkProps as NextLinkProps } from 'next/link';
+import NextLink, { LinkProps as NextLinkProps } from 'next/link';
 import { ReactNode, forwardRef, ComponentProps, useEffect, useState } from 'react';
 import { languages } from '../i18n/settings';
 
@@ -57,6 +56,7 @@ if (typeof window !== 'undefined') {
 type LinkProps = NextLinkProps & {
   children: React.ReactNode;
   lang?: string;
+  className?: string;
 };
 
 /**
