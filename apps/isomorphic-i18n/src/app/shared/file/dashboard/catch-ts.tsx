@@ -399,7 +399,7 @@ export default function CatchMetricsChart({
     if (localActiveTab !== newTabName) {
       setLocalActiveTab(newTabName);
     }
-  }, [activeTab]);
+  }, [activeTab, getNewTabName, localActiveTab]);
 
   const handleLegendClick = (site: string) => {
     // Don't toggle visibility for the average line
@@ -766,7 +766,7 @@ export default function CatchMetricsChart({
       });
       setVisibilityState(newVisibilityState);
     }
-  }, [localActiveTab, isCiaUser, siteColors, bmu]);
+  }, [localActiveTab, isCiaUser, siteColors, bmu, visibilityState]);
 
   // Calculate annual data when chart data changes
   useEffect(() => {

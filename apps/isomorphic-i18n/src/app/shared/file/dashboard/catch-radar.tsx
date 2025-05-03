@@ -425,7 +425,7 @@ export default function CatchRadarChart({
       setLoading(false);
       setIsInitialLoad(false);
     }
-  }, [bmsDependencyString, selectedMetric, activeTab, processedData, isFetching, isInitialLoad]);
+  }, [bmsDependencyString, selectedMetric, activeTab, processedData, isFetching, isInitialLoad, bmus.length]);
 
   // Memoize legend click handler
   const handleLegendClick = useCallback((site: string) => {

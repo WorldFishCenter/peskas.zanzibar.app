@@ -730,7 +730,7 @@ export default function FishCompositionChart({
     // Annual data is the same for all users
     setAnnualData(getAnnualData(chartData, !canCompareWithOthers, siteColors));
     
-  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length]);
+  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length, loading, visibilityState]);
 
   // Find the selected category option
   const selectedCategoryOption = FISH_CATEGORIES.find(

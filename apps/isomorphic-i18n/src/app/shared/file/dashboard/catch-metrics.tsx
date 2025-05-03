@@ -324,7 +324,7 @@ export default function CatchMetricsChart({
     if (lang && i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
-  }, [lang, i18n]);
+  }, [lang, i18n, chartData.length, loading, visibilityState]);
 
   const handleLegendClick = useCallback((site: string) => {
     // Don't toggle visibility for the average line or special CIA comparison lines
