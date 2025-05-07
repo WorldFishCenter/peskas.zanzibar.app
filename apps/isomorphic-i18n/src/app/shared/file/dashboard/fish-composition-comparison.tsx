@@ -337,7 +337,7 @@ export default function FishCompositionComparison({
               </div>
               <div className="text-xs text-gray-500 text-center mt-1">
                 {isAdmin 
-                  ? t("text-admin-chart-description") || "Showing limited BMU selection. Use reference selector to highlight a BMU."
+                  ? t("text-comparison-chart-description") || "Showing limited BMU selection. Use reference selector to highlight a BMU."
                   : hasRestrictedAccess
                     ? t("text-cia-chart-description") || "Distribution of fish groups in your BMU"
                     : t("text-comparison-chart-description") || "Compare fish group distribution across BMUs"}
