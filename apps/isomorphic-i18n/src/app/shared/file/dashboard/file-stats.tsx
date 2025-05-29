@@ -443,14 +443,13 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={stat.chart}
-                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-                barSize={15}
-                barGap={2}
+                margin={{ top: 5, right: 8, bottom: 5, left: 8 }}
+                barGap={1}
                 onMouseMove={handleMouseMove}
                 onClick={handleBarClick}
                 className="[&_.recharts-cartesian-grid]:hidden"
               >
-                <XAxis dataKey="day" hide={true} scale="band" />
+                <XAxis dataKey="day" hide={true} />
                 <YAxis 
                   hide={true} 
                   domain={[(dataMin: number) => 0, (dataMax: number) => dataMax * 1.1]} 
@@ -464,7 +463,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                   fill="#fc3468"
                   name={displayName}
                   radius={[2, 2, 0, 0]}
-                  maxBarSize={7}
+                  maxBarSize={8}
                   minPointSize={3}
                   activeBar={{ fill: '#d81b4a', stroke: '#d81b4a', strokeWidth: 1 }}
                 />
@@ -474,7 +473,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
                     fill="rgba(178, 216, 216, 0.75)"
                     name="Other BMUs"
                     radius={[2, 2, 0, 0]}
-                    maxBarSize={7}
+                    maxBarSize={8}
                     minPointSize={3}
                     activeBar={{ fill: 'rgba(128, 188, 188, 1)', stroke: 'rgba(128, 188, 188, 1)', strokeWidth: 1 }}
                   />
