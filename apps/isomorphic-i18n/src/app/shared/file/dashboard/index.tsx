@@ -9,6 +9,7 @@ import FileStats from "@/app/shared/file/dashboard/file-stats";
 import PerformanceTable from "@/app/shared/file/dashboard/file-list/table";
 import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
+import BMURanking from "@/app/shared/file/dashboard/bmu-ranking";
 import { useUserPermissions } from "./hooks/useUserPermissions";
 
 type SerializedBmu = {
@@ -63,7 +64,8 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           </div>
         </div>
         <GearTreemap lang={lang} bmu={effectiveBMU} />
-        <PerformanceTable lang={lang} />
+        <BMURanking lang={lang} bmu={effectiveBMU} />
+        {/* <PerformanceTable lang={lang} /> */}
       </div>
     </div>
   );

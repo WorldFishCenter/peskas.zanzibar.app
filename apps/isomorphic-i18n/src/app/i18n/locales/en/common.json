@@ -888,6 +888,8 @@
   "text-no-data": "No Data",
   "text-manage-users": "Manage Users",
   "text-bmu-ranking": "BMU Performance Rankings",
+  "text-bmu-ranking-title": "BMU Performance Rankings",
+  "text-bmu-ranking-description": "Shows ranked performance of all BMUs based on selected metrics",
   "text-metrics-revenue": "Revenue Metrics",
   "text-metrics-catch": "Catch Metrics",
   "text-metrics-effort": "Effort",
