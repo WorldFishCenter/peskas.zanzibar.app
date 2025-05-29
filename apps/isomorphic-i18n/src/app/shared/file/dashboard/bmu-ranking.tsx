@@ -163,12 +163,6 @@ export default function BMURanking({
     hasRestrictedAccess,
   } = useUserPermissions();
   
-  // If in CIA mode, don't render the ranking as it doesn't make sense to show a comparison
-  // ranking with just one BMU
-  if (isCiaUser) {
-    return null;
-  }
-  
   // Determine which BMU to use for highlighting - prefer passed prop, then user's BMU
   const effectiveBMU = bmu || userBMU;
   
@@ -261,7 +255,13 @@ export default function BMURanking({
     } finally {
       setLoading(false);
     }
-  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, bmus]);
+  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, bmus, rankingData.length, loading]);
+
+  // If in CIA mode, don't render the ranking as it doesn't make sense to show a comparison
+  // ranking with just one BMU
+  if (isCiaUser) {
+    return null;
+  }
 
   if (loading) return <LoadingState />;
   if (error) return <LoadingState />;

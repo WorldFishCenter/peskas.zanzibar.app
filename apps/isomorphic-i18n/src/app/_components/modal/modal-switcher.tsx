@@ -1,8 +1,7 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { ModalEnum, modalStoreAtom } from "@/store/modal";
-import type { Modal, DataType } from "@/store/modal";
+import { ModalEnum, modalStoreAtom, type Modal, type DataType } from "@/store/modal";
 import UserModal from "./user-modal";
 
 export default function ModalSwitcher() {

@@ -1,5 +1,4 @@
-import type { ObjectId } from "mongoose";
-import mongoose from "mongoose";
+import mongoose, { type ObjectId } from "mongoose";
 import type {
   Adapter,
   AdapterAccount,
