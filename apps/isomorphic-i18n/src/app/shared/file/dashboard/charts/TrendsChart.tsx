@@ -1,6 +1,6 @@
 import {
-  Area,
-  AreaChart,
+  Line,
+  LineChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -74,7 +74,7 @@ export default function TrendsChart({
     return format(date, "MMM yyyy");
   };
 
-  // Generate areas for each BMU
+  // Generate lines for each BMU
   const renderAreas = () => {
     // For CIA users, only show their BMU and not "average" or "historical_average"
     const sites = Object.keys(siteColors).filter(site => {
@@ -85,13 +85,10 @@ export default function TrendsChart({
     });
     
     return sites.map((site) => (
-      <Area
+      <Line
         key={site}
-        type="monotone"
         dataKey={site}
         stroke={siteColors[site]}
-        fill={siteColors[site]}
-        fillOpacity={0.1}
         strokeWidth={2}
         dot={false}
         activeDot={{ r: 6, strokeWidth: 0 }}
@@ -146,16 +143,10 @@ export default function TrendsChart({
   return (
     <div className="h-96 w-full pt-9">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
+        <LineChart
           data={chartData}
           margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
         >
-          <defs>
-            <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-            </linearGradient>
-          </defs>
           <XAxis
             dataKey="date"
             tickFormatter={formatDate}
@@ -200,12 +191,10 @@ export default function TrendsChart({
           
           {/* Add average line for non-CIA users only */}
           {!isCiaUser && (
-            <Area
-              type="monotone"
+            <Line
               dataKey="average"
               stroke="#000000"
               strokeWidth={4}
-              fill="none"
               dot={false}
               activeDot={{ r: 6, strokeWidth: 0 }}
               strokeOpacity={visibilityState["average"]?.opacity}
@@ -217,7 +206,7 @@ export default function TrendsChart({
           )}
           
           {CustomLegend && <Legend content={(props) => <CustomLegend {...props} />} />}
-        </AreaChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

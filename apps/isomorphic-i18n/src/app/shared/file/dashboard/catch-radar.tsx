@@ -536,7 +536,7 @@ export default function CatchRadarChart({
                   dataKey={site}
                   stroke={activeTab === 'differenced' ? "#fc3468" : color}
                   fill={activeTab === 'differenced' ? "#fc3468" : color}
-                  fillOpacity={opacity * 0.35}
+                  fillOpacity={opacity * 0.05}
                   strokeOpacity={opacity}
                   strokeWidth={2}
                   dot

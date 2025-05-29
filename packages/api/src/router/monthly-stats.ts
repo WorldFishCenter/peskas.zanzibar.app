@@ -55,7 +55,7 @@ export const monthlyStatsRouter = createTRPCRouter({
         effort: {
           current: data[0].mean_effort,
           percentage: calculatePercentageChange(data[0].mean_effort, data[1]?.mean_effort),
-          trend: data.slice(0, 6).map(d => ({
+          trend: data.slice(0, 3).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
             sale: d.mean_effort
           })).reverse()
@@ -63,7 +63,7 @@ export const monthlyStatsRouter = createTRPCRouter({
         cpue: {
           current: data[0].mean_cpue,
           percentage: calculatePercentageChange(data[0].mean_cpue, data[1]?.mean_cpue),
-          trend: data.slice(0, 6).map(d => ({
+          trend: data.slice(0, 3).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
             sale: d.mean_cpue
           })).reverse()
@@ -71,7 +71,7 @@ export const monthlyStatsRouter = createTRPCRouter({
         cpua: {
           current: data[0].mean_cpua,
           percentage: calculatePercentageChange(data[0].mean_cpua, data[1]?.mean_cpua),
-          trend: data.slice(0, 6).map(d => ({
+          trend: data.slice(0, 3).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
             sale: d.mean_cpua
           })).reverse()
@@ -79,7 +79,7 @@ export const monthlyStatsRouter = createTRPCRouter({
         rpue: {
           current: data[0].mean_rpue,
           percentage: calculatePercentageChange(data[0].mean_rpue, data[1]?.mean_rpue),
-          trend: data.slice(0, 6).map(d => ({
+          trend: data.slice(0, 3).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
             sale: d.mean_rpue
           })).reverse()
@@ -87,7 +87,7 @@ export const monthlyStatsRouter = createTRPCRouter({
         rpua: {
           current: data[0].mean_rpua,
           percentage: calculatePercentageChange(data[0].mean_rpua, data[1]?.mean_rpua),
-          trend: data.slice(0, 6).map(d => ({
+          trend: data.slice(0, 3).map(d => ({
             day: new Date(d.date).toLocaleString('default', { month: 'short' }),
             sale: d.mean_rpua
           })).reverse()
