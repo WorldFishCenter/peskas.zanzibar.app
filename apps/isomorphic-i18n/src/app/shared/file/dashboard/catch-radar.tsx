@@ -21,7 +21,7 @@ import { useSession } from "next-auth/react";
 // Import shared permissions hook
 import useUserPermissions from "./hooks/useUserPermissions";
 // Import shared color function
-import { generateColor } from "./charts/utils";
+import { generateColor, updateBmuColorRegistry } from "./charts/utils";
 import { MetricKey, MetricOption } from "./charts/types";
 
 interface RadarData {
@@ -279,6 +279,9 @@ export default function CatchRadarChart({
       const accessibleSites = hasRestrictedAccess 
         ? getAccessibleBMUs(uniqueSites) 
         : uniqueSites;
+
+      // Update the global BMU color registry to ensure unique colors
+      updateBmuColorRegistry(uniqueSites);
 
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(
         (acc: Record<string, string>, site: string, index: number) => {

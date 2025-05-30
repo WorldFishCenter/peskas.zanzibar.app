@@ -9,7 +9,7 @@ import { bmusAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import SimpleBar from "@ui/simplebar";
 import useUserPermissions, { adminReferenceBmuAtom } from "./hooks/useUserPermissions";
-import { generateFishCategoryColor } from "./charts/utils";
+import { generateFishCategoryColor, updateBmuColorRegistry } from "./charts/utils";
 
 // Define fish category display data
 interface CategoryDisplay {
@@ -144,6 +144,9 @@ export default function FishCompositionComparison({
     }
     
     try {
+      // Update the global BMU color registry to ensure unique colors across all dashboard components
+      updateBmuColorRegistry(queryBmus);
+      
       // Process the fish category data
       const totals: Record<string, Record<string, number>> = {};
       const categories: Set<string> = new Set();

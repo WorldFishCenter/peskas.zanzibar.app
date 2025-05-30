@@ -28,7 +28,7 @@ import {
 
 // Import shared MetricSelector component
 import { MetricKey, MetricOption, METRIC_OPTIONS } from "./charts/types";
-import { generateColor } from "./charts/utils";
+import { generateColor, updateBmuColorRegistry } from "./charts/utils";
 import useUserPermissions from "./hooks/useUserPermissions";
 
 // Colors for gear types (consistent set)
@@ -370,6 +370,9 @@ export default function GearHeatmap({
       const accessibleBMUs = hasRestrictedAccess 
         ? getAccessibleBMUs(uniqueBMUs) 
         : uniqueBMUs;
+
+      // Update the global BMU color registry to ensure unique colors
+      updateBmuColorRegistry(uniqueBMUs);
 
       // Create color mapping for BMUs
       const newSiteColors = uniqueBMUs.reduce<Record<string, string>>(

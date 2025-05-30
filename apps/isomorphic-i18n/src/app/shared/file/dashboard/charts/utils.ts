@@ -1,6 +1,27 @@
 import { ChartDataPoint, TickProps } from "./types";
 import { CustomYAxisTick } from "./components";
 
+// Global array to keep track of all BMU names for consistent color assignment
+let globalBmuNames: string[] = [];
+
+// Function to update the global BMU list and ensure consistent color assignment
+export const updateBmuColorRegistry = (bmuNames: string[]) => {
+  // Filter out special cases and sort alphabetically for consistent ordering
+  const filteredNames = bmuNames.filter(name => 
+    name !== 'average' && 
+    name !== 'historical_average' && 
+    typeof name === 'string' && 
+    name.trim().length > 0
+  );
+  
+  // Merge with existing names and remove duplicates
+  const uniqueNames = new Set([...globalBmuNames, ...filteredNames]);
+  const allNames = Array.from(uniqueNames);
+  
+  // Sort alphabetically for consistent ordering
+  globalBmuNames = allNames.sort();
+};
+
 // Standard color function for all charts - using consistent mapping without hardcoding BMUs
 export const generateColor = (index: number, site: string, referenceBmu: string | undefined): string => {
   // Special case for reference BMU
@@ -17,26 +38,36 @@ export const generateColor = (index: number, site: string, referenceBmu: string 
     return "#94a3b8"; // Light slate gray for historical average
   }
   
-  // Standard color palette
+  // Updated 13-color palette for better distinction when there are many BMUs
   const colors = [
-    "#0c526e", // Dark blue
-    "#f09609", // Orange
-    "#2563eb", // Blue
-    "#16a34a", // Green
-    "#9333ea", // Purple
-    "#ea580c", // Dark orange
-    "#0891b2", // Teal
+    "#ebac23", // Yellow
+    "#b80058", // Lipstick
+    "#008cf9", // Azure
+    "#006e00", // Green
+    "#00bbad", // Caribbean
+    "#d163e6", // Lavender
+    "#b24502", // Brown
+    "#ff9287", // Coral
+    "#5954d6", // Indigo
+    "#00c6f8", // Turquoise
+    "#878500", // Olive
+    "#00a76c", // Jade
+    "#bdbdbd", // Gray
   ];
   
-  // Use a simple hash of the BMU name to determine its color
-  // This ensures the same BMU always gets the same color regardless of order
-  const hash = site.split('').reduce((acc, char) => {
-    return ((acc << 5) - acc) + char.charCodeAt(0);
-  }, 0);
+  // Find the position of this BMU in the alphabetically sorted list
+  let colorIndex = globalBmuNames.indexOf(site);
   
-  // Use absolute value and modulo to pick a color from our palette
-  const colorIndex = Math.abs(hash) % colors.length;
-  return colors[colorIndex];
+  // If not found in global registry, fall back to a simple approach
+  if (colorIndex === -1) {
+    // Add it to the registry and get its new position
+    globalBmuNames.push(site);
+    globalBmuNames.sort();
+    colorIndex = globalBmuNames.indexOf(site);
+  }
+  
+  // Use modulo to cycle through colors if we have more BMUs than colors
+  return colors[colorIndex % colors.length];
 };
 
 export const getBarColor = (baseColor: string, isPositive: boolean): string => {
@@ -244,41 +275,44 @@ export const generateFishCategoryColor = (category: string): string => {
   // Normalize the category name to handle case sensitivity
   const normalizedCategory = category.trim();
   
-  // Special cases for specific categories - using a case-insensitive approach
-  const specialCases: Record<string, string> = {
-    "goatfish": "#4F46E5",    // Indigo
-    "lobster": "#EC4899",     // Pink
-    "octopus": "#F59E0B",     // Amber
-    "parrotfish": "#10B981",  // Emerald
-    "pelagics": "#6366F1",    // Indigo (lighter)
-    "rabbitfish": "#8B5CF6",  // Violet
-    "ray": "#F97316",         // Orange
-    "shark": "#EF4444",       // Red
-    "rest of catch": "#6B7280", // Gray
-    "scavengers": "#94A3B8",  // Light slate
-  };
-  
-  // Check if we have a special case for this category (case insensitive)
-  const lowerCaseCategory = normalizedCategory.toLowerCase();
-  if (specialCases[lowerCaseCategory]) {
-    return specialCases[lowerCaseCategory];
-  }
-  
-  // Standard color palette for other fish categories
+  // Use the same 13-color palette as BMUs for consistency
   const colors = [
-    "#4F46E5", // Indigo
-    "#EC4899", // Pink
-    "#F59E0B", // Amber
-    "#10B981", // Emerald
-    "#6366F1", // Indigo (lighter)
-    "#8B5CF6", // Violet
-    "#F97316", // Orange
-    "#14B8A6", // Teal
-    "#06B6D4", // Cyan
-    "#3B82F6", // Blue
+    "#ebac23", // Yellow
+    "#b80058", // Lipstick
+    "#008cf9", // Azure
+    "#006e00", // Green
+    "#00bbad", // Caribbean
+    "#d163e6", // Lavender
+    "#b24502", // Brown
+    "#ff9287", // Coral
+    "#5954d6", // Indigo
+    "#00c6f8", // Turquoise
+    "#878500", // Olive
+    "#00a76c", // Jade
+    "#bdbdbd", // Gray
   ];
   
-  // Use a hash function with the normalized name to ensure consistent results
+  // Create a consistent mapping for common fish categories
+  const categoryMap: Record<string, number> = {
+    "goatfish": 0,      // Yellow
+    "lobster": 1,       // Lipstick
+    "octopus": 2,       // Azure
+    "parrotfish": 3,    // Green
+    "pelagics": 4,      // Caribbean
+    "rabbitfish": 5,    // Lavender
+    "ray": 6,           // Brown
+    "rest of catch": 7, // Coral
+    "shark": 8,         // Indigo
+    "scavengers": 9,    // Turquoise
+  };
+  
+  // Check if we have a predefined mapping for this category
+  const lowerCaseCategory = normalizedCategory.toLowerCase();
+  if (categoryMap[lowerCaseCategory] !== undefined) {
+    return colors[categoryMap[lowerCaseCategory]];
+  }
+  
+  // For any other categories, use hash function to assign from the same palette
   const hash = lowerCaseCategory.split('').reduce((acc, char) => {
     return ((acc << 5) - acc) + char.charCodeAt(0);
   }, 0);

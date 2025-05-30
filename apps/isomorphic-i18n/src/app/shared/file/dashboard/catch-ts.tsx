@@ -25,6 +25,7 @@ import SimpleBar from "@ui/simplebar";
 import cn from "@utils/class-names";
 import { ActionIcon, Popover } from "rizzui";
 import { useSession } from "next-auth/react";
+import { generateColor, updateBmuColorRegistry } from "./charts/utils";
 
 // Add local formatNumber function to replace the import
 const formatNumber = (num: number, precision = 0): string => {
@@ -135,25 +136,6 @@ const METRIC_OPTIONS: MetricOption[] = [
     category: "revenue",
   },
 ];
-
-const generateColor = (index: number, site: string, referenceBmu: string | undefined): string => {
-  if (site === referenceBmu) {
-    return "#fc3468"; // Red color for reference BMU
-  }
-  if (site === "average") {
-    return "#000000"; // Black color for average line
-  }
-  const colors = [
-    "#0c526e", // Dark blue
-    "#f09609", // Orange
-    "#2563eb", // Blue
-    "#16a34a", // Green
-    "#9333ea", // Purple
-    "#ea580c", // Dark orange
-    "#0891b2", // Teal
-  ];
-  return colors[index % colors.length];
-};
 
 // Get positive and negative colors for each site
 const getBarColor = (baseColor: string, isPositive: boolean): string => {
@@ -451,6 +433,9 @@ export default function CatchMetricsChart({
       const uniqueSites = Array.from(
         new Set(monthlyData.map((item: ApiDataPoint) => item.landing_site))
       );
+
+      // Update the global BMU color registry to ensure unique colors
+      updateBmuColorRegistry(uniqueSites as string[]);
 
       // Create color mapping for sites
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(

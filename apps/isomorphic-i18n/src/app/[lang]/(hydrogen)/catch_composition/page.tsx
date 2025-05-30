@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useAtom } from "jotai";
 import { useTranslation } from "@/app/i18n/client";
 import type { DefaultSession } from "next-auth";
 import type { TBmu } from "@repo/nosql/schema/bmu";
@@ -30,18 +31,20 @@ interface PageProps {
 
 export default function CatchCompositionPage({ params }: PageProps) {
   const lang = params.lang;
-  // Use simple useState like in index.tsx
+  // Use the same state management pattern as the homepage FileDashboard
   const [selectedCategory, setSelectedCategory] = useState("Octopus");
   const [activeTab, setActiveTab] = useState("trends");
   const { t } = useTranslation("common");
   const { referenceBMU } = useUserPermissions();
 
-  // Use reference BMU instead of directly using userBmu from session
+  // Use reference BMU instead of directly using userBmu from session - consistent with homepage
   const effectiveBMU = referenceBMU || undefined;
 
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 gap-5 xl:gap-6">
+        {/* <FileStats lang={lang} bmu={effectiveBMU} /> */}
+        
         <div className="grid grid-cols-12 gap-5 xl:gap-6">
           <div className="col-span-12">
             <FishCompositionChart 

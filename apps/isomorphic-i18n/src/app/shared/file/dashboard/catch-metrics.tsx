@@ -21,7 +21,7 @@ import {
   ApiDataPoint, 
   VisibilityState 
 } from "./charts/types";
-import { generateColor, getAnnualData, getRecentData } from "./charts/utils";
+import { generateColor, getAnnualData, getRecentData, updateBmuColorRegistry } from "./charts/utils";
 import CustomLegend from "./charts/CustomLegend";
 // Import the chart components
 import TrendsChart from "./charts/TrendsChart";
@@ -470,6 +470,9 @@ export default function CatchMetricsChart({
       const accessibleSites = hasRestrictedAccess 
         ? getAccessibleBMUs(uniqueSites as string[])
         : uniqueSites;
+
+      // Update the global BMU color registry to ensure unique colors
+      updateBmuColorRegistry(uniqueSites as string[]);
 
       // Create color mapping for sites
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(

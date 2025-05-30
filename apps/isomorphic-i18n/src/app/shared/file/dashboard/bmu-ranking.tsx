@@ -23,7 +23,7 @@ import {
 // Import shared components and types
 import { MetricKey, MetricOption } from "./charts/types";
 import useUserPermissions from "./hooks/useUserPermissions";
-import { generateColor } from "./charts/utils";
+import { generateColor, updateBmuColorRegistry } from "./charts/utils";
 
 // Define METRIC_OPTIONS consistent with other components
 const METRIC_OPTIONS: MetricOption[] = [
@@ -221,6 +221,10 @@ export default function BMURanking({
           bmuAverages[bmuName].count += 1;
         }
       });
+
+      // Get all BMU names and update color registry to ensure unique colors
+      const bmuNames = Object.keys(bmuAverages);
+      updateBmuColorRegistry(bmuNames);
 
       // Calculate averages and create ranking data
       const rankingData: BMURankingData[] = Object.entries(bmuAverages)
