@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
@@ -22,13 +22,7 @@ import { useSession } from "next-auth/react";
 import useUserPermissions from "./hooks/useUserPermissions";
 // Import shared color function
 import { generateColor } from "./charts/utils";
-
-type MetricKey =
-  | "mean_effort"
-  | "mean_cpue"
-  | "mean_cpua"
-  | "mean_rpue"
-  | "mean_rpua";
+import { MetricKey, MetricOption } from "./charts/types";
 
 interface RadarData {
   month: string;
@@ -157,21 +151,22 @@ const CustomLegend = ({ payload, visibilityState, handleLegendClick, siteColors,
   );
 };
 
+interface CatchRadarChartProps {
+  className?: string;
+  lang?: string;
+  bmu?: string;
+  activeTab?: string;
+}
+
 export default function CatchRadarChart({
   className,
   lang,
-  selectedMetric,
   bmu,
   activeTab = 'standard',
-}: {
-  className?: string;
-  lang?: string;
-  selectedMetric: MetricKey;
-  bmu?: string;
-  activeTab?: string;
-}) {
+}: CatchRadarChartProps) {
   const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
+  const [selectedMetric] = useAtom(selectedMetricAtom);
   
   // Use centralized permissions hook
   const {

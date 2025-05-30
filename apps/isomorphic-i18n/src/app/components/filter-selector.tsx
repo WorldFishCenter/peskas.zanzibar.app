@@ -12,6 +12,8 @@ import isEmpty from 'lodash/isEmpty';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import Fuse from "fuse.js";
+import { atom } from "jotai";
+import { MetricKey } from "@/app/shared/file/dashboard/charts/types";
 
 import type { TBmu } from "@repo/nosql/schema/bmu";
 import SimpleBar from '@ui/simplebar';
@@ -65,6 +67,9 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
 export const dropdownAtom = atomWithStorage<DropdownTypes[]>('dropdown', [], undefined, { getOnInit: true });
 export const bmusAtom = atomWithStorage<string[]>('bmus', [], undefined, { getOnInit: true });
 export const viewModeAtom = atomWithStorage<'bmu' | 'region'>('viewMode', 'bmu', undefined, { getOnInit: true });
+
+// Global metric selector atom
+export const selectedMetricAtom = atom<MetricKey>("mean_effort");
 
 export const FilterSelector = () => {
   const { t } = useTranslation("common");

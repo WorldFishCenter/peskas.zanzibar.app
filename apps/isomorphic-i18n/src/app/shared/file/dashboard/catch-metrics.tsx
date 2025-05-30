@@ -10,6 +10,8 @@ import { api } from "@/trpc/react";
 import { useMedia } from "@hooks/use-media";
 import SimpleBar from "@ui/simplebar";
 import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
+import cn from "@utils/class-names";
 
 import { 
   MetricKey, 
@@ -20,7 +22,6 @@ import {
   VisibilityState 
 } from "./charts/types";
 import { generateColor, getAnnualData, getRecentData } from "./charts/utils";
-import MetricSelector from "./charts/MetricSelector";
 import CustomLegend from "./charts/CustomLegend";
 // Import the chart components
 import TrendsChart from "./charts/TrendsChart";
@@ -29,6 +30,7 @@ import AnnualChart from "./charts/AnnualChart";
 import { getClientLanguage } from "@/app/i18n/language-link";
 // Import shared permissions hook
 import useUserPermissions from "./hooks/useUserPermissions";
+import { CustomYAxisTick } from "./charts/components";
 
 // Create a more robust language context that includes both the language code and translations
 const LanguageContext = createContext<{
@@ -61,7 +63,6 @@ interface CatchMetricsChartProps {
   className?: string;
   lang?: string;
   selectedMetric: MetricKey;
-  onMetricChange: (metric: MetricKey) => void;
   bmu?: string;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
@@ -188,7 +189,6 @@ export default function CatchMetricsChart({
   className,
   lang,
   selectedMetric,
-  onMetricChange,
   bmu,
   activeTab = 'standard', // Keep the original default for backwards compatibility
   onTabChange,
@@ -732,15 +732,8 @@ export default function CatchMetricsChart({
   return (
     <WidgetCard
       title={
-        <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between w-full gap-3">
-          <div className="w-full sm:w-auto">
-            <MetricSelector
-              selectedMetric={selectedMetric}
-              onMetricChange={onMetricChange}
-              selectedMetricOption={selectedMetricOption}
-            />
-          </div>
-          <div className="hidden sm:block text-base font-medium text-gray-800 mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-3">
+          <div className="hidden sm:block text-base font-medium text-gray-800 flex-1">
             <div className="text-center">
               {getTabTitle(localActiveTab)}
             </div>
@@ -749,7 +742,7 @@ export default function CatchMetricsChart({
             </div>
           </div>
           {/* Show tabs for all users, but handle them differently based on permissions */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:flex-shrink-0">
               <button
                 className={`px-4 py-2 text-sm rounded-md transition duration-200 ${localActiveTab === 'trends' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} w-full sm:w-auto`}
                 onClick={() => handleTabChange('trends')}

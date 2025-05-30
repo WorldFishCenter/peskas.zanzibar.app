@@ -5,7 +5,7 @@ import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import { useTheme } from "next-themes";
 import MetricCard from "@components/cards/metric-card";
@@ -27,46 +27,9 @@ import {
 } from "recharts";
 
 // Import shared MetricSelector component
-import MetricSelector from "./charts/MetricSelector";
-import { MetricKey, MetricOption } from "./charts/types";
-// Import shared permissions hook
-import useUserPermissions from "./hooks/useUserPermissions";
-// Import shared color function 
+import { MetricKey, MetricOption, METRIC_OPTIONS } from "./charts/types";
 import { generateColor } from "./charts/utils";
-
-// Define METRIC_OPTIONS if not imported from types
-const METRIC_OPTIONS: MetricOption[] = [
-  {
-    value: "mean_effort",
-    label: "Effort",
-    unit: "fishers/km²/day",
-    category: "catch",
-  },
-  {
-    value: "mean_cpue",
-    label: "Catch Rate",
-    unit: "kg/fisher/day",
-    category: "catch",
-  },
-  {
-    value: "mean_cpua",
-    label: "Catch Density",
-    unit: "kg/km²/day",
-    category: "catch",
-  },
-  {
-    value: "mean_rpue",
-    label: "Fisher Revenue",
-    unit: "KES/fisher/day",
-    category: "revenue",
-  },
-  {
-    value: "mean_rpua",
-    label: "Area Revenue",
-    unit: "KES/km²/day",
-    category: "revenue",
-  },
-];
+import useUserPermissions from "./hooks/useUserPermissions";
 
 // Colors for gear types (consistent set)
 const GEAR_COLORS = [
@@ -304,8 +267,6 @@ export default function GearHeatmap({
   bmu?: string;
 }) {
   const { theme } = useTheme();
-  const [selectedMetric, setSelectedMetric] =
-    useState<MetricKey>("mean_effort");
   const [barData, setBarData] = useState<any[]>([]);
   const [rankingData, setRankingData] = useState<RankingDataItem[]>([]);
   const [comparisonData, setComparisonData] = useState<any[]>([]);
@@ -313,6 +274,7 @@ export default function GearHeatmap({
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
+  const [selectedMetric] = useAtom(selectedMetricAtom);
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
   const [activeTab, setActiveTab] = useState('distribution');
@@ -653,11 +615,6 @@ export default function GearHeatmap({
       title={
         <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between w-full gap-3">
           <div className="w-full sm:w-auto">
-          <MetricSelector
-            selectedMetric={selectedMetric}
-            onMetricChange={setSelectedMetric}
-            selectedMetricOption={selectedMetricOption}
-          />
           </div>
           <div className="hidden sm:block text-base font-medium text-gray-800 mx-auto">
             <div className="text-center">
@@ -873,5 +830,3 @@ const WidgetCardTitle = ({
     </div>
   );
 };
-
-export { MetricSelector };

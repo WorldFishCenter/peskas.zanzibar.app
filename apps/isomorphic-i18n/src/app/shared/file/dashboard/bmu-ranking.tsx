@@ -6,7 +6,7 @@ import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import MetricCard from "@components/cards/metric-card";
 import {
@@ -21,7 +21,6 @@ import {
 } from "recharts";
 
 // Import shared components and types
-import MetricSelector from "./charts/MetricSelector";
 import { MetricKey, MetricOption } from "./charts/types";
 import useUserPermissions from "./hooks/useUserPermissions";
 import { generateColor } from "./charts/utils";
@@ -142,12 +141,12 @@ export default function BMURanking({
   lang?: string;
   bmu?: string;
 }) {
-  const [selectedMetric, setSelectedMetric] = useState<MetricKey>("mean_effort");
   const [rankingData, setRankingData] = useState<BMURankingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation(lang!, "common");
   const [bmus] = useAtom(bmusAtom);
+  const [selectedMetric] = useAtom(selectedMetricAtom);
   
   // Add refs to track initialization states
   const dataProcessed = useRef<boolean>(false);
@@ -270,15 +269,8 @@ export default function BMURanking({
   return (
     <WidgetCard
       title={
-        <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between w-full gap-3">
-          <div className="w-full sm:w-auto">
-            <MetricSelector
-              selectedMetric={selectedMetric}
-              onMetricChange={setSelectedMetric}
-              selectedMetricOption={selectedMetricOption}
-            />
-          </div>
-          <div className="hidden sm:block text-base font-medium text-gray-800 mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-3">
+          <div className="hidden sm:block text-base font-medium text-gray-800 flex-1">
             <div className="text-center">
               {t("text-bmu-ranking-title")}
             </div>

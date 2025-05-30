@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useAtom } from "jotai";
 import { useTranslation } from "@/app/i18n/client";
 import { MetricKey } from "./charts/types"; 
 import CatchMetricsChart from "./catch-metrics";
@@ -10,6 +11,7 @@ import PerformanceTable from "@/app/shared/file/dashboard/file-list/table";
 import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 import BMURanking from "@/app/shared/file/dashboard/bmu-ranking";
+import { selectedMetricAtom } from "@/app/components/filter-selector";
 import { useUserPermissions } from "./hooks/useUserPermissions";
 
 type SerializedBmu = {
@@ -26,7 +28,7 @@ type CustomSession = {
 }
 
 export default function FileDashboard({ lang }: { lang?: string }) {
-  const [selectedMetricKey, setSelectedMetricKey] = useState<MetricKey>("mean_effort");
+  const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
   const [activeTab, setActiveTab] = useState("trends");
   const { t } = useTranslation("common");
   const { referenceBMU } = useUserPermissions();
@@ -36,20 +38,13 @@ export default function FileDashboard({ lang }: { lang?: string }) {
 
   return (
     <div className="w-full">
-      {/* <div className="mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-          {t("text-file-dashboard-title")}
-        </h2>
-      </div> */}
-
       <div className="grid grid-cols-1 gap-5 xl:gap-6">
         <FileStats lang={lang} bmu={effectiveBMU} />
         <div className="grid grid-cols-12 gap-5 xl:gap-6">
           <div className="col-span-12 md:col-span-9">
             <CatchMetricsChart
               lang={lang}
-              selectedMetric={selectedMetricKey}
-              onMetricChange={setSelectedMetricKey}
+              selectedMetric={selectedMetric}
               activeTab={activeTab}
               onTabChange={setActiveTab}
               bmu={effectiveBMU}
@@ -58,7 +53,6 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           <div className="col-span-12 md:col-span-3">
             <CatchRadarChart 
               lang={lang} 
-              selectedMetric={selectedMetricKey}
               bmu={effectiveBMU}
             />
           </div>
