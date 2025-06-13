@@ -24,18 +24,16 @@ import { useTheme } from "next-themes";
 import HeaderMenuLeft from "@/layouts/lithium/lithium-menu";
 import Sidebar from "@/layouts/hydrogen/sidebar";
 import StickyHeader from "@/layouts/sticky-header";
-import { FilterSelector } from "@/app/components/filter-selector";
+import { FilterSelector, selectedMetricAtom } from "@/app/components/filter-selector";
 import { useSession } from "next-auth/react";
 import type { TBmu } from "@repo/nosql/schema/bmu";
-import LanguageLink from "@/app/i18n/language-link";
+import LanguageLink, { getClientLanguage } from "@/app/i18n/language-link";
 import useUserPermissions from "@/app/shared/file/dashboard/hooks/useUserPermissions";
 import { useAtom } from 'jotai';
-import { selectedMetricAtom } from '@/app/components/filter-selector';
 import { METRIC_OPTIONS } from '@/app/shared/file/dashboard/charts/types';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { changeAppLanguage } from '@/app/i18n/language-switcher';
-import { getClientLanguage } from '@/app/i18n/language-link';
 import { USFlag } from "@components/icons/language/USFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
 import { useTranslation } from "@/app/i18n/client";
@@ -299,13 +297,13 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 xs:gap-1 md:gap-2 xl:gap-3">
-      <ReferenceBMU />
+      {/* <ReferenceBMU /> */}
       <HeaderMetricSelector />
       <div className="hidden sm:block">
         <FilterSelector />
       </div>
       <CompactLanguageSwitcher />
-      <ThemeToggle />
+      {/* <ThemeToggle /> */}
       <ProfileMenu
         buttonClassName="w-auto sm:w-auto p-1 border border-gray-300"
         avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"

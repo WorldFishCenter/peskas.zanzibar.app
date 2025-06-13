@@ -10,6 +10,7 @@ import cn from "@utils/class-names";
 import { useTheme } from "next-themes";
 import MetricCard from "@components/cards/metric-card";
 import { useSession } from "next-auth/react";
+import { getClientLanguage } from "@/app/i18n/language-link";
 import {
   BarChart,
   Bar,
@@ -179,18 +180,30 @@ const TreemapTooltip = ({ active, payload, selectedMetricOption }: any) => {
     return (
       <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
         <p className="text-sm font-medium text-gray-600 mb-2">{data.name}</p>
-        <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: data.fill }}
-          />
-          <p className="text-sm">
-            <span className="font-semibold">
-              {isValidValue ? formatNumber(data.value) : t("text-na")}
-            </span>
-            {isValidValue && data.percentage && (
-              <span className="text-gray-500 ml-1">({data.percentage}%)</span>
-            )}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: data.fill }}
+            />
+            <p className="text-sm">
+              <span className="font-medium">{selectedMetricOption?.label || t("text-value")}:</span>{" "}
+              <span className="font-semibold">
+                {isValidValue ? formatNumber(data.value) : t("text-na")}
+              </span>
+              {isValidValue && selectedMetricOption?.unit && (
+                <span className="text-gray-500 ml-1">{selectedMetricOption.unit}</span>
+              )}
+            </p>
+          </div>
+          {isValidValue && data.percentage && (
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">{t("text-share-of-total")}:</span>{" "}
+              <span className="font-semibold">{data.percentage}%</span>
+            </p>
+          )}
+          <p className="text-xs text-gray-500 italic">
+            {t("text-treemap-explanation")}
           </p>
         </div>
       </div>
@@ -226,11 +239,11 @@ const CustomizedTreemapContent = (props: any) => {
         <>
         <text
           x={x + width / 2}
-            y={y + height / 2 - (showPercentage ? 10 : 0)}
+            y={y + height / 2 - (showPercentage ? 8 : 0)}
           textAnchor="middle"
           dominantBaseline="middle"
-            fontSize={25}
-            fontWeight="normal"
+            fontSize={Math.min(width / 8, 16)}
+            fontWeight="600"
             fontFamily="'Inter', sans-serif"
             fill="#ffffff"
         >
@@ -239,11 +252,11 @@ const CustomizedTreemapContent = (props: any) => {
           {showPercentage && percentage && (
             <text
               x={x + width / 2}
-              y={y + height / 2 + 16}
+              y={y + height / 2 + 12}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize={20}
-              fontWeight="normal"
+              fontSize={Math.min(width / 6, 24)}
+              fontWeight="700"
               fontFamily="'Inter', sans-serif"
               fill="#ffffff"
               fillOpacity={0.95}
@@ -272,7 +285,29 @@ export default function GearHeatmap({
   const [comparisonData, setComparisonData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation(lang!, "common");
+  
+  // Use client language and handle language changes properly
+  const clientLang = getClientLanguage();
+  const { t, i18n } = useTranslation(clientLang, "common");
+  const [currentLang, setCurrentLang] = useState(clientLang);
+  
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      setCurrentLang(event.detail.language);
+      
+      // Make sure i18n instance is updated
+      if (i18n.language !== event.detail.language) {
+        i18n.changeLanguage(event.detail.language);
+      }
+    };
+    
+    window.addEventListener('i18n-language-changed', handleLanguageChange as EventListener);
+    return () => {
+      window.removeEventListener('i18n-language-changed', handleLanguageChange as EventListener);
+    };
+  }, [i18n]);
+  
   const [bmus] = useAtom(bmusAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
@@ -299,35 +334,67 @@ export default function GearHeatmap({
   // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
   const effectiveBMU = bmu || userBMU;
   
+  // Ensure bmus is always an array
+  const safeBmus = bmus || [];
+  
   // Force refetch when bmus changes by adding bmus to the query key
   const { data: rawData, refetch } = api.gear.summaries.useQuery(
-    { bmus },
+    { bmus: safeBmus },
     {
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       retry: 3,
-      enabled: bmus.length > 0,
+      enabled: safeBmus.length > 0,
     }
   );
 
   // Force refetch when bmus changes
   useEffect(() => {
     // Check if bmus array has changed
-    if (JSON.stringify(previousBmus.current) !== JSON.stringify(bmus)) {
+    if (JSON.stringify(previousBmus.current) !== JSON.stringify(safeBmus)) {
       console.log('BMUs changed, refetching data');
       dataProcessed.current = false;
-      previousBmus.current = [...bmus];
+      previousBmus.current = [...safeBmus];
       refetch();
     }
-  }, [bmus, refetch]);
+  }, [safeBmus, refetch]);
 
   const selectedMetricOption = METRIC_OPTIONS.find(
     (m) => m.value === selectedMetric
   );
 
   const handleTabChange = useCallback((tab: string) => {
+    // Get the current language to preserve it
+    const currentActiveLang = i18n.language || currentLang || getClientLanguage();
+    
     setActiveTab(tab);
-  }, []);
+    
+    // Force language persistence after state update
+    requestAnimationFrame(() => {
+      // Double-check and force language if needed
+      const storedLang = localStorage.getItem('i18nextLng') || 
+                        localStorage.getItem('selectedLanguage') || 
+                        localStorage.getItem('peskas-language');
+      
+      if (storedLang && storedLang !== i18n.language) {
+        i18n.changeLanguage(storedLang);
+        
+        // Ensure all storage is consistent
+        localStorage.setItem('i18nextLng', storedLang);
+        localStorage.setItem('selectedLanguage', storedLang);
+        localStorage.setItem('peskas-language', storedLang);
+        
+        // Update document attributes
+        document.documentElement.lang = storedLang;
+        document.documentElement.setAttribute('data-language', storedLang);
+        
+        // Dispatch event to notify all components
+        window.dispatchEvent(new CustomEvent('i18n-language-changed', {
+          detail: { language: storedLang }
+        }));
+      }
+    });
+  }, [i18n, currentLang]);
 
   const handleLegendClick = useCallback((site: string) => {
     setVisibilityState((prev) => ({

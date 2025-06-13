@@ -267,16 +267,19 @@ export default function CatchMetricsChart({
   } = useUserPermissions();
 
   // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = useMemo(() => bmu || userBMU, [bmu, userBMU]);
-
-  // Force refetch when bmus changes by adding bmus to the query key
+  const effectiveBMU = bmu || userBMU;
+  
+  // Ensure bmus is always an array
+  const safeBmus = bmus || [];
+  
+  // Fetch monthly data
   const { data: monthlyData, refetch } = api.aggregatedCatch.monthly.useQuery(
-    { bmus },
+    { bmus: safeBmus },
     {
-      refetchOnMount: true, 
+      refetchOnMount: true,
       refetchOnWindowFocus: false,
       retry: 3,
-      enabled: bmus.length > 0,
+      enabled: safeBmus.length > 0,
     }
   );
 
@@ -297,17 +300,13 @@ export default function CatchMetricsChart({
   // Force refetch when bmus changes
   useEffect(() => {
     // Check if bmus array has changed
-    if (JSON.stringify(previousBmus.current) !== JSON.stringify(bmus)) {
+    if (JSON.stringify(previousBmus.current) !== JSON.stringify(safeBmus)) {
       console.log('BMUs changed, refetching data');
-      setChartData([]);
-      setRecentData([]);
-      setAnnualData([]);
-      setCiaComparisonData([]);
       dataProcessed.current = false;
-      previousBmus.current = [...bmus];
+      previousBmus.current = [...safeBmus];
       refetch();
     }
-  }, [bmus, refetch]);
+  }, [safeBmus, refetch]);
 
   // Keep in sync with parent component, handling old tab names too
   useEffect(() => {
@@ -355,20 +354,17 @@ export default function CatchMetricsChart({
 
   // Handle tab changes while preserving language state
   const handleTabChange = useCallback((tab: string) => {
-    // Save current scroll position
-    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+    // Don't process if it's the same tab
+    if (prevTabRef.current === tab) return;
     
-    // Save current language before tab change
-    const currentClientLang = getClientLanguage();
+    // Get the current language from the i18n instance which should be the most up-to-date
+    const currentActiveLang = i18n.language || currentLang || getClientLanguage();
     
-    if (prevTabRef.current === tab) return; // Avoid unnecessary updates
+    // Log for debugging
+    console.log('Tab change - Current language:', currentActiveLang);
+    
+    // Update tab reference
     prevTabRef.current = tab;
-    
-    // Set a data attribute on document to immediately communicate language
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-language', currentClientLang);
-      document.documentElement.setAttribute('data-language-ready', 'true');
-    }
     
     // Update local tab state
     setLocalActiveTab(tab);
@@ -379,30 +375,36 @@ export default function CatchMetricsChart({
     // Call parent's onTabChange handler if provided
     if (onTabChange) {
       onTabChange(oldTabName);
-      
-      // Ensure language doesn't revert during tab change
-      // This is crucial for Vercel/production environment
-      setTimeout(() => {
-        // Force the language to stay as selected by user
-        if (i18n.language !== currentClientLang) {
-          i18n.changeLanguage(currentClientLang);
-        }
-        
-        // Re-trigger a language change event to ensure all components update
-        window.dispatchEvent(new CustomEvent('i18n-language-changed', {
-          detail: { language: currentClientLang }
-        }));
-        
-        // Restore scroll position
-        window.scrollTo(0, scrollPosition);
-      }, 10);
-    } else {
-      // Restore scroll position even if no parent callback
-      setTimeout(() => {
-        window.scrollTo(0, scrollPosition);
-      }, 10);
     }
-  }, [i18n, onTabChange]);
+    
+    // Force language persistence after React re-render cycle
+    // Use requestAnimationFrame to ensure this runs after all React updates
+    requestAnimationFrame(() => {
+      // Double-check and force language if needed
+      const storedLang = localStorage.getItem('i18nextLng') || 
+                        localStorage.getItem('selectedLanguage') || 
+                        localStorage.getItem('peskas-language');
+      
+      if (storedLang && storedLang !== i18n.language) {
+        console.log('Language mismatch detected, forcing to:', storedLang);
+        i18n.changeLanguage(storedLang);
+        
+        // Also update all storage to ensure consistency
+        localStorage.setItem('i18nextLng', storedLang);
+        localStorage.setItem('selectedLanguage', storedLang);
+        localStorage.setItem('peskas-language', storedLang);
+        
+        // Update document attributes
+        document.documentElement.lang = storedLang;
+        document.documentElement.setAttribute('data-language', storedLang);
+        
+        // Dispatch event to notify all components
+        window.dispatchEvent(new CustomEvent('i18n-language-changed', {
+          detail: { language: storedLang }
+        }));
+      }
+    });
+  }, [i18n, currentLang, onTabChange]);
 
   // Update visibility state when changing tabs - but only once per tab change
   useEffect(() => {
@@ -447,7 +449,7 @@ export default function CatchMetricsChart({
 
   // Process main data when monthlyData changes
   useEffect(() => {
-    if (!monthlyData || bmus.length === 0) return;
+    if (!monthlyData || safeBmus.length === 0) return;
     
     // Reset processing flag if metric changed
     if (previousMetricRef.current !== selectedMetric) {
@@ -457,7 +459,7 @@ export default function CatchMetricsChart({
     
     // Prevent re-processing data unnecessarily
     if (chartData.length > 0 && !loading && 
-        JSON.stringify(previousBmus.current) === JSON.stringify(bmus) && 
+        JSON.stringify(previousBmus.current) === JSON.stringify(safeBmus) && 
         previousMetricRef.current === selectedMetric) return;
 
     try {
@@ -621,14 +623,14 @@ export default function CatchMetricsChart({
 
       setFiveYearMarks(marks);
       setChartData(processedData);
-      previousBmus.current = [...bmus];
+      previousBmus.current = [...safeBmus];
       previousMetricRef.current = selectedMetric;
     } catch (error) {
-      console.error("Error processing data:", error);
+      console.error("Error transforming data:", error);
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, selectedMetric, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, bmus, isCiaUser, localActiveTab]);
+  }, [monthlyData, selectedMetric, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, safeBmus, isCiaUser, localActiveTab]);
 
   // Calculate derived data when chartData changes
   useEffect(() => {
