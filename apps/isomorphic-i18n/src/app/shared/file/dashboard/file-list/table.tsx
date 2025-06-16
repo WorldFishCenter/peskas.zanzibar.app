@@ -8,7 +8,7 @@ import ControlledTable from "@/app/shared/controlled-table";
 import { api } from "@/trpc/react";
 import { BarChart, Bar, ResponsiveContainer } from "recharts";
 import { useAtom } from "jotai";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import { Info } from "lucide-react";
 import MetricCard from "@components/cards/metric-card";
@@ -174,7 +174,7 @@ export default function PerformanceTable({
 }) {
   const [pageSize, setPageSize] = useState(10);
   const { t } = useTranslation(lang!, "table");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const { data: session } = useSession();
   const { data: performanceData, isLoading: isDataLoading } =
     api.aggregatedCatch.performance.useQuery({ bmus });

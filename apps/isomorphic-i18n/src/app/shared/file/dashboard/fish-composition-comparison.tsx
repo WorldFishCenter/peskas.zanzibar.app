@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import WidgetCard from "@components/cards/widget-card";
 import { api } from "@/trpc/react";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import SimpleBar from "@ui/simplebar";
 import useUserPermissions, { adminReferenceBmuAtom } from "./hooks/useUserPermissions";
@@ -58,7 +58,7 @@ export default function FishCompositionComparison({
   const [chartData, setChartData] = useState<any[]>([]);
   const [categoryDisplays, setCategoryDisplays] = useState<CategoryDisplay[]>([]);
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   
   // Get BMUs based on permissions
   const { userBMU, isAdmin, hasRestrictedAccess, referenceBMU, getLimitedBMUs } = useUserPermissions();

@@ -14,7 +14,7 @@ import { atomWithStorage } from 'jotai/utils';
 import Fuse from "fuse.js";
 import { MetricKey } from "@/app/shared/file/dashboard/charts/types";
 
-import type { TBmu } from "@repo/nosql/schema/bmu";
+import type { TDistrict } from "@repo/nosql/schema/district";
 import SimpleBar from '@ui/simplebar';
 import useUserPermissions from "../shared/file/dashboard/hooks/useUserPermissions";
 import { useTranslation } from "@/app/i18n/client";
@@ -29,21 +29,21 @@ type DropdownTypes = {
 
 type CustomSession = {
   user?: {
-    bmus?: Omit<TBmu, "lat" | "lng" | "treatments">[]
+    districts?: Omit<TDistrict, "lat" | "lng">[]
   }
 }
 
 const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
-  return values(session.user?.bmus).reduce((prev: DropdownTypes[], cur:  Omit<TBmu, "lat" | "lng" | "treatments">) => 
-    find(prev, { sectionName: cur.group })
+  return values(session.user?.districts).reduce((prev: DropdownTypes[], cur: Omit<TDistrict, "lat" | "lng">) => 
+    find(prev, { sectionName: cur.region })
     ?
       prev.map((item) => {
-        if (item.sectionName === cur.group) {
+        if (item.sectionName === cur.region) {
         return {
-            sectionName: cur.group,
+            sectionName: cur.region,
             units: [
-              ...(get(find(prev, { sectionName: cur.group }), 'units', [])),
-              { value: cur.BMU }
+              ...(get(find(prev, { sectionName: cur.region }), 'units', [])),
+              { value: cur.district }
             ]
           } as DropdownTypes        
         }
@@ -54,9 +54,9 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
       [
         ...prev,
         {
-          sectionName: cur.group,
+          sectionName: cur.region,
           units: [
-            { value: cur.BMU }
+            { value: cur.district }
           ]
         } as DropdownTypes
       ]
@@ -64,8 +64,8 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
 }
 
 export const dropdownAtom = atomWithStorage<DropdownTypes[]>('dropdown', [], undefined, { getOnInit: true });
-export const bmusAtom = atomWithStorage<string[]>('bmus', [], undefined, { getOnInit: true });
-export const viewModeAtom = atomWithStorage<'bmu' | 'region'>('viewMode', 'bmu', undefined, { getOnInit: true });
+export const districtsAtom = atomWithStorage<string[]>('districts', [], undefined, { getOnInit: true });
+export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', 'district', undefined, { getOnInit: true });
 
 // Global metric selector atom
 export const selectedMetricAtom = atom<MetricKey>("mean_effort");
@@ -77,57 +77,83 @@ export const FilterSelector = () => {
   const [fuse, setFuse] = useState<Fuse<string>>();
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
-  const [dropdown, setBmusDropdown] = useAtom(dropdownAtom);
-  const [bmus, setBmus] = useAtom(bmusAtom);
+  const [dropdown, setDistrictsDropdown] = useAtom(dropdownAtom);
+  const [districts, setDistricts] = useAtom(districtsAtom);
   const [viewMode, setViewMode] = useAtom(viewModeAtom);
   const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
   const selectedRegion = userPreferences.selectedRegion;
 
+  // For demo purposes - create default districts data if no session
+  const defaultDistrictsData: DropdownTypes[] = [
+    {
+      sectionName: "Unguja",
+      units: [
+        { value: "Central" },
+        { value: "North A" },
+        { value: "North B" },
+        { value: "South" },
+        { value: "Urban" },
+        { value: "West" }
+      ]
+    },
+    {
+      sectionName: "Pemba",
+      units: [
+        { value: "Chake Chake" },
+        { value: "Mkoani" },
+        { value: "Micheweni" },
+        { value: "Wete" }
+      ]
+    }
+  ];
+
   useEffect(() => {
-    if (status === 'authenticated') {
-      if (isEmpty(bmus) &&
-        isEmpty(dropdown)
-      ) {
-        const dropdownData = sessObjectToDropdown(session)
-        setFilteredList(dropdownData)
-        setBmusDropdown(dropdownData)
-        
-        // For admin users, select one BMU per region by default regardless of view mode
-        if (isAdmin) {
+    // For open access, we don't require authentication
+    // Initialize with default data if no session
+    if (isEmpty(districts) && isEmpty(dropdown)) {
+      const dropdownData = session ? sessObjectToDropdown(session) : defaultDistrictsData;
+      setFilteredList(dropdownData)
+      setDistrictsDropdown(dropdownData)
+      
+      if (dropdownData.length > 0) {
+        // For admin users, select one district per region by default in region view mode
+        if (isAdmin && viewMode === 'region') {
           const regionRepresentatives = dropdownData.map(region => {
-            // Select the first BMU from each region
+            // Select the first district from each region
             return region.units[0].value;
           });
-          setBmus(regionRepresentatives);
+          setDistricts(regionRepresentatives);
         } else {
-          // For regular users, set all BMUs
-          const newBmus = dropdownData.flatMap((section) =>
+          // For regular users or district view, select all districts
+          const newDistricts = dropdownData.flatMap((section) =>
             section.units.map((unit) => unit.value)
           )
-          setBmus(newBmus)
+          setDistricts(newDistricts)
         }
         
-        const allBmus = dropdownData.flatMap((section) =>
+        const allDistricts = dropdownData.flatMap((section) =>
           section.units.map((unit) => unit.value)
         )
         setFuse(new Fuse(
-          allBmus,
+          allDistricts,
           {
             includeScore: true,
-          }
-        ))
-      } else {
-        setFilteredList(dropdown)
-        setFuse(new Fuse(
-          bmus,
-          {
-            includeScore: true,
+            threshold: 0.3, // More forgiving fuzzy search
           }
         ))
       }
+    } else if (districts.length > 0 || dropdown.length > 0) {
+      setFilteredList(dropdown.length > 0 ? dropdown : defaultDistrictsData)
+      setFuse(new Fuse(
+        districts.length > 0 ? districts : defaultDistrictsData.flatMap(d => d.units.map(u => u.value)),
+        {
+          includeScore: true,
+          threshold: 0.3,
+        }
+      ))
     }
 
-  }, [ session, status, bmus, dropdown, isAdmin, setBmus, setBmusDropdown ]);
+  }, [ session, status, districts, dropdown, isAdmin, viewMode, setDistricts, setDistrictsDropdown ]);
   
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fuse) return
@@ -136,34 +162,43 @@ export const FilterSelector = () => {
     if (e.target.value) {
       const result = fuse.search(e.target.value);
       setFilteredList(result.map((res) => res.item));
-    } else if (session) {
-      setFilteredList(sessObjectToDropdown(session));
+    } else {
+      setFilteredList(dropdown.length > 0 ? dropdown : defaultDistrictsData);
     }
   };
 
   // Function to handle view mode change
-  const handleViewModeChange = (newMode: 'bmu' | 'region') => {
+  const handleViewModeChange = (newMode: 'district' | 'region') => {
     if (viewMode === newMode) return;
     
     setViewMode(newMode);
     
-    // If switching to region view, select one BMU from each region
-    if (newMode === 'region' && session && dropdown.length > 0) {
-      // Select representative BMUs from each region
+    // If switching to region view, select one district from each region
+    if (newMode === 'region' && dropdown.length > 0) {
+      // Select representative districts from each region
       const regionRepresentatives = dropdown.map(region => {
-        // Select the first BMU from each region
+        // Select the first district from each region
         return region.units[0].value;
       });
       
-      setBmus(regionRepresentatives);
+      setDistricts(regionRepresentatives);
     }
   };
+
+  const selectedCount = districts.length;
+  const totalCount = dropdown.reduce((sum, region) => sum + region.units.length, 0) || 
+                     defaultDistrictsData.reduce((sum, region) => sum + region.units.length, 0);
 
   return (
     <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
       <Popover.Trigger>
         <ActionIcon variant="text" className="relative flex items-center justify-center h-[34px] w-[34px] rounded-full md:h-9 md:w-9">
           <TbFilterCog className="h-5 w-5 md:h-6 md:w-6 fill-[#D6D6D6] [stroke-width:1.5px]" />
+          {selectedCount > 0 && selectedCount < totalCount && (
+            <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+              {selectedCount}
+            </span>
+          )}
         </ActionIcon>
       </Popover.Trigger>
       <Popover.Content className="w-[280px] sm:w-[350px]">
@@ -173,17 +208,17 @@ export const FilterSelector = () => {
               <button
                 className={cn(
                   "px-3 py-1.5 rounded-md text-sm flex-1 transition-all",
-                  viewMode === 'bmu' 
+                  viewMode === 'district' 
                     ? "bg-white shadow-sm text-primary font-medium" 
                     : "text-gray-600 hover:bg-gray-200"
                 )}
-                onClick={() => handleViewModeChange('bmu')}
+                onClick={() => handleViewModeChange('district')}
               >
-                BMU View
+                District View
               </button>
               <button
                 className={cn(
-                  "px-3 py-1.5 rounded-md text-sm flex-1 transition-all relative",
+                  "px-3 py-1.5 rounded-md text-sm flex-1 transition-all",
                   viewMode === 'region' 
                     ? "bg-white shadow-sm text-primary font-medium" 
                     : "text-gray-600 hover:bg-gray-200"
@@ -191,7 +226,6 @@ export const FilterSelector = () => {
                 onClick={() => handleViewModeChange('region')}
               >
                 Region View
-                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[9px] font-medium bg-yellow-100 text-yellow-800 rounded-full">Beta</span>
               </button>
             </div>
             
@@ -209,21 +243,36 @@ export const FilterSelector = () => {
           </div>
         )}
         
-        <Input
-          placeholder="Search BMUs..."
-          value={searchFilter}
-          onChange={handleSearchChange}
-        />
-        <div className="space-y-2 mt-2">
+        <div className="mb-2">
+          <Input
+            placeholder="Search districts..."
+            value={searchFilter}
+            onChange={handleSearchChange}
+            className="mb-2"
+          />
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>{selectedCount} of {totalCount} districts selected</span>
+            {selectedCount > 0 && (
+              <button
+                className="text-primary hover:text-primary-dark"
+                onClick={() => setDistricts([])}
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+        
+        <div className="space-y-2">
           <SimpleBar className="max-h-[300px] md:max-h-[600px]">
-            {filteredList.map((section, idx) => {
+            {(filteredList.length > 0 ? filteredList : defaultDistrictsData).map((section, idx) => {
               return (
                 <FilterGroup
-                  key={`bmu-section-${idx}`}
-                  bmuSection={section}
+                  key={`district-section-${idx}`}
+                  districtSection={section}
                   searchFilter={searchFilter}
                   viewMode={viewMode}
-                  referenceBmu={selectedRegion}
+                  referenceDistrict={selectedRegion}
                 />
               );
             })}
@@ -235,98 +284,97 @@ export const FilterSelector = () => {
 };
 
 const FilterGroup = ({
-  bmuSection,
+  districtSection,
   searchFilter,
   viewMode,
-  referenceBmu
+  referenceDistrict
 }: {
-  bmuSection: DropdownTypes | string;
+  districtSection: DropdownTypes | string;
   searchFilter: string;
-  viewMode?: 'bmu' | 'region';
-  referenceBmu?: string | null;
+  viewMode?: 'district' | 'region';
+  referenceDistrict?: string | null;
 }) => {
-  const [bmus, setBmus] = useAtom(bmusAtom);
+  const [districts, setDistricts] = useAtom(districtsAtom);
   const { data: session } = useSession();
   const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
   const { t } = useTranslation("common");
 
-  const handleBmuSelect = (unit: string) => {
-    // For region view in admin mode, ensure only one BMU is selected per region
-    if (isAdmin && viewMode === 'region' && typeof bmuSection !== 'string') {
-      const section = bmuSection as DropdownTypes;
-      const regionName = section.sectionName;
+  const handleDistrictSelect = (unit: string) => {
+    // For region view in admin mode, ensure only one district is selected per region
+    if (isAdmin && viewMode === 'region' && typeof districtSection !== 'string') {
+      const section = districtSection as DropdownTypes;
       
-      // Remove all other BMUs from this region
-      const filteredBmus = bmus.filter(bmu => {
-        // Check if this BMU is from a different region
-        if (section.units.some(u => u.value === bmu)) {
-          return false; // Remove BMUs from this region
+      // Remove all other districts from this region
+      const filteredDistricts = districts.filter(district => {
+        // Check if this district is from a different region
+        if (section.units.some(u => u.value === district)) {
+          return false; // Remove districts from this region
         }
-        return true; // Keep BMUs from other regions
+        return true; // Keep districts from other regions
       });
       
-      // Add the newly selected BMU
-      setBmus([...filteredBmus, unit]);
+      // Add the newly selected district
+      setDistricts([...filteredDistricts, unit]);
       return;
     }
     
     // Standard multi-select behavior for other cases
-    if (bmus.includes(unit)) {
-      setBmus(bmus.filter((filter) => filter !== unit));
+    if (districts.includes(unit)) {
+      setDistricts(districts.filter((filter) => filter !== unit));
     } else {
-      setBmus([...bmus, unit]);
+      setDistricts([...districts, unit]);
     }
   };
   
   const handleReferenceSelect = (unit: string) => {
     if (isAdmin) {
-      // Toggle reference region (simplified for Zanzibar)
-      const newSelectedRegion = referenceBmu === unit ? undefined : unit;
+      // Toggle reference district
+      const newSelectedRegion = referenceDistrict === unit ? undefined : unit;
       setUserPreferences({ ...userPreferences, selectedRegion: newSelectedRegion });
       
-      // Also select the region if it's not already selected
-      if (referenceBmu !== unit && !bmus.includes(unit)) {
+      // Also select the district if it's not already selected
+      if (referenceDistrict !== unit && !districts.includes(unit)) {
         // For region view, we need to handle region selection differently
-        if (viewMode === 'region' && typeof bmuSection !== 'string') {
-          const section = bmuSection as DropdownTypes;
+        if (viewMode === 'region' && typeof districtSection !== 'string') {
+          const section = districtSection as DropdownTypes;
           
-          // Remove all other BMUs from this region
-          const filteredBmus = bmus.filter(bmu => {
-            if (section.units.some(u => u.value === bmu)) {
-              return false; // Remove BMUs from this region
+          // Remove all other districts from this region
+          const filteredDistricts = districts.filter(district => {
+            if (section.units.some(u => u.value === district)) {
+              return false; // Remove districts from this region
             }
-            return true; // Keep BMUs from other regions
+            return true; // Keep districts from other regions
           });
           
-          // Add the newly selected BMU
-          setBmus([...filteredBmus, unit]);
+          // Add the newly selected district
+          setDistricts([...filteredDistricts, unit]);
         } else {
-          // Standard selection for BMU view
-          setBmus([...bmus, unit]);
+          // Standard selection for district view
+          setDistricts([...districts, unit]);
         }
       }
     }
   };
 
-  if (typeof bmuSection === "string" && searchFilter) {
-    const unit = bmuSection as string;
-    const isReferenceBmu = referenceBmu === unit;
+  if (typeof districtSection === "string" && searchFilter) {
+    const unit = districtSection as string;
+    const isReferenceDistrict = referenceDistrict === unit;
 
     return (
-      <div className="flex items-center justify-between pr-2">
+      <div className="flex items-center justify-between pr-2 py-1 hover:bg-gray-50 rounded">
         <div className="flex-grow">
           <Checkbox
             key={unit}
             label={unit}
-            checked={bmus.includes(unit)}
-            onChange={() => handleBmuSelect(unit)}
+            checked={districts.includes(unit)}
+            onChange={() => handleDistrictSelect(unit)}
           />
         </div>
         {isAdmin && (
           <button
             className={cn(
               "ml-4 text-lg flex-shrink-0 w-6 h-6 flex items-center justify-center", 
-              isReferenceBmu ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
+              isReferenceDistrict ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
             )}
             onClick={() => handleReferenceSelect(unit)}
             title="Set as reference"
@@ -337,56 +385,57 @@ const FilterGroup = ({
       </div>
     );
   } else {
-    const section = bmuSection as DropdownTypes;
+    const section = districtSection as DropdownTypes;
     
-    // In region view, we only check if any BMU from this region is selected
+    // In region view, we only check if any district from this region is selected
     const isRegionSelected = isAdmin && viewMode === 'region' 
-      ? section.units.some(unit => bmus.includes(unit.value))
-      : section.units.every(unit => bmus.includes(unit.value));
+      ? section.units.some(unit => districts.includes(unit.value))
+      : section.units.every(unit => districts.includes(unit.value));
 
     const handleSectionSelect = () => {
-      // For region view in admin mode, select only one BMU per region
+      // For region view in admin mode, select only one district per region
       if (isAdmin && viewMode === 'region') {
         if (isRegionSelected) {
-          // Remove all BMUs from this region
-          setBmus(bmus.filter(bmu => !section.units.some(unit => unit.value === bmu)));
+          // Remove all districts from this region
+          setDistricts(districts.filter(district => !section.units.some(unit => unit.value === district)));
         } else {
-          // Add the first BMU from this region, remove any others
-          const filteredBmus = bmus.filter(bmu => !section.units.some(unit => unit.value === bmu));
-          setBmus([...filteredBmus, section.units[0].value]);
+          // Add the first district from this region, remove any others
+          const filteredDistricts = districts.filter(district => !section.units.some(unit => unit.value === district));
+          setDistricts([...filteredDistricts, section.units[0].value]);
         }
         return;
       }
       
       // Standard behavior for other cases
       if (isRegionSelected) {
-        setBmus(
-          bmus.filter(
+        setDistricts(
+          districts.filter(
             (filter) =>
               !section.units.flatMap((unit) => unit.value).includes(filter)
           )
         );
       } else {
-        setBmus([
-          ...bmus,
+        setDistricts([
+          ...districts,
           ...section.units.map((unit) => unit.value),
         ]);
       }
     };
 
-    // Check if this section has the reference BMU
-    const hasReferenceBmu = referenceBmu && section.units.some(unit => unit.value === referenceBmu);
+    // Check if this section has the reference district
+    const hasReferenceDistrict = referenceDistrict && section.units.some(unit => unit.value === referenceDistrict);
 
     return (
-      <div>
-        <div className="flex items-center">
+      <div className="border-b border-gray-100 last:border-0 pb-2 mb-2 last:mb-0">
+        <div className="flex items-center mb-1">
           <Checkbox
             label={
               <span className={cn(
-                hasReferenceBmu ? "text-yellow-600 font-medium" : ""
+                "font-medium",
+                hasReferenceDistrict ? "text-yellow-600" : ""
               )}>
                 {section.sectionName}
-                {hasReferenceBmu && <span className="ml-1 text-yellow-500">★</span>}
+                {hasReferenceDistrict && <span className="ml-1 text-yellow-500">★</span>}
               </span>
             }
             checked={isRegionSelected}
@@ -395,20 +444,20 @@ const FilterGroup = ({
         </div>
         <div className="mt-1 ml-6 space-y-1">
           {section.units.map((unit) => {
-            // In region view for admin, only one BMU can be selected per region
+            // In region view for admin, only one district can be selected per region
             const disabled = isAdmin && viewMode === 'region' && isRegionSelected && 
-              !bmus.includes(unit.value);
+              !districts.includes(unit.value);
             
-            // Check if this is the reference BMU
-            const isReferenceBmu = referenceBmu === unit.value;
+            // Check if this is the reference district
+            const isReferenceDistrict = referenceDistrict === unit.value;
             
             return (
-              <div key={unit.value} className="flex items-center justify-between pr-2">
+              <div key={unit.value} className="flex items-center justify-between pr-2 py-0.5 hover:bg-gray-50 rounded">
                 <div className="flex-grow">
                   <Checkbox
                     label={unit.value}
-                    checked={bmus.includes(unit.value)}
-                    onChange={() => handleBmuSelect(unit.value)}
+                    checked={districts.includes(unit.value)}
+                    onChange={() => handleDistrictSelect(unit.value)}
                     disabled={disabled}
                     className={disabled ? "opacity-50" : ""}
                   />
@@ -417,7 +466,7 @@ const FilterGroup = ({
                   <button
                     className={cn(
                       "ml-4 text-lg flex-shrink-0 w-6 h-6 flex items-center justify-center", 
-                      isReferenceBmu ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
+                      isReferenceDistrict ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
                     )}
                     onClick={() => handleReferenceSelect(unit.value)}
                     title="Set as reference"

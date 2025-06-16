@@ -6,7 +6,7 @@ import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import MetricCard from "@components/cards/metric-card";
 import {
@@ -178,13 +178,13 @@ export default function BMURanking({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation(lang!, "common");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
 
   // Add refs to track initialization states
   const dataProcessed = useRef<boolean>(false);
   const previousMetric = useRef<string>(selectedMetric);
-  const previousBmus = useRef<string[]>(bmus);
+  const previousBmus = useRef<string[]>(districts);
 
   // Use the centralized permissions hook
   const {
@@ -199,7 +199,7 @@ export default function BMURanking({
   const effectiveBMU = bmu || undefined;
 
   // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  const safeBmus = districts || [];
 
   // Fetch aggregated monthly data for BMU ranking
   const { data: rawData, refetch } = api.aggregatedCatch.monthly.useQuery(

@@ -12,7 +12,7 @@ import TrendingUpIcon from "@components/icons/trending-up";
 import TrendingDownIcon from "@components/icons/trending-down";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import useUserPermissions from "./hooks/useUserPermissions";
 
 type FileStatsType = {
@@ -115,7 +115,7 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   const [hoveredPercentages, setHoveredPercentages] = useState<{[key: string]: HoveredPercentage}>({});
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [comparisonValues, setComparisonValues] = useState<{[key: string]: ComparisonValue}>({});
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   
   // Get user permissions
   const {
@@ -132,13 +132,13 @@ export function FileStatGrid({ className, lang, bmu }: { className?: string; lan
   
   // Memoize query parameters to prevent unnecessary refetches
   const referenceBmus = useMemo(() => 
-    effectiveBMU ? [effectiveBMU] : (isAdmin ? bmus : (hasRestrictedAccess ? [effectiveBMU].filter(Boolean) as string[] : bmus)),
-    [effectiveBMU, isAdmin, hasRestrictedAccess, bmus]
+    effectiveBMU ? [effectiveBMU] : (isAdmin ? districts : (hasRestrictedAccess ? [effectiveBMU].filter(Boolean) as string[] : districts)),
+    [effectiveBMU, isAdmin, hasRestrictedAccess, districts]
   );
   
   const otherBmus = useMemo(() => 
-    canCompareWithOthers && effectiveBMU ? bmus.filter(b => b !== effectiveBMU) : [],
-    [bmus, canCompareWithOthers, effectiveBMU]
+    canCompareWithOthers && effectiveBMU ? districts.filter((b: string) => b !== effectiveBMU) : [],
+    [districts, canCompareWithOthers, effectiveBMU]
   );
   
   // Fetch reference BMU data

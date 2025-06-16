@@ -11,7 +11,7 @@ import MetricCard from "@components/cards/metric-card";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import useUserPermissions from "./hooks/useUserPermissions";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 
 type FileStatsCIAType = {
   className?: string;
@@ -59,13 +59,13 @@ export function FileStatWBCIAGrid({ className, lang }: { className?: string; lan
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredBMU, setHoveredBMU] = useState<{[key: string]: { bmu: string; value: number | null }}>({});
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   
   // Get user permissions
   const { userBMU } = useUserPermissions();
   
   // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  const safeBmus = districts || [];
   
   // Fetch monthly data to get latest month values per BMU
   const { data: monthlyData, isLoading, error: queryError } = api.aggregatedCatch.monthly.useQuery(

@@ -10,29 +10,34 @@ export const userPreferencesAtom = atomWithStorage<{ selectedRegion?: string }>(
  * 
  * Provides basic authentication and simplified permission structure
  * for Zanzibar/Pemba fishing data application.
+ * 
+ * TEMPORARILY MODIFIED FOR OPEN ACCESS - All users have full permissions
  */
 export const useUserPermissions = () => {
   const { data: session } = useSession();
   const [userPreferences, setUserPreferences] = useAtom(userPreferencesAtom);
   
+  // OPEN ACCESS MODE - Treat all users as having full access
+  const isOpenAccess = true;
+  
   // Simplified admin check - only check if user has admin role
-  const isAdmin = !!(session?.user?.email && 
+  const isAdmin = isOpenAccess || (session?.user?.email && 
     (session.user.email.includes('admin') || 
      session?.user?.groups?.some((group: { name: string }) => group.name.toLowerCase() === 'admin')));
   
-  // For Zanzibar, we'll use a simplified structure
-  const isLoggedIn = !!session?.user;
+  // For Zanzibar open access - all users are considered logged in
+  const isLoggedIn = isOpenAccess || !!session?.user;
   
   // Get basic user information
-  const userEmail = session?.user?.email;
-  const userName = session?.user?.name;
+  const userEmail = session?.user?.email || 'guest@zanzibar-peskas.org';
+  const userName = session?.user?.name || 'Guest User';
   
   /**
    * For Zanzibar - all authenticated users can access all data
    * This removes the complex BMU-based restrictions from Kenya version
    */
   const getAccessibleRegions = (allRegions: string[]): string[] => {
-    // All authenticated users can see all regions
+    // All users can see all regions in open access mode
     return allRegions;
   };
   
@@ -40,7 +45,7 @@ export const useUserPermissions = () => {
    * Simplified data access - no restrictions for Zanzibar version
    */
   const canAccessData = () => {
-    return isLoggedIn;
+    return true; // Open access
   };
 
   return {
@@ -58,11 +63,11 @@ export const useUserPermissions = () => {
     getAccessibleRegions,
     canAccessData,
     
-    // Simple flags for components
-    canViewData: isLoggedIn,
+    // Simple flags for components - all true for open access
+    canViewData: true,
     canEditData: isAdmin,
     canDeleteData: isAdmin,
-    canExportData: isLoggedIn,
+    canExportData: true,
     
     // Legacy compatibility (for components not yet updated)
     hasRestrictedAccess: false,

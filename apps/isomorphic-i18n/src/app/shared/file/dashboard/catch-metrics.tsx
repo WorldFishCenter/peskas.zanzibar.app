@@ -4,7 +4,7 @@ import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
 import { useEffect, useState, useCallback, useRef, useMemo, createContext, useContext } from "react";
 
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useMedia } from "@hooks/use-media";
@@ -252,7 +252,7 @@ export default function CatchMetricsChart({
     };
   }, [i18n, loading]);
 
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   
   // Use centralized permissions hook
   const {
@@ -269,8 +269,8 @@ export default function CatchMetricsChart({
   // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
   const effectiveBMU = bmu || userBMU;
   
-  // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  // Ensure districts is always an array
+  const safeBmus = districts || [];
   
   // Fetch monthly data
   const { data: monthlyData, refetch } = api.aggregatedCatch.monthly.useQuery(

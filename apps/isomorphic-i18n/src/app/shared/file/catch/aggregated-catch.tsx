@@ -23,7 +23,7 @@ import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useGlobalFilter } from "@/app/components/global-filter-provider";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useUserPermissions } from "@/app/shared/file/dashboard/hooks/useUserPermissions";
 
 function CustomYAxisTick({ x, y, payload }: any) {
@@ -55,7 +55,7 @@ export default function AggregatedCatch({
   const is2xl = useMedia("(max-width: 1780px)", false);
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation(lang!, "common");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const { isAdmin, referenceBMU, getLimitedBMUs } = useUserPermissions();
 
   // For Zanzibar - all users can access all regions (simplified)

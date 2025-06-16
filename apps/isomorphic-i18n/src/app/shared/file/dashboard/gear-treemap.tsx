@@ -5,7 +5,7 @@ import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import { useTheme } from "next-themes";
 import MetricCard from "@components/cards/metric-card";
@@ -308,7 +308,7 @@ export default function GearHeatmap({
     };
   }, [i18n]);
   
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
@@ -317,7 +317,7 @@ export default function GearHeatmap({
   // Add refs to track initialization states
   const dataProcessed = useRef<boolean>(false);
   const previousMetric = useRef<string>(selectedMetric);
-  const previousBmus = useRef<string[]>(bmus);
+  const previousBmus = useRef<string[]>(districts);
   
   // Use the centralized permissions hook
   const {
@@ -335,7 +335,7 @@ export default function GearHeatmap({
   const effectiveBMU = bmu || userBMU;
   
   // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  const safeBmus = districts || [];
   
   // Force refetch when bmus changes by adding bmus to the query key
   const { data: rawData, refetch } = api.gear.summaries.useQuery(
@@ -606,7 +606,7 @@ export default function GearHeatmap({
     } finally {
       setLoading(false);
     }
-  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, bmus]);
+  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, safeBmus]);
 
   const getTabTitle = (tab: string): string => {
     // Custom titles for CIA users who can only see their own BMU

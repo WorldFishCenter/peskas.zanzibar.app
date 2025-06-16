@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
@@ -165,7 +165,7 @@ export default function CatchRadarChart({
   activeTab = 'standard',
 }: CatchRadarChartProps) {
   const { t } = useTranslation(lang!, "common");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
   
   // Use centralized permissions hook

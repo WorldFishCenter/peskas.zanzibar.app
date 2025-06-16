@@ -25,6 +25,11 @@ export default function ProfileMenu({
   username?: boolean;
   lang?: string;
 }) {
+  // TEMPORARILY DISABLED FOR ZANZIBAR OPEN ACCESS
+  // The profile menu is hidden since authentication is disabled
+  return null;
+  
+  /* ORIGINAL CODE - UNCOMMENT TO RE-ENABLE AUTHENTICATION
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [currentLang, setCurrentLang] = useState<string>(getClientLanguage());
@@ -84,6 +89,7 @@ export default function ProfileMenu({
       </Popover.Content>
     </ProfileMenuPopover>
   );
+  */
 }
 
 function ProfileMenuPopover({ children }: React.PropsWithChildren<{}>) {
