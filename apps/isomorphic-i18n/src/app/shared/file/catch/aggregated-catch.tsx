@@ -58,13 +58,10 @@ export default function AggregatedCatch({
   const [bmus] = useAtom(bmusAtom);
   const { isAdmin, referenceBMU, getLimitedBMUs } = useUserPermissions();
 
-  // For admin users, limit the number of BMUs shown and prioritize reference BMU
+  // For Zanzibar - all users can access all regions (simplified)
   const effectiveBmus = useMemo(() => {
-    if (isAdmin) {
-      return getLimitedBMUs(bmus, 8);
-    }
-    return bmus;
-  }, [isAdmin, bmus, getLimitedBMUs]);
+    return bmus; // Simplified - no restrictions
+  }, [bmus]);
 
   const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ 
     bmus: effectiveBmus 

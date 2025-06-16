@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAtom } from "jotai";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { Input } from "@ui/input";
 import SimpleBar from "@ui/simplebar";
-import { adminReferenceBmuAtom, useUserPermissions } from "../shared/file/dashboard/hooks/useUserPermissions";
+import { useUserPermissions } from "../shared/file/dashboard/hooks/useUserPermissions";
 import { api } from "@/trpc/react";
 import { useTranslation } from "@/app/i18n/client";
 import { ActionIcon } from "rizzui";
@@ -25,8 +24,8 @@ type BmuGroup = {
 
 export const AdminReferenceSelector = ({ lang }: { lang?: string }) => {
   const { t } = useTranslation(lang || "en", "common");
-  const { isAdmin } = useUserPermissions();
-  const [adminReferenceBmu, setAdminReferenceBmu] = useAtom(adminReferenceBmuAtom);
+  const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
+  const selectedRegion = userPreferences.selectedRegion;
   const [isOpen, setIsOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
   const { data: bmus } = api.user.allBmus.useQuery();
@@ -78,9 +77,9 @@ export const AdminReferenceSelector = ({ lang }: { lang?: string }) => {
           variant="text"
           className={cn(
             "relative flex items-center justify-center h-[34px] w-[34px] rounded-full md:h-9 md:w-9",
-            adminReferenceBmu ? "text-yellow-500" : "text-gray-500"
+            selectedRegion ? "text-yellow-500" : "text-gray-500"
           )}
-          title={t("text-select-reference-bmu") || "Select reference BMU"}
+          title={t("text-select-reference-region") || "Select reference region"}
         >
           <HiMiniStar className="h-5 w-5 md:h-6 md:w-6" />
         </ActionIcon>
@@ -88,15 +87,15 @@ export const AdminReferenceSelector = ({ lang }: { lang?: string }) => {
       <PopoverContent className="w-[280px] sm:w-[350px]">
         <div className="mb-2">
           <h4 className="text-sm font-medium text-gray-900 mb-1">
-            {t("text-select-reference-bmu") || "Select Reference BMU"}
+            {t("text-select-reference-region") || "Select Reference Region"}
           </h4>
           <p className="text-xs text-gray-500">
-            {t("text-reference-bmu-description") || "Select a BMU to use as reference in comparison charts"}
+            {t("text-reference-region-description") || "Select a region to use as reference in comparison charts"}
           </p>
         </div>
         
         <Input
-          placeholder={t("text-search-bmus") || "Search BMUs..."}
+          placeholder={t("text-search-regions") || "Search regions..."}
           value={searchFilter}
           onChange={e => setSearchFilter(e.target.value)}
           className="mb-3"
@@ -113,17 +112,18 @@ export const AdminReferenceSelector = ({ lang }: { lang?: string }) => {
                       key={unit.value}
                       className={cn(
                         "px-2 py-1 text-sm rounded cursor-pointer flex items-center",
-                        adminReferenceBmu === unit.value 
+                        selectedRegion === unit.value 
                           ? "bg-primary/10 text-primary font-medium"
                           : "hover:bg-gray-100"
                       )}
                       onClick={() => {
-                        setAdminReferenceBmu(adminReferenceBmu === unit.value ? null : unit.value);
+                        const newSelectedRegion = selectedRegion === unit.value ? undefined : unit.value;
+                        setUserPreferences({ ...userPreferences, selectedRegion: newSelectedRegion });
                         setIsOpen(false);
                       }}
                     >
                       {unit.label}
-                      {adminReferenceBmu === unit.value && (
+                      {selectedRegion === unit.value && (
                         <HiMiniStar className="ml-auto text-yellow-500" />
                       )}
                     </div>
@@ -134,16 +134,16 @@ export const AdminReferenceSelector = ({ lang }: { lang?: string }) => {
             
             {filteredGroups.length === 0 && (
               <div className="text-gray-500 text-sm py-2 text-center">
-                {t("text-no-bmus-found") || "No BMUs found"}
+                {t("text-no-regions-found") || "No regions found"}
               </div>
             )}
           </div>
         </SimpleBar>
         
-        {adminReferenceBmu && (
+        {selectedRegion && (
           <button
             className="mt-3 text-sm text-red-600 hover:text-red-700 font-medium"
-            onClick={() => setAdminReferenceBmu(null)}
+            onClick={() => setUserPreferences({ ...userPreferences, selectedRegion: undefined })}
           >
             {t("text-clear-selection") || "Clear selection"}
           </button>

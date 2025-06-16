@@ -195,8 +195,8 @@ export default function BMURanking({
     hasRestrictedAccess,
   } = useUserPermissions();
 
-  // Determine which BMU to use for highlighting - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which BMU to use for highlighting - simplified for Zanzibar
+  const effectiveBMU = bmu || undefined;
 
   // Ensure bmus is always an array
   const safeBmus = bmus || [];

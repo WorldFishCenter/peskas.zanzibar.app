@@ -80,7 +80,8 @@ export const FilterSelector = () => {
   const [dropdown, setBmusDropdown] = useAtom(dropdownAtom);
   const [bmus, setBmus] = useAtom(bmusAtom);
   const [viewMode, setViewMode] = useAtom(viewModeAtom);
-  const { isAdmin, adminReferenceBmu, setAdminReferenceBmu } = useUserPermissions();
+  const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
+  const selectedRegion = userPreferences.selectedRegion;
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -194,12 +195,12 @@ export const FilterSelector = () => {
               </button>
             </div>
             
-            {adminReferenceBmu && (
+            {selectedRegion && (
               <div className="flex justify-between items-center mt-2 text-xs">
-                <span className="text-gray-500">Reference: <span className="text-yellow-600 font-medium">{adminReferenceBmu}</span></span>
+                <span className="text-gray-500">Reference: <span className="text-yellow-600 font-medium">{selectedRegion}</span></span>
                 <button
                   className="text-red-600 hover:text-red-700"
-                  onClick={() => setAdminReferenceBmu(null)}
+                  onClick={() => setUserPreferences({ ...userPreferences, selectedRegion: undefined })}
                 >
                   Clear
                 </button>
@@ -222,7 +223,7 @@ export const FilterSelector = () => {
                   bmuSection={section}
                   searchFilter={searchFilter}
                   viewMode={viewMode}
-                  referenceBmu={adminReferenceBmu}
+                  referenceBmu={selectedRegion}
                 />
               );
             })}
@@ -246,16 +247,10 @@ const FilterGroup = ({
 }) => {
   const [bmus, setBmus] = useAtom(bmusAtom);
   const { data: session } = useSession();
-  const { isAdmin, isCiaUser, setAdminReferenceBmu } = useUserPermissions();
+  const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
   const { t } = useTranslation("common");
 
   const handleBmuSelect = (unit: string) => {
-    // For the CIA group, ensure only one BMU is selectable
-    if (isCiaUser) {
-      setBmus([unit]);
-      return;
-    }
-    
     // For region view in admin mode, ensure only one BMU is selected per region
     if (isAdmin && viewMode === 'region' && typeof bmuSection !== 'string') {
       const section = bmuSection as DropdownTypes;
@@ -285,10 +280,11 @@ const FilterGroup = ({
   
   const handleReferenceSelect = (unit: string) => {
     if (isAdmin) {
-      // Toggle reference BMU
-      setAdminReferenceBmu(referenceBmu === unit ? null : unit);
+      // Toggle reference region (simplified for Zanzibar)
+      const newSelectedRegion = referenceBmu === unit ? undefined : unit;
+      setUserPreferences({ ...userPreferences, selectedRegion: newSelectedRegion });
       
-      // Also select the BMU if it's not already selected
+      // Also select the region if it's not already selected
       if (referenceBmu !== unit && !bmus.includes(unit)) {
         // For region view, we need to handle region selection differently
         if (viewMode === 'region' && typeof bmuSection !== 'string') {
