@@ -1,6 +1,8 @@
 export const routes = {
   about: '/about',
   catch_composition: '/catch_composition',
+  catch: '/catch',
+  revenue: '/revenue',
   eCommerce: {
     dashboard: '/ecommerce',
     products: '/ecommerce/products',
@@ -87,10 +89,6 @@ export const routes = {
     charts: '/widgets/charts',
     maps: '/widgets/maps',
     banners: '/widgets/banners',
-  },
-  catch: {
-    aggregated: '/catch/aggregated',
-    composition: '/catch/composition',
   },
   map: '/map',
   groups: {

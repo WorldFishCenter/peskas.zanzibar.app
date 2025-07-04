@@ -20,6 +20,19 @@ export const menuItems = [
     href: routes.catch_composition,
     icon: <PiFishDuotone />,
   },
+  // Catch
+  {
+    name: 'Catch',
+    href: routes.catch_composition,
+    icon: <PiFishDuotone />,
+  },
+  // Revenue
+  {
+    name: 'Revenue',
+    href: routes.catch_composition,
+    icon: <PiFishDuotone />,
+  },
+
   // About page
   {
     name: 'About',

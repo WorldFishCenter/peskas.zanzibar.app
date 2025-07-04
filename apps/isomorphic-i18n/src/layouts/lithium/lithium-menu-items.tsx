@@ -35,18 +35,24 @@ export const lithiumMenuItems: LithiumMenuItem = {
     ],
   },
   catch: {
-    name: 'sidebar-menu-overview',
+    name: 'Catch',
     type: 'link',
     dropdownItems: [
       {
         name: 'Aggregated',
-        href: routes.catch.aggregated,
+        href: routes.catch,
         icon: 'FishIcon',
       },
+    ],
+  },
+  revenue: {
+    name: 'Revenue',
+    type: 'link',
+    dropdownItems: [
       {
-        name: 'Composition',
-        href: routes.catch.composition,
-        icon: 'PieIcon',
+        name: 'Revenue',
+        href: routes.revenue,
+        icon: 'FishIcon',
       },
     ],
   },

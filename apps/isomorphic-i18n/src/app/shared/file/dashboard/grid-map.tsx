@@ -7,7 +7,9 @@ import Map from "react-map-gl/maplibre";
 import { NavigationControl } from "react-map-gl";
 // Add this if you get a type error for d3-scale-chromatic
 // @ts-ignore
-import { interpolateYlGnBu } from "d3-scale-chromatic";
+import { interpolateRgbBasis } from "d3-interpolate";
+// @ts-ignore
+import { color as d3Color } from "d3-color";
 
 const INITIAL_VIEW_STATE = {
   longitude: 39.3,
@@ -35,12 +37,16 @@ function hexToRgba(hex: string, alpha = 180) {
   ];
 }
 
-function getContinuousColor(value: number, min: number, max: number) {
+const pinkScale = interpolateRgbBasis([
+  "#fcc5e0", "#f768a1", "#c51b8a", "#7a0177"
+]);
+
+function getPinkColor(value: number, min: number, max: number) {
   if (isNaN(value)) return [200, 200, 200, 80];
-  if (max === min) return hexToRgba(interpolateYlGnBu(1));
+  if (max === min) value = min;
   const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
-  const hex = interpolateYlGnBu(t);
-  return hexToRgba(hex);
+  const c = d3Color(pinkScale(t));
+  return c ? [c.r, c.g, c.b, 180] : [200, 200, 200, 80];
 }
 
 function getTooltip({ object }: any) {
@@ -92,11 +98,11 @@ export default function GridMap() {
     new ColumnLayer({
       id: "grid-cells",
       data: points,
-      diskResolution: 4, // rectangle
+      diskResolution: 30, // circular columns as in coasts
       radius: 500, // meters (1km cell)
       elevationScale: 1,
       getPosition: (d: any) => d.position,
-      getFillColor: (d: any) => getContinuousColor(d.avg_time_hours, minTime, maxTime) as [number, number, number, number],
+      getFillColor: (d: any) => getPinkColor(d.avg_time_hours, minTime, maxTime) as [number, number, number, number],
       getElevation: (d: any) => getElevation(d.avg_time_hours),
       pickable: true,
       extruded: true,
@@ -115,7 +121,7 @@ export default function GridMap() {
   ];
 
   return (
-    <div className="w-full h-[400px] my-6 rounded-xl overflow-hidden border border-gray-200 shadow-sm relative">
+    <div className="w-full aspect-[2/1] sm:aspect-[3/2] md:aspect-[16/7] my-6 rounded-xl overflow-hidden border border-gray-200 shadow-sm relative min-h-[250px]">
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
