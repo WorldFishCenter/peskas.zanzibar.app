@@ -64,6 +64,7 @@ interface CatchMetricsChartProps {
   lang?: string;
   selectedMetric: MetricKey;
   bmu?: string;
+  district?: string;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
@@ -190,6 +191,7 @@ export default function CatchMetricsChart({
   lang,
   selectedMetric,
   bmu,
+  district,
   activeTab = 'standard', // Keep the original default for backwards compatibility
   onTabChange,
 }: CatchMetricsChartProps) {
@@ -254,6 +256,12 @@ export default function CatchMetricsChart({
 
   const [districts] = useAtom(districtsAtom);
   
+  // Default districts list if none selected
+  const defaultDistricts = [
+    'Central', 'North A', 'North B', 'South', 'Urban', 'West',
+    'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
+  ];
+  
   // Use centralized permissions hook
   const {
     userBMU,
@@ -266,11 +274,12 @@ export default function CatchMetricsChart({
     canCompareWithOthers
   } = useUserPermissions();
 
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
+  const effectiveBMU = district || bmu || userBMU || undefined;
   
-  // Ensure districts is always an array
-  const safeBmus = districts || [];
+  // Ensure districts is always an array - use defaults if none selected
+  const safeBmus = district ? [district] : 
+    (districts.length > 0 ? districts : defaultDistricts);
   
   // Fetch monthly data
   const { data: monthlyData, refetch } = api.aggregatedCatch.monthly.useQuery(
@@ -279,7 +288,7 @@ export default function CatchMetricsChart({
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       retry: 3,
-      enabled: safeBmus.length > 0,
+      enabled: true, // Always enabled now
     }
   );
 

@@ -82,6 +82,7 @@ export const useUserPermissions = () => {
     isIiaUser: false,
     userBMU: null,
     referenceBMU: null,
+    referenceDistrict: null,
     userFisherId: null,
     getAccessibleBMUs: (allBMUs: string[]) => allBMUs,
     getLimitedBMUs: (allBMUs: string[]) => allBMUs,

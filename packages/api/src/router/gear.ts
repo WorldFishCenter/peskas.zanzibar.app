@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import { GearSummaryModel } from "@repo/nosql/schema/gear-summary";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const gearRouter = createTRPCRouter({
-  summaries: protectedProcedure
+  summaries: publicProcedure
     .input(z.object({ bmus: z.string().array() }))
     .query(({ input }) => {
       return GearSummaryModel

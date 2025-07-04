@@ -23,6 +23,7 @@ export type TDistrictSummary = {
   district: string;
   indicator: TDistrictIndicator | string; // Allow string for flexibility with new indicators
   value: number;
+  date: Date;
   timestamp?: Date;
   metadata?: {
     period?: string; // e.g., "monthly", "weekly", "daily"
@@ -39,6 +40,7 @@ const districtSummarySchema = new Schema<TDistrictSummary>(
     district: { type: String, required: true },
     indicator: { type: String, required: true },
     value: { type: Number, required: true },
+    date: { type: Date, required: true },
     timestamp: Date,
     metadata: {
       period: String,

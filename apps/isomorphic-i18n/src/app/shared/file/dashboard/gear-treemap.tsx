@@ -274,10 +274,12 @@ export default function GearHeatmap({
   className,
   lang,
   bmu,
+  district,
 }: {
   className?: string;
   lang?: string;
   bmu?: string;
+  district?: string;
 }) {
   const { theme } = useTheme();
   const [barData, setBarData] = useState<any[]>([]);
@@ -331,8 +333,8 @@ export default function GearHeatmap({
     canCompareWithOthers
   } = useUserPermissions();
   
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
+  const effectiveBMU = district || bmu || userBMU;
   
   // Ensure bmus is always an array
   const safeBmus = districts || [];
@@ -445,7 +447,7 @@ export default function GearHeatmap({
       const newSiteColors = uniqueBMUs.reduce<Record<string, string>>(
         (acc, site, index) => ({
           ...acc,
-          [site]: generateColor(index, site, effectiveBMU),
+          [site]: generateColor(index, site, effectiveBMU || undefined),
         }),
         {}
       );

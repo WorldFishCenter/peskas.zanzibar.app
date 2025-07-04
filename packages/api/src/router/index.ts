@@ -8,6 +8,8 @@ import { fishDistributionRouter } from "./fish-distribution";
 import { pingRouter } from "./ping";
 import { mapDistributionRouter } from "./map-distribution";
 import { individualDataRouter } from "./individual-data";
+import { districtSummaryRouter } from "./district-summary";
+import { gridSummaryRouter } from "./grid-summary";
 
 // Export all routers for easier imports
 export {
@@ -21,4 +23,6 @@ export {
   pingRouter,
   mapDistributionRouter,
   individualDataRouter,
+  districtSummaryRouter,
+  gridSummaryRouter,
 }; 
