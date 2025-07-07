@@ -22,7 +22,7 @@ import { useSession } from "next-auth/react";
 import useUserPermissions from "./hooks/useUserPermissions";
 // Import shared color function
 import { generateColor, updateBmuColorRegistry } from "./charts/utils";
-import { MetricKey, MetricOption } from "./charts/types";
+import { MetricKey, MetricOption, RadarMetricKey } from "./charts/types";
 
 interface RadarData {
   month: string;
@@ -44,10 +44,8 @@ const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_cpue: { translationKey: "text-metrics-catch-rate", unit: "kg/fisher/day" },
   mean_rpue: { translationKey: "text-metrics-fisher-revenue", unit: "KSH/fisher/day" },
   mean_price_kg: { translationKey: "text-metrics-price-per-kg", unit: "KSH/kg" },
-  total_catch_kg: { translationKey: "text-metrics-total-catch", unit: "kg" },
-  total_value: { translationKey: "text-metrics-total-value", unit: "KSH" },
-  n_trips: { translationKey: "text-metrics-number-of-trips", unit: "trips" },
-  n_fishers: { translationKey: "text-metrics-number-of-fishers", unit: "fishers" },
+  mean_cpua: { translationKey: "text-metrics-catch-per-area", unit: "kg/km²/day" },
+  mean_rpua: { translationKey: "text-metrics-revenue-per-area", unit: "KSH/km²/day" },
 };
 
 const getMetricLabel = (metric: string, t: any): string => {
@@ -180,8 +178,11 @@ export default function CatchRadarChart({
   ];
   
   // Use default districts if none are selected
-  const selectedDistricts = district ? [district] : 
-    (districts.length > 0 ? districts : defaultDistricts);
+  const selectedDistricts = useMemo(() => 
+    district ? [district] : 
+    (districts.length > 0 ? districts : defaultDistricts),
+    [district, districts, defaultDistricts]
+  );
   
   // Use centralized permissions hook
   const {
@@ -215,7 +216,7 @@ export default function CatchRadarChart({
   
   const { data: meanCatch, isLoading: isFetching, error: queryError, refetch } =
     api.aggregatedCatch.meanCatchRadar.useQuery(
-      { bmus: selectedDistricts, metric: selectedMetric },
+      { bmus: selectedDistricts, metric: selectedMetric as RadarMetricKey },
       {
         refetchOnMount: true,
         refetchOnWindowFocus: false,

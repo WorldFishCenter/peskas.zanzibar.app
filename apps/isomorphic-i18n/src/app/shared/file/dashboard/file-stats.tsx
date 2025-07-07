@@ -1,10 +1,9 @@
 "use client";
 
-import { Text } from "rizzui";
+import { Text, Button } from "rizzui";
 import cn from "@utils/class-names";
 import { useScrollableSlider } from "@hooks/use-scrollable-slider";
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
-import { Button } from "rizzui";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import {

@@ -8,12 +8,11 @@ import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 import DistrictRanking from "@/app/shared/file/dashboard/district-ranking";
 import GridMap from "./grid-map";
 import { selectedMetricAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
-import Table from "@/app/shared/table";
+import Table, { HeaderCell } from "@/app/shared/table";
 import TableFilter from "@/app/shared/controlled-table/table-filter";
 import { api } from "@/trpc/react";
 import { useState, useMemo } from "react";
 import type { AlignType } from "rc-table/lib/interface";
-import { HeaderCell } from "@/app/shared/table";
 import DistrictSummaryPlot from "./DistrictSummaryPlot";
 
 // YlGnBu-8 palette

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useAtom } from "jotai";
 import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
@@ -199,7 +199,7 @@ export default function DistrictRanking({
   const effectiveDistrict = district || undefined;
 
   // Ensure bmus is always an array
-  const safeBmus = districts || [];
+  const safeBmus = useMemo(() => districts || [], [districts]);
 
   // Fetch aggregated monthly data for BMU ranking
   const { data: rawData, refetch } = api.aggregatedCatch.monthly.useQuery(

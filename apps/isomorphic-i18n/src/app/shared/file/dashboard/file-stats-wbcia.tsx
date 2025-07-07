@@ -65,7 +65,7 @@ export function FileStatWBCIAGrid({ className, lang }: { className?: string; lan
   const { userBMU } = useUserPermissions();
   
   // Ensure bmus is always an array
-  const safeBmus = districts || [];
+  const safeBmus = useMemo(() => districts || [], [districts]);
   
   // Fetch monthly data to get latest month values per BMU
   const { data: monthlyData, isLoading, error: queryError } = api.aggregatedCatch.monthly.useQuery(

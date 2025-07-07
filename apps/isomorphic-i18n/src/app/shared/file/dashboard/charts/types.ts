@@ -1,6 +1,9 @@
 import { Session } from "next-auth";
 
-export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort";
+export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua";
+
+// Type for metrics supported by radar API
+export type RadarMetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
 
 export interface ChartDataPoint {
   date: number;
@@ -15,6 +18,8 @@ export interface ApiDataPoint {
   mean_cpue: number;
   mean_rpue: number;
   mean_price_kg: number;
+  mean_cpua: number;
+  mean_rpua: number;
   total_catch_kg: number;
   total_value: number;
   n_trips: number;
