@@ -60,8 +60,8 @@ function ThemeToggle() {
       variant="text"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className={cn(
-        "h-[34px] w-[34px] shadow backdrop-blur-md dark:bg-gray-100 md:h-9 md:w-9",
-        "relative rounded-full text-gray-700 hover:text-gray-1000"
+        "h-[34px] w-[34px] shadow backdrop-blur-md dark:bg-gray-800 md:h-9 md:w-9",
+        "relative rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-1000 dark:hover:text-gray-100"
       )}
     >
       {theme === "dark" ? (
@@ -80,9 +80,9 @@ function ReferenceBMU() {
   if (!userBmu) return null;
 
   return (
-    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 rounded-full">
-      <PiMapPinDuotone className="h-4 w-4 text-gray-600" />
-      <span className="font-medium text-gray-900">{userBmu}</span>
+    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-50 rounded-full">
+      <PiMapPinDuotone className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+      <span className="font-medium text-gray-900 dark:text-gray-200">{userBmu}</span>
     </div>
   );
 }
@@ -128,8 +128,8 @@ function CompactLanguageSwitcher() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium rounded-md transition-colors",
-          "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
+          isOpen && "ring-2 ring-blue-200"
         )}
       >
         <span className="w-4 h-3 overflow-hidden flex items-center justify-center">
@@ -142,7 +142,7 @@ function CompactLanguageSwitcher() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-[1000]" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] min-w-[100px]">
+          <div className="absolute right-0 top-full mt-1 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] min-w-[100px]">
             {languages.map((lang) => (
               <button
                 key={lang.code}
@@ -207,11 +207,8 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
         <button
           onClick={() => setIsMetricOpen(!isMetricOpen)}
           className={cn(
-            "flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium rounded-md transition-colors",
-            "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
-            selectedMetric === "mean_rpue" || selectedMetric === "mean_price_kg"
-              ? "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50"
-              : "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+            "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
+            isMetricOpen && "ring-2 ring-blue-200"
           )}
         >
           <span className="truncate">
@@ -226,7 +223,7 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
               className="fixed inset-0 z-[1000]" 
               onClick={() => setIsMetricOpen(false)}
             />
-            <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-80 sm:w-64 -translate-x-1/2 sm:translate-x-0 bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
+            <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-80 sm:w-64 -translate-x-1/2 sm:translate-x-0 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
               <div className="p-2">
                 {/* Catch Metrics */}
                 <div className="mb-3">
@@ -298,14 +295,14 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
   };
 
   return (
-    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 xs:gap-1 md:gap-2 xl:gap-3">
+    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1 md:gap-2 xl:gap-3">
       {/* Time Range Dropdown */}
      <div className="relative">
        <button
          onClick={() => setIsTimeOpen(!isTimeOpen)}
          className={cn(
-           "flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium rounded-md transition-colors border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
-           "text-gray-700 dark:text-gray-300"
+           "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
+           isTimeOpen && "ring-2 ring-blue-200"
          )}
        >
          <span className="truncate">
@@ -316,7 +313,7 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
        {isTimeOpen && (
          <>
            <div className="fixed inset-0 z-[1000]" onClick={() => setIsTimeOpen(false)} />
-           <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
+           <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-48 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
              <div className="p-2">
                {TIME_RANGES.map((option) => (
                  <button
@@ -348,7 +345,7 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
       <CompactLanguageSwitcher />
       <ThemeToggle />
       <ProfileMenu
-        buttonClassName="w-auto sm:w-auto p-1 border border-gray-300"
+        buttonClassName="w-auto sm:w-auto p-1 border border-gray-300 dark:border-gray-700"
         avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"
         lang={lang}
       />
@@ -365,7 +362,7 @@ export default function Header({ lang }: { lang?: string }) {
         <LanguageLink
           aria-label="Site Logo"
           href="/"
-          className="me-4 hidden w-[155px] shrink-0 text-gray-800 hover:text-gray-900 lg:me-5 xl:block"
+          className="me-4 hidden w-[155px] shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:block"
         >
           <div className="flex items-center gap-2">
             <Logo className="max-w-[155px]" />
@@ -383,7 +380,7 @@ export default function Header({ lang }: { lang?: string }) {
           <LanguageLink
             aria-label="Site Logo"
             href="/"
-            className="me-2 w-8 sm:me-3 sm:w-9 shrink-0 text-gray-800 hover:text-gray-900 lg:me-5 xl:hidden"
+            className="me-2 w-8 sm:me-3 sm:w-9 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
           >
             <Logo iconOnly={true} />
           </LanguageLink>

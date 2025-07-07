@@ -36,19 +36,25 @@ async function getDb() {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: true, // Change to true to allow buffering
-      serverSelectionTimeoutMS: 5000, // Add timeout
-      connectTimeoutMS: 10000,
+      bufferCommands: false, // Disable buffering to fail fast
+      serverSelectionTimeoutMS: 15000, // Increase timeout
+      connectTimeoutMS: 15000,
+      socketTimeoutMS: 30000,
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      maxIdleTimeMS: 30000,
+      retryWrites: true,
+      retryReads: true,
     };
 
     cached.promise = mongoose
       .connect(databaseUrl as string, opts)
       .then((mongoose) => {
-        
+        console.log('MongoDB connected successfully');
         return mongoose;
       })
       .catch((error) => {
-        console.error('MongoDB connection error:', error);
+        console.error('MongoDB connection error:', error.message);
         cached.promise = null;
         throw error;
       });
@@ -58,7 +64,7 @@ async function getDb() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
-    console.error('Failed to establish MongoDB connection:', e);
+    console.error('Failed to establish MongoDB connection:', e instanceof Error ? e.message : e);
     throw e;
   }
 

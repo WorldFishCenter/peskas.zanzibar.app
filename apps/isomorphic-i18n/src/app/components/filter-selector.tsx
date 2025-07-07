@@ -124,24 +124,27 @@ export const FilterSelector = () => {
   return (
     <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
       <Popover.Trigger>
-        <ActionIcon variant="text" className="relative flex items-center justify-center h-[34px] w-[34px] rounded-full md:h-9 md:w-9">
-          <TbFilterCog className="h-5 w-5 md:h-6 md:w-6 fill-[#D6D6D6] [stroke-width:1.5px]" />
+        <ActionIcon
+          variant="text"
+          className="relative flex items-center justify-center h-[34px] w-[34px] bg-gray-0 dark:bg-gray-50 border border-muted rounded-lg text-gray-500 dark:text-gray-400 md:h-9 md:w-9"
+        >
+          <TbFilterCog className="h-5 w-5 md:h-6 md:w-6" />
           {selectedCount > 0 && selectedCount < totalCount && (
-            <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-gray-200 dark:bg-gray-300 text-gray-900 dark:text-gray-700 text-xs font-semibold rounded-full h-4 w-4 flex items-center justify-center border border-white dark:border-gray-50">
               {selectedCount}
             </span>
           )}
         </ActionIcon>
       </Popover.Trigger>
-      <Popover.Content className="w-[280px] sm:w-[350px]">
+      <Popover.Content className="w-[280px] sm:w-[350px] bg-gray-0 dark:bg-gray-50 border border-muted rounded-lg p-4">
         <div className="mb-2">
           <Input
             placeholder="Search districts..."
             value={searchFilter}
             onChange={handleSearchChange}
-            className="mb-2"
+            className="mb-2 bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>{selectedCount} of {totalCount} districts selected</span>
             {selectedCount > 0 && (
               <button
@@ -156,11 +159,11 @@ export const FilterSelector = () => {
         <div className="space-y-2">
           <SimpleBar className="max-h-[300px] md:max-h-[600px]">
             {filteredList.map((district) => (
-              <div key={district} className="flex items-center justify-between pr-2 py-1 hover:bg-gray-50 rounded">
+              <div key={district} className="flex items-center justify-between pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
                 <div className="flex-grow">
                   <Checkbox
                     key={district}
-                    label={district}
+                    label={<span className="text-gray-900 dark:text-gray-700">{district}</span>}
                     checked={selectedDistricts.includes(district)}
                     onChange={() => {
                       if (selectedDistricts.includes(district)) {
@@ -169,7 +172,7 @@ export const FilterSelector = () => {
                         setSelectedDistricts([...selectedDistricts, district]);
                       }
                     }}
-                />
+                  />
                 </div>
               </div>
             ))}
@@ -258,11 +261,11 @@ const FilterGroup = ({
     const isReferenceDistrict = referenceDistrict === unit;
 
     return (
-      <div className="flex items-center justify-between pr-2 py-1 hover:bg-gray-50 rounded">
+      <div className="flex items-center justify-between pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
         <div className="flex-grow">
           <Checkbox
             key={unit}
-            label={unit}
+            label={<span className="text-gray-900 dark:text-gray-700">{unit}</span>}
             checked={districts.includes(unit)}
             onChange={() => handleDistrictSelect(unit)}
           />
@@ -349,10 +352,10 @@ const FilterGroup = ({
             const isReferenceDistrict = referenceDistrict === unit.value;
             
             return (
-              <div key={unit.value} className="flex items-center justify-between pr-2 py-0.5 hover:bg-gray-50 rounded">
+              <div key={unit.value} className="flex items-center justify-between pr-2 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
                 <div className="flex-grow">
                   <Checkbox
-                    label={unit.value}
+                    label={<span className="text-gray-900 dark:text-gray-700">{unit.value}</span>}
                     checked={districts.includes(unit.value)}
                     onChange={() => handleDistrictSelect(unit.value)}
                     disabled={disabled}
