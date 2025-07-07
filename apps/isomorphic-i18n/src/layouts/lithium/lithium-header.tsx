@@ -24,7 +24,7 @@ import { useTheme } from "next-themes";
 import HeaderMenuLeft from "@/layouts/lithium/lithium-menu";
 import Sidebar from "@/layouts/hydrogen/sidebar";
 import StickyHeader from "@/layouts/sticky-header";
-import { FilterSelector, selectedMetricAtom } from "@/app/components/filter-selector";
+import { FilterSelector, selectedMetricAtom, TIME_RANGES, selectedTimeRangeAtom } from "@/app/components/filter-selector";
 import { useSession } from "next-auth/react";
 import type { TBmu } from "@repo/nosql/schema/bmu";
 import LanguageLink, { getClientLanguage } from "@/app/i18n/language-link";
@@ -170,7 +170,9 @@ function CompactLanguageSwitcher() {
 function HeaderMenuRight({ lang }: { lang?: string }) {
   const pathname = usePathname();
   const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
+  const [selectedTimeRange, setSelectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [isMetricOpen, setIsMetricOpen] = useState(false);
+  const [isTimeOpen, setIsTimeOpen] = useState(false);
   const { t } = useTranslation(lang || 'en');
   
   const selectedMetricOption = METRIC_OPTIONS.find(
@@ -297,6 +299,47 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 xs:gap-1 md:gap-2 xl:gap-3">
+      {/* Time Range Dropdown */}
+     <div className="relative">
+       <button
+         onClick={() => setIsTimeOpen(!isTimeOpen)}
+         className={cn(
+           "flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium rounded-md transition-colors border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
+           "text-gray-700 dark:text-gray-300"
+         )}
+       >
+         <span className="truncate">
+           {TIME_RANGES.find(r => r.value === selectedTimeRange)?.label || TIME_RANGES[0].label}
+         </span>
+         <PiCaretDownBold className={cn("h-3 w-3 transition-transform flex-shrink-0", isTimeOpen && "rotate-180")} />
+       </button>
+       {isTimeOpen && (
+         <>
+           <div className="fixed inset-0 z-[1000]" onClick={() => setIsTimeOpen(false)} />
+           <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
+             <div className="p-2">
+               {TIME_RANGES.map((option) => (
+                 <button
+                   key={option.value}
+                   onClick={() => {
+                     setSelectedTimeRange(option.value);
+                     setIsTimeOpen(false);
+                   }}
+                   className={cn(
+                     "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
+                     selectedTimeRange === option.value
+                       ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
+                       : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                   )}
+                 >
+                   {option.label}
+                 </button>
+               ))}
+             </div>
+           </div>
+         </>
+       )}
+     </div>
       {/* <ReferenceBMU /> */}
       <HeaderMetricSelector />
       <div className="hidden sm:block">

@@ -99,17 +99,17 @@ function MetricBarCard({
   const pembaValue = Math.round(lastDataPoint?.Pemba || 0);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm min-w-[240px] max-w-[280px] flex flex-col sm:h-[180px] h-[120px]">
+    <div className="border border-muted bg-gray-0 p-5 dark:bg-gray-50 rounded-lg min-w-[240px] max-w-[280px] flex flex-col sm:h-[180px] h-[120px]">
       <div className="mb-2" style={{ minHeight: 48 }}>
-        <Text className="text-xs font-semibold text-gray-900">
-          {config.title} <span className="text-[10px] font-normal text-gray-500">{config.unit}</span>
+        <Text className="text-xs font-semibold text-gray-900 dark:text-gray-700">
+          {config.title} <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400">{config.unit}</span>
         </Text>
-        <Text className="text-[10px] text-gray-500">{config.description}</Text>
+        <Text className="text-[10px] text-gray-500 dark:text-gray-400">{config.description}</Text>
       </div>
       <div className="flex items-baseline gap-3 mb-2">
         <div className="flex gap-2 text-[11px]">
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span>Unguja: {ungujaValue}</span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span>Pemba: {pembaValue}</span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {ungujaValue}</span></span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {pembaValue}</span></span>
         </div>
       </div>
       <div className="flex-1 flex items-end">
@@ -122,15 +122,16 @@ function MetricBarCard({
             >
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 9 }}
+                tick={{ fontSize: 9, fill: '#64748b' }}
                 axisLine={false}
                 tickLine={false}
+                className="dark:fill-gray-300"
               />
               <Bar dataKey="Unguja" fill="#F28F3B" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Unguja" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#F28F3B' }} />
+                <LabelList dataKey="Unguja" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#F28F3B' }} className="dark:fill-gray-100" />
               </Bar>
               <Bar dataKey="Pemba" fill="#75ABBC" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Pemba" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#75ABBC' }} />
+                <LabelList dataKey="Pemba" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#75ABBC' }} className="dark:fill-gray-100" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -158,7 +159,7 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
       <>
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="min-w-[240px] max-w-[280px] animate-pulse">
-            <div className="h-32 bg-gray-200 rounded-lg"></div>
+            <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
           </div>
         ))}
       </>
@@ -168,8 +169,8 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
   if (error || !monthlyData) {
     return (
       <div className="min-w-[240px] col-span-full">
-        <div className="flex flex-col items-center justify-center h-32 bg-gray-50 rounded-lg">
-          <Text className="text-gray-500">{t('text-no-data-available')}</Text>
+        <div className="flex flex-col items-center justify-center h-32 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <Text className="text-gray-500 dark:text-gray-400">{t('text-no-data-available')}</Text>
         </div>
       </div>
     );

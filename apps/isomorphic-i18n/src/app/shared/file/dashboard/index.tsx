@@ -7,7 +7,7 @@ import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 import DistrictRanking from "@/app/shared/file/dashboard/district-ranking";
 import GridMap from "./grid-map";
-import { selectedMetricAtom } from "@/app/components/filter-selector";
+import { selectedMetricAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
 import Table from "@/app/shared/table";
 import TableFilter from "@/app/shared/controlled-table/table-filter";
 import { api } from "@/trpc/react";
@@ -46,25 +46,16 @@ function formatNumber(val: number | null) {
   return Number(val).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-const TIME_RANGES = [
-  { label: "Last 3 months", value: 3 },
-  { label: "Last 6 months", value: 6 },
-  { label: "Last year", value: 12 },
-  { label: "All time", value: "all" },
-];
-
-function getDateRange(months: number | string) {
-  if (months === "all") return { start: "1900-01-01", end: new Date().toISOString() };
-  const end = new Date();
-  const start = new Date();
-  start.setMonth(end.getMonth() - Number(months));
-  return { start: start.toISOString(), end: end.toISOString() };
-}
-
 function DistrictMetricsTable() {
-  const [range, setRange] = useState<string | number>(3);
+  const [range] = useAtom(selectedTimeRangeAtom);
   const [sorter, setSorter] = useState<{ columnKey: string; order: 'ascend' | 'descend' | null }>({ columnKey: 'district', order: null });
-  const { start, end } = useMemo(() => getDateRange(range), [range]);
+  const { start, end } = useMemo(() => {
+    if (range === "all") return { start: "1900-01-01", end: new Date().toISOString() };
+    const end = new Date();
+    const start = new Date();
+    start.setMonth(end.getMonth() - Number(range));
+    return { start: start.toISOString(), end: end.toISOString() };
+  }, [range]);
   const { data = [], isLoading } = api.districtSummary.getDistrictsSummaryByDateRange.useQuery({ startDate: start, endDate: end });
   const metricKeys = [
     "n_submissions",
@@ -158,17 +149,7 @@ function DistrictMetricsTable() {
     <div className="mt-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
         <span className="font-semibold text-gray-700">District Metrics</span>
-        <div className="flex gap-2">
-          {TIME_RANGES.map(opt => (
-            <button
-              key={opt.value}
-              className={`px-3 py-1 rounded text-xs border ${range === opt.value ? 'bg-gray-200 border-gray-400 font-semibold' : 'bg-white border-gray-200'}`}
-              onClick={() => setRange(opt.value as string | number)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* Time range selector moved to header */}
       </div>
       <div className="overflow-x-auto">
         {isLoading && <div className="py-4 text-center text-gray-500">Loading...</div>}
