@@ -14,6 +14,7 @@ import { api } from "@/trpc/react";
 import { useState, useMemo } from "react";
 import type { AlignType } from "rc-table/lib/interface";
 import { HeaderCell } from "@/app/shared/table";
+import DistrictSummaryPlot from "./DistrictSummaryPlot";
 
 // YlGnBu-8 palette
 const YLGNBU_8 = [
@@ -202,16 +203,17 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           </p>
         </div>
       </div> */}
-      
-      <div className="grid grid-cols-1 gap-5 xl:gap-6">
-        <FileStats 
-          lang={lang} 
-        />
-        <div className="w-full h-[700px] overflow-hidden">
+      <FileStats lang={lang} />
+      <div className="grid grid-cols-12 gap-5 xl:gap-6 w-full h-[700px] mt-4">
+        <div className="col-span-12 md:col-span-4 h-full">
+          <DistrictSummaryPlot />
+        </div>
+        <div className="col-span-12 md:col-span-8 h-full overflow-hidden">
           <GridMap />
         </div>
-        <DistrictMetricsTable />
-        {/* <div className="grid grid-cols-12 gap-5 xl:gap-6">
+      </div>
+      <DistrictMetricsTable />
+      {/* <div className="grid grid-cols-12 gap-5 xl:gap-6">
           <div className="col-span-12 md:col-span-9">
             <CatchMetricsChart
               lang={lang}
@@ -236,7 +238,6 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           lang={lang} 
           district={undefined} // Show all districts by default
         /> */}
-      </div>
     </div>
   );
 }
