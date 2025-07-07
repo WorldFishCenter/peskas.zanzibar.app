@@ -181,10 +181,10 @@ export const districtSummaryRouter = createTRPCRouter({
           const last3 = dateEntries.slice(-3);
           result[metric] = {
             data: last3.map(([dateStr, regions]) => {
-              const date = new Date(dateStr);
-              const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+            const date = new Date(dateStr);
+            const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
               return {
-                month: monthLabel,
+              month: monthLabel,
                 Unguja: regions.Unguja.length ? regions.Unguja.reduce((a, b) => a + b, 0) / regions.Unguja.length : 0,
                 Pemba: regions.Pemba.length ? regions.Pemba.reduce((a, b) => a + b, 0) / regions.Pemba.length : 0,
               };

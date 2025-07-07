@@ -256,11 +256,11 @@ export default function CatchMetricsChart({
 
   const [districts] = useAtom(districtsAtom);
   
-  // Default districts list if none selected
-  const defaultDistricts = [
+  // Default districts list if none selected - memoized to prevent infinite loops
+  const defaultDistricts = useMemo(() => [
     'Central', 'North A', 'North B', 'South', 'Urban', 'West',
     'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
-  ];
+  ], []);
   
   // Use centralized permissions hook
   const {
@@ -277,9 +277,12 @@ export default function CatchMetricsChart({
   // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
   const effectiveBMU = district || bmu || userBMU || undefined;
   
-  // Ensure districts is always an array - use defaults if none selected
-  const safeBmus = district ? [district] : 
-    (districts.length > 0 ? districts : defaultDistricts);
+  // Ensure districts is always an array - use defaults if none selected - memoized to prevent infinite loops
+  const safeBmus = useMemo(() => 
+    district ? [district] : 
+    (districts.length > 0 ? districts : defaultDistricts),
+    [district, districts]
+  );
   
   // Fetch monthly data
   const { data: monthlyData, refetch } = api.aggregatedCatch.monthly.useQuery(
@@ -332,7 +335,7 @@ export default function CatchMetricsChart({
     if (lang && i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
-  }, [lang, i18n, chartData.length, loading, visibilityState]);
+  }, [lang, i18n]);
 
   const handleLegendClick = useCallback((site: string) => {
     // Don't toggle visibility for the average line or special CIA comparison lines

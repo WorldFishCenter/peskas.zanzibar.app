@@ -10,6 +10,7 @@ import { mapDistributionRouter } from "./map-distribution";
 import { individualDataRouter } from "./individual-data";
 import { districtSummaryRouter } from "./district-summary";
 import { gridSummaryRouter } from "./grid-summary";
+import { monthlySummaryRouter } from "./monthly-summary";
 
 // Export all routers for easier imports
 export {
@@ -25,4 +26,5 @@ export {
   individualDataRouter,
   districtSummaryRouter,
   gridSummaryRouter,
+  monthlySummaryRouter,
 }; 

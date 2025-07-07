@@ -207,7 +207,7 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
           className={cn(
             "flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium rounded-md transition-colors",
             "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
-            selectedMetric === "mean_rpue" || selectedMetric === "mean_rpua"
+            selectedMetric === "mean_rpue" || selectedMetric === "mean_price_kg"
               ? "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50"
               : "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50"
           )}
@@ -303,7 +303,7 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
         <FilterSelector />
       </div>
       <CompactLanguageSwitcher />
-      {/* <ThemeToggle /> */}
+      <ThemeToggle />
       <ProfileMenu
         buttonClassName="w-auto sm:w-auto p-1 border border-gray-300"
         avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"

@@ -1,6 +1,6 @@
 import { Session } from "next-auth";
 
-export type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
+export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue";
 
 export interface ChartDataPoint {
   date: number;
@@ -13,9 +13,12 @@ export interface ApiDataPoint {
   landing_site: string;
   mean_effort: number;
   mean_cpue: number;
-  mean_cpua: number;
   mean_rpue: number;
-  mean_rpua: number;
+  mean_price_kg: number;
+  total_catch_kg: number;
+  total_value: number;
+  n_trips: number;
+  n_fishers: number;
 }
 
 export interface MetricOption {
@@ -54,33 +57,21 @@ export type TickProps = {
 
 export const METRIC_OPTIONS: MetricOption[] = [
   {
-    value: "mean_effort",
-    label: "Effort",
-    unit: "fishers/km²/day",
-    category: "catch",
-  },
-  {
     value: "mean_cpue",
     label: "Catch Rate",
     unit: "kg/fisher/day",
     category: "catch",
   },
   {
-    value: "mean_cpua",
-    label: "Catch Density",
-    unit: "kg/km²/day",
-    category: "catch",
+    value: "mean_price_kg",
+    label: "Price per KG",
+    unit: "KES/kg",
+    category: "revenue",
   },
   {
     value: "mean_rpue",
     label: "Fisher Revenue",
     unit: "KES/fisher/day",
-    category: "revenue",
-  },
-  {
-    value: "mean_rpua",
-    label: "Area Revenue",
-    unit: "KES/km²/day",
     category: "revenue",
   },
 ];

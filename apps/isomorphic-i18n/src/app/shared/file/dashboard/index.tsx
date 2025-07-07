@@ -176,6 +176,7 @@ function DistrictMetricsTable() {
           data={sortedData}
           variant="elegant"
           className="min-w-[600px]"
+          rowKey="district"
         />
       </div>
     </div>
@@ -191,7 +192,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
   return (
     <div className="w-full">
       {/* Dashboard header */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-5">
+      {/* <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-5">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
             {t('text-fishing-dashboard')}
@@ -200,13 +201,15 @@ export default function FileDashboard({ lang }: { lang?: string }) {
             {t('text-dashboard-description')}
           </p>
         </div>
-      </div>
+      </div> */}
       
       <div className="grid grid-cols-1 gap-5 xl:gap-6">
         <FileStats 
           lang={lang} 
         />
-        <GridMap />
+        <div className="w-full h-[700px] overflow-hidden">
+          <GridMap />
+        </div>
         <DistrictMetricsTable />
         {/* <div className="grid grid-cols-12 gap-5 xl:gap-6">
           <div className="col-span-12 md:col-span-9">

@@ -42,9 +42,12 @@ interface VisibilityState {
 const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_effort: { translationKey: "text-metrics-effort", unit: "fishers/km²/day" },
   mean_cpue: { translationKey: "text-metrics-catch-rate", unit: "kg/fisher/day" },
-  mean_cpua: { translationKey: "text-metrics-catch-density", unit: "kg/km²/day" },
   mean_rpue: { translationKey: "text-metrics-fisher-revenue", unit: "KSH/fisher/day" },
-  mean_rpua: { translationKey: "text-metrics-area-revenue", unit: "KSH/km²/day" },
+  mean_price_kg: { translationKey: "text-metrics-price-per-kg", unit: "KSH/kg" },
+  total_catch_kg: { translationKey: "text-metrics-total-catch", unit: "kg" },
+  total_value: { translationKey: "text-metrics-total-value", unit: "KSH" },
+  n_trips: { translationKey: "text-metrics-number-of-trips", unit: "trips" },
+  n_fishers: { translationKey: "text-metrics-number-of-fishers", unit: "fishers" },
 };
 
 const getMetricLabel = (metric: string, t: any): string => {

@@ -2,7 +2,7 @@
 
 import { ActionIcon, Checkbox, Input, Popover } from "rizzui";
 import { TbFilterCog } from "react-icons/tb";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react"
 import type { DefaultSession } from 'next-auth';
 import find from 'lodash/find';
@@ -19,6 +19,7 @@ import SimpleBar from '@ui/simplebar';
 import useUserPermissions from "../shared/file/dashboard/hooks/useUserPermissions";
 import { useTranslation } from "@/app/i18n/client";
 import cn from "@utils/class-names";
+import { api } from "@/trpc/react";
 
 type DropdownTypes = {
   sectionName: string;
@@ -68,126 +69,48 @@ export const districtsAtom = atomWithStorage<string[]>('districts', [], undefine
 export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', 'district', undefined, { getOnInit: true });
 
 // Global metric selector atom
-export const selectedMetricAtom = atom<MetricKey>("mean_effort");
+export const selectedMetricAtom = atom<MetricKey>("mean_cpue");
 
 export const FilterSelector = () => {
   const { t } = useTranslation("common");
   const [searchFilter, setSearchFilter] = useState("");
-  const [filteredList, setFilteredList] = useState<DropdownTypes[] | string[]>([]);
+  const [filteredList, setFilteredList] = useState<string[]>([]);
   const [fuse, setFuse] = useState<Fuse<string>>();
   const [isOpen, setIsOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const [dropdown, setDistrictsDropdown] = useAtom(dropdownAtom);
-  const [districts, setDistricts] = useAtom(districtsAtom);
-  const [viewMode, setViewMode] = useAtom(viewModeAtom);
-  const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
-  const selectedRegion = userPreferences.selectedRegion;
+  const { data: districts = [] } = api.monthlySummary.districts.useQuery();
+  const [selectedDistricts, setSelectedDistricts] = useAtom(districtsAtom);
+  const prevValidDistrictsRef = useRef<string[]>([]);
 
-  // For demo purposes - create default districts data if no session
-  const defaultDistrictsData: DropdownTypes[] = [
-    {
-      sectionName: "Unguja",
-      units: [
-        { value: "Central" },
-        { value: "North A" },
-        { value: "North B" },
-        { value: "South" },
-        { value: "Urban" },
-        { value: "West" }
-      ]
-    },
-    {
-      sectionName: "Pemba",
-      units: [
-        { value: "Chake Chake" },
-        { value: "Mkoani" },
-        { value: "Micheweni" },
-        { value: "Wete" }
-      ]
-    }
-  ];
+  // Filter out null/undefined values and ensure districts are strings - memoized to prevent infinite loops
+  const validDistricts = useMemo(() => {
+    if (!districts || !Array.isArray(districts)) return [];
+    return districts.filter((district): district is string => 
+      district !== null && district !== undefined && typeof district === 'string'
+    );
+  }, [districts]);
 
   useEffect(() => {
-    // For open access, we don't require authentication
-    // Initialize with default data if no session
-    if (isEmpty(districts) && isEmpty(dropdown)) {
-      const dropdownData = session ? sessObjectToDropdown(session) : defaultDistrictsData;
-      setFilteredList(dropdownData)
-      setDistrictsDropdown(dropdownData)
-      
-      if (dropdownData.length > 0) {
-        // For admin users, select one district per region by default in region view mode
-        if (isAdmin && viewMode === 'region') {
-          const regionRepresentatives = dropdownData.map(region => {
-            // Select the first district from each region
-            return region.units[0].value;
-          });
-          setDistricts(regionRepresentatives);
-        } else {
-          // For regular users or district view, select all districts
-          const newDistricts = dropdownData.flatMap((section) =>
-            section.units.map((unit) => unit.value)
-          )
-          setDistricts(newDistricts)
-        }
-        
-        const allDistricts = dropdownData.flatMap((section) =>
-          section.units.map((unit) => unit.value)
-        )
-        setFuse(new Fuse(
-          allDistricts,
-          {
-            includeScore: true,
-            threshold: 0.3, // More forgiving fuzzy search
-          }
-        ))
-      }
-    } else if (districts.length > 0 || dropdown.length > 0) {
-      setFilteredList(dropdown.length > 0 ? dropdown : defaultDistrictsData)
-      setFuse(new Fuse(
-        districts.length > 0 ? districts : defaultDistrictsData.flatMap(d => d.units.map(u => u.value)),
-        {
-          includeScore: true,
-          threshold: 0.3,
-        }
-      ))
+    // Only update if the validDistricts array has actually changed
+    if (JSON.stringify(prevValidDistrictsRef.current) !== JSON.stringify(validDistricts)) {
+      setFilteredList(validDistricts);
+      setFuse(new Fuse(validDistricts, { includeScore: true, threshold: 0.3 }));
+      prevValidDistrictsRef.current = validDistricts;
     }
-
-  }, [ session, status, districts, dropdown, isAdmin, viewMode, setDistricts, setDistrictsDropdown ]);
+  }, [validDistricts]); // Only depend on validDistricts
   
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!fuse) return
-
+    if (!fuse) return;
     setSearchFilter(e.target.value);
     if (e.target.value) {
       const result = fuse.search(e.target.value);
       setFilteredList(result.map((res) => res.item));
     } else {
-      setFilteredList(dropdown.length > 0 ? dropdown : defaultDistrictsData);
+      setFilteredList(validDistricts);
     }
   };
 
-  // Function to handle view mode change
-  const handleViewModeChange = (newMode: 'district' | 'region') => {
-    if (viewMode === newMode) return;
-    
-    setViewMode(newMode);
-    
-    // If switching to region view, select one district from each region
-    if (newMode === 'region' && dropdown.length > 0) {
-      // Select representative districts from each region
-      const regionRepresentatives = dropdown.map(region => {
-        // Select the first district from each region
-        return region.units[0].value;
-      });
-      
-      setDistricts(regionRepresentatives);
-    }
-  };
-
-  const selectedCount = districts.length;
-  const totalCount = dropdown.reduce((sum, region) => sum + region.units.length, 0) || 
-                     defaultDistrictsData.reduce((sum, region) => sum + region.units.length, 0);
+  const selectedCount = selectedDistricts.length;
+  const totalCount = validDistricts.length;
 
   return (
     <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
@@ -202,47 +125,6 @@ export const FilterSelector = () => {
         </ActionIcon>
       </Popover.Trigger>
       <Popover.Content className="w-[280px] sm:w-[350px]">
-        {isAdmin && (
-          <div className="mb-2">
-            <div className="flex gap-2 bg-gray-100 p-1 rounded-md">
-              <button
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-sm flex-1 transition-all",
-                  viewMode === 'district' 
-                    ? "bg-white shadow-sm text-primary font-medium" 
-                    : "text-gray-600 hover:bg-gray-200"
-                )}
-                onClick={() => handleViewModeChange('district')}
-              >
-                District View
-              </button>
-              <button
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-sm flex-1 transition-all",
-                  viewMode === 'region' 
-                    ? "bg-white shadow-sm text-primary font-medium" 
-                    : "text-gray-600 hover:bg-gray-200"
-                )}
-                onClick={() => handleViewModeChange('region')}
-              >
-                Region View
-              </button>
-            </div>
-            
-            {selectedRegion && (
-              <div className="flex justify-between items-center mt-2 text-xs">
-                <span className="text-gray-500">Reference: <span className="text-yellow-600 font-medium">{selectedRegion}</span></span>
-                <button
-                  className="text-red-600 hover:text-red-700"
-                  onClick={() => setUserPreferences({ ...userPreferences, selectedRegion: undefined })}
-                >
-                  Clear
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-        
         <div className="mb-2">
           <Input
             placeholder="Search districts..."
@@ -255,27 +137,33 @@ export const FilterSelector = () => {
             {selectedCount > 0 && (
               <button
                 className="text-primary hover:text-primary-dark"
-                onClick={() => setDistricts([])}
+                onClick={() => setSelectedDistricts([])}
               >
                 Clear all
               </button>
             )}
           </div>
         </div>
-        
         <div className="space-y-2">
           <SimpleBar className="max-h-[300px] md:max-h-[600px]">
-            {(filteredList.length > 0 ? filteredList : defaultDistrictsData).map((section, idx) => {
-              return (
-                <FilterGroup
-                  key={`district-section-${idx}`}
-                  districtSection={section}
-                  searchFilter={searchFilter}
-                  viewMode={viewMode}
-                  referenceDistrict={selectedRegion}
+            {filteredList.map((district) => (
+              <div key={district} className="flex items-center justify-between pr-2 py-1 hover:bg-gray-50 rounded">
+                <div className="flex-grow">
+                  <Checkbox
+                    key={district}
+                    label={district}
+                    checked={selectedDistricts.includes(district)}
+                    onChange={() => {
+                      if (selectedDistricts.includes(district)) {
+                        setSelectedDistricts(selectedDistricts.filter((d) => d !== district));
+                      } else {
+                        setSelectedDistricts([...selectedDistricts, district]);
+                      }
+                    }}
                 />
-              );
-            })}
+                </div>
+              </div>
+            ))}
           </SimpleBar>
         </div>
       </Popover.Content>
