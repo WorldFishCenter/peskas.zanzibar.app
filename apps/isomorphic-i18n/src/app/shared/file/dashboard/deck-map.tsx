@@ -93,7 +93,7 @@ export default function DeckMap() {
   const [radius, setRadius] = useState(1000);
   const [open, setOpen] = useState(false);
   const [districts] = useAtom(districtsAtom);
-  const { data: mapData } = api.mapDistribution.all.useQuery({ bmus });
+  const { data: mapData } = api.mapDistribution.all.useQuery({ bmus: districts });
 
   useEffect(() => {
     if (!mapData) return

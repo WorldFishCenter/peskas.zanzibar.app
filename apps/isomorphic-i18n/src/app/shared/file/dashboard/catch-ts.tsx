@@ -373,7 +373,7 @@ export default function CatchMetricsChart({
   // Determine if the user is part of the CIA group
   const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
 
-  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus });
+  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus: districts });
 
   // Keep in sync with parent component, handling old tab names too
   useEffect(() => {

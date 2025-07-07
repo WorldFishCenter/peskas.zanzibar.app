@@ -7,9 +7,11 @@ import { useMemo, useRef, useState } from "react";
 import { useAtom } from 'jotai';
 import { selectedTimeRangeAtom } from '@/app/components/filter-selector';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "/Users/lore/Desktop/work/wf_projects/peskas.zanzibar.v2/packages/isomorphic-core/src/ui/select";
+import { DISTRICT_COLORS } from "./charts/utils";
 
-const COLORS = [
-  "#4A90E2", "#F28F3B", "#27AE60", "#E74C3C", "#9B59B6", "#F39C12", "#3498DB", "#75ABBC", "#FC3468", "#2ECC71"
+// Fallback colors for any districts not in the predefined mapping
+const FALLBACK_COLORS = [
+  "#167288", "#8cdaec", "#b45248", "#d48c84", "#a89a49", "#d6cfa2", "#3cb464", "#9bddb1", "#643c6a", "#836394", "#90a4ae"
 ];
 
 // List of metrics to show in tooltip
@@ -165,9 +167,11 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
               animationDuration={1000}
               animationEasing="ease-out"
             >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {chartData.map((entry, index) => {
+                const districtName = entry.name;
+                const color = DISTRICT_COLORS[districtName] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+                return <Cell key={`cell-${index}`} fill={color} />;
+              })}
               {/* Show value at end of bar */}
               <LabelList dataKey="value" position="right" formatter={(value: number) => value?.toLocaleString(undefined, { maximumFractionDigits: 2 })} style={{ fontSize: 12, fill: '#222', filter: 'invert(1) brightness(2)'}} className="dark:fill-white" />
             </Bar>

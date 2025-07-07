@@ -177,7 +177,7 @@ export default function PerformanceTable({
   const [districts] = useAtom(districtsAtom);
   const { data: session } = useSession();
   const { data: performanceData, isLoading: isDataLoading } =
-    api.aggregatedCatch.performance.useQuery({ bmus });
+    api.aggregatedCatch.performance.useQuery({ bmus: districts });
 
   // Move all hooks before the conditional return
   const memoizedData = useMemo(() => performanceData || [], [performanceData]);

@@ -4,6 +4,22 @@ import { CustomYAxisTick } from "./components";
 // Global array to keep track of all BMU names for consistent color assignment
 let globalBmuNames: string[] = [];
 
+// District-specific color mapping for consistent visualization
+// Based on the ColorsWall palette (https://colorswall.com/palette/178887) + Blue-grey lighten-2
+export const DISTRICT_COLORS: Record<string, string> = {
+  "Chake chake": "#167288",   // Semi dark teal
+  "North b": "#8cdaec",      // Light sky blue
+  "Wete": "#b45248",         // Semi dark red
+  "Central": "#d48c84",      // Light rosy brown
+  "Urban": "#a89a49",        // Semi dark khaki
+  "West b": "#d6cfa2",       // Light pale goldenrod
+  "North a": "#3cb464",      // Semi dark green
+  "South": "#9bddb1",        // Light medium aquamarine
+  "Mkoani": "#643c6a",       // Semi dark purple
+  "West a": "#836394",       // Light medium purple
+  "Micheweni": "#90a4ae",    // Blue-grey lighten-2
+};
+
 // Function to update the global BMU list and ensure consistent color assignment
 export const updateBmuColorRegistry = (bmuNames: string[]) => {
   // Filter out special cases and sort alphabetically for consistent ordering
@@ -38,21 +54,25 @@ export const generateColor = (index: number, site: string, referenceBmu: string 
     return "#94a3b8"; // Light slate gray for historical average
   }
   
-  // Updated 13-color palette for better distinction when there are many BMUs
+  // Check if this is a known district with a predefined color
+  if (DISTRICT_COLORS[site]) {
+    return DISTRICT_COLORS[site];
+  }
+  
+  // Custom 11-color palette from ColorsWall (https://colorswall.com/palette/178887) + Blue-grey lighten-2
+  // Provides consistent, professional colors for district visualization
   const colors = [
-    "#ebac23", // Yellow
-    "#b80058", // Lipstick
-    "#008cf9", // Azure
-    "#006e00", // Green
-    "#00bbad", // Caribbean
-    "#d163e6", // Lavender
-    "#b24502", // Brown
-    "#ff9287", // Coral
-    "#5954d6", // Indigo
-    "#00c6f8", // Turquoise
-    "#878500", // Olive
-    "#00a76c", // Jade
-    "#bdbdbd", // Gray
+    "#167288", // Semi dark teal - Primary accent
+    "#8cdaec", // Light sky blue
+    "#b45248", // Semi dark red
+    "#d48c84", // Light rosy brown
+    "#a89a49", // Semi dark khaki
+    "#d6cfa2", // Light pale goldenrod
+    "#3cb464", // Semi dark green
+    "#9bddb1", // Light medium aquamarine
+    "#643c6a", // Semi dark purple
+    "#836394", // Light medium purple
+    "#90a4ae", // Blue-grey lighten-2
   ];
   
   // Find the position of this BMU in the alphabetically sorted list
