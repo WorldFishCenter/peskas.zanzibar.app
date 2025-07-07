@@ -36,6 +36,7 @@ import { changeAppLanguage } from '@/app/i18n/language-switcher';
 import { USFlag } from "@components/icons/language/USFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
 import { useTranslation } from "@/app/i18n/client";
+import Image from "next/image";
 
 type SerializedBmu = {
   _id: string;
@@ -365,7 +366,7 @@ export default function Header({ lang }: { lang?: string }) {
         >
           <div className="flex items-center gap-2">
             <Logo className="max-w-[155px]" />
-            <img src="/zanzibar-flag.svg" alt="Zanzibar flag" className="h-6 w-auto" />
+            <Image src="/zanzibar-flag.svg" alt="Zanzibar flag" width={24} height={24} className="h-6 w-auto" />
           </div>
         </LanguageLink>
         <HeaderMenuLeft lang={lang} />

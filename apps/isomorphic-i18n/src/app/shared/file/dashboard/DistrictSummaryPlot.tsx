@@ -158,7 +158,13 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
               tickLine={{ stroke: '#cbd5e1', className: 'dark:stroke-gray-700' }}
             />
             <Tooltip content={<DistrictTooltip allData={data} selectedMetric={selectedMetric} />} wrapperStyle={{ background: 'transparent' }} />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+            <Bar 
+              dataKey="value" 
+              radius={[0, 4, 4, 0]} 
+              isAnimationActive={true}
+              animationDuration={1000}
+              animationEasing="ease-out"
+            >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}

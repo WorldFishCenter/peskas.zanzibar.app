@@ -1,6 +1,6 @@
 import { Session } from "next-auth";
 
-export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue";
+export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort";
 
 export interface ChartDataPoint {
   date: number;
