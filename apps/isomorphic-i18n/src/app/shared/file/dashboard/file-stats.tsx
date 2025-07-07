@@ -99,21 +99,21 @@ function MetricBarCard({
   const pembaValue = Math.round(lastDataPoint?.Pemba || 0);
 
   return (
-    <div className="border border-muted bg-gray-0 p-5 dark:bg-gray-50 rounded-lg min-w-[240px] max-w-[280px] flex flex-col sm:h-[180px] h-[120px]">
+    <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
       <div className="mb-2" style={{ minHeight: 48 }}>
-        <Text className="text-xs font-semibold text-gray-900 dark:text-gray-700">
-          {config.title} <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400">{config.unit}</span>
+        <Text className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-700">
+          {config.title} <span className="text-[11px] sm:text-sm font-normal text-gray-500 dark:text-gray-400">{config.unit}</span>
         </Text>
-        <Text className="text-[10px] text-gray-500 dark:text-gray-400">{config.description}</Text>
+        <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{config.description}</Text>
       </div>
       <div className="flex items-baseline gap-3 mb-2">
-        <div className="flex gap-2 text-[11px]">
+        <div className="flex gap-2 text-sm sm:text-base">
           <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {ungujaValue}</span></span>
           <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {pembaValue}</span></span>
         </div>
       </div>
       <div className="flex-1 flex items-end">
-        <div className="w-full sm:h-20 h-14">
+        <div className="w-full h-16 sm:h-24">
           <ResponsiveContainer width="99%" height="100%">
             <BarChart 
               data={chartData}
@@ -122,16 +122,16 @@ function MetricBarCard({
             >
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 9, fill: '#64748b' }}
+                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
                 axisLine={false}
                 tickLine={false}
                 className="dark:fill-gray-300"
               />
               <Bar dataKey="Unguja" fill="#F28F3B" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Unguja" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#F28F3B' }} className="dark:fill-gray-100" />
+                <LabelList dataKey="Unguja" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 11, fontWeight: 600, fill: '#F28F3B' }} className="dark:fill-gray-100" />
               </Bar>
               <Bar dataKey="Pemba" fill="#75ABBC" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Pemba" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 9, fill: '#75ABBC' }} className="dark:fill-gray-100" />
+                <LabelList dataKey="Pemba" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 11, fontWeight: 600, fill: '#75ABBC' }} className="dark:fill-gray-100" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
