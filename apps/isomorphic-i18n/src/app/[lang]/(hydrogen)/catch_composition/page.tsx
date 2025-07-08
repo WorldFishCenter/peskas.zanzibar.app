@@ -5,8 +5,6 @@ import { useTranslation } from "@/app/i18n/client";
 import type { DefaultSession } from "next-auth";
 import type { TBmu } from "@repo/nosql/schema/bmu";
 import FileStats from "@/app/shared/file/dashboard/file-stats";
-import FishCompositionChart from "@/app/shared/file/dashboard/fish-composition-chart";
-import FishCompositionComparison from "@/app/shared/file/dashboard/fish-composition-comparison";
 import { useUserPermissions } from "@/app/shared/file/dashboard/hooks/useUserPermissions";
 
 type SerializedBmu = {
@@ -44,27 +42,7 @@ export default function CatchCompositionPage({ params }: PageProps) {
     <div className="w-full">
       <div className="grid grid-cols-1 gap-5 xl:gap-6">
         {/* <FileStats lang={lang} bmu={effectiveBMU} /> */}
-        
-        <div className="grid grid-cols-12 gap-5 xl:gap-6">
-          <div className="col-span-12">
-            <FishCompositionChart 
-              lang={lang}
-              bmu={effectiveBMU} 
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
-          </div>
-          
-          <div className="col-span-12">
-            <FishCompositionComparison
-              lang={lang}
-              bmu={effectiveBMU}
-            />
-          </div>
-        </div>
-      </div>
+              </div>
     </div>
   );
 }
