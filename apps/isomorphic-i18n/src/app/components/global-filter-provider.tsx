@@ -12,7 +12,7 @@ export type BmuType = {
 
 const bmuMockData = [
   {
-    sectionName: "Kenya",
+    sectionName: "Zanzibar",
     units: [
       { value: "Coastal Conservation Zone" },
       { value: "Sandy Shores Management Area" },

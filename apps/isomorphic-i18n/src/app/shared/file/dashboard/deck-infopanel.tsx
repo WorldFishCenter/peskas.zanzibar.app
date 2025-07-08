@@ -28,8 +28,8 @@ const InfoPanel: React.FC<InfoPanelProps> = ({
   const [open, setOpen] = useState(false);
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg w-72">
-      <h2 className="text-xl font-bold mb-2">Kenya Landing Sites</h2>
-      <p className="mb-2">Distribution of landing sites in Kenya</p>
+      <h2 className="text-xl font-bold mb-2">Zanzibar Landing Sites</h2>
+      <p className="mb-2">Distribution of landing sites in Zanzibar</p>
       <p className="mb-4">The layer aggregates data within the boundary of each hexagon cell</p>
       
       <div className="flex items-center mb-2">

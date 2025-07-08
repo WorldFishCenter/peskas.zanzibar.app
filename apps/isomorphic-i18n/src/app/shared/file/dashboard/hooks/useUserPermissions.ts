@@ -34,7 +34,7 @@ export const useUserPermissions = () => {
   
   /**
    * For Zanzibar - all authenticated users can access all data
-   * This removes the complex BMU-based restrictions from Kenya version
+   * This removes the complex BMU-based restrictions from Zanzibar version
    */
   const getAccessibleRegions = (allRegions: string[]): string[] => {
     // All users can see all regions in open access mode

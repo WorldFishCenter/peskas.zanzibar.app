@@ -3,7 +3,7 @@ import PageHeader from '@/app/shared/page-header';
 import cn from '@utils/class-names';
 
 const pageHeader = {
-  title: 'About Peskas Kenya',
+  title: 'About Peskas Zanzibar',
   breadcrumb: [
     {
       href: '/',
@@ -45,7 +45,7 @@ export default function AboutPage({
         <div className="mx-auto max-w-[1200px] space-y-10 py-6">
           <div className="prose mx-auto max-w-full dark:prose-invert lg:prose-lg">
             <Text className="mb-8 text-lg leading-loose text-gray-600 lg:text-xl">
-              Peskas is an innovative digital monitoring system designed to transform data into actionable insights for Kenya&apos;s small-scale fisheries. Operating at the intersection of technology and community-driven resource management, Peskas serves as a bridge between traditional fishing practices and sustainable marine resource management.
+              Peskas is an innovative digital monitoring system designed to transform data into actionable insights for Zanzibar&apos;s small-scale fisheries. Operating at the intersection of technology and community-driven resource management, Peskas serves as a bridge between traditional fishing practices and sustainable marine resource management.
             </Text>
 
             <SectionBlock title="Our Purpose">
@@ -61,7 +61,7 @@ export default function AboutPage({
                     Catch Monitoring
                   </Title>
                   <Text className="text-gray-600">
-                    Comprehensive data collection on fish species, catch volumes, and fishing locations provides a clear picture of fishing activities along Kenya&apos;s coast. This information helps track changes in fish populations and identify sustainable harvest levels.
+                    Comprehensive data collection on fish species, catch volumes, and fishing locations provides a clear picture of fishing activities along Zanzibar&apos;s coast. This information helps track changes in fish populations and identify sustainable harvest levels.
                   </Text>
                 </div>
 
@@ -114,7 +114,7 @@ export default function AboutPage({
 
             <SectionBlock title="Implementation Approach">
               <Text className="text-gray-600">
-                Peskas operates through a carefully structured system of Beach Management Units across Kenya&apos;s coastal regions. Each BMU receives specific levels of information access, allowing for individual fisher and trader data access, community-level performance metrics, regional comparison capabilities, and sustainable fishing threshold monitoring.
+                Peskas operates through a carefully structured system of Beach Management Units across Zanzibar&apos;s coastal regions. Each BMU receives specific levels of information access, allowing for individual fisher and trader data access, community-level performance metrics, regional comparison capabilities, and sustainable fishing threshold monitoring.
               </Text>
             </SectionBlock>
 
@@ -126,7 +126,7 @@ export default function AboutPage({
 
             <SectionBlock title="Long-Term Vision">
               <Text className="text-gray-600">
-                Peskas is committed to supporting the sustainable development of Kenya&apos;s small-scale fisheries by:
+                Peskas is committed to supporting the sustainable development of Zanzibar&apos;s small-scale fisheries by:
               </Text>
               <ul className="mt-2 list-inside list-disc text-gray-600">
                 <li>Promoting evidence-based decision-making</li>
@@ -136,7 +136,7 @@ export default function AboutPage({
                 <li>Building capacity for data-driven resource stewardship</li>
               </ul>
               <Text className="mt-4 text-gray-600">
-                Through this comprehensive approach, Peskas works to ensure that Kenya&apos;s marine resources continue to support coastal livelihoods while maintaining ecological balance for future generations.
+                Through this comprehensive approach, Peskas works to ensure that Zanzibar&apos;s marine resources continue to support coastal livelihoods while maintaining ecological balance for future generations.
               </Text>
             </SectionBlock>
           </div>

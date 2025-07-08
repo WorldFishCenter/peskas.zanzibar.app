@@ -11,8 +11,8 @@ enum MODE {
 }
 
 export const siteConfig = {
-  title: 'PESKAS | KENYA FISHERIES',
-  description: 'Peskas | Kenya Fisheries Dashboard',
+  title: 'PESKAS | Zanzibar FISHERIES',
+  description: 'Peskas | Zanzibar Fisheries Dashboard',
   logo: logoImg,
   icon: logoIconImg,
   mode: MODE.LIGHT,
