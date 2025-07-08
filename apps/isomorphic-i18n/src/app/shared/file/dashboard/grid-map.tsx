@@ -425,16 +425,17 @@ const GridMap = memo(function GridMap() {
   );
   // Only two states: 'satellite' and 'map'
   const [viewMode, setViewMode] = useState<'satellite' | 'map'>('satellite');
+  const iconColor = theme === 'dark' ? '#fff' : '#222';
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {/* Single Icon Map Style Switcher */}
+      {/* Single Icon Map Style Switcher, now theme-aware */}
       <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
         <button
           onClick={() => setViewMode(viewMode === 'satellite' ? 'map' : 'satellite')}
           style={{
-            background: 'rgba(255,255,255,0.85)',
-            border: '1px solid #d1d5db',
+            background: theme === 'dark' ? 'rgba(30,41,59,0.85)' : 'rgba(255,255,255,0.85)',
+            border: theme === 'dark' ? '1px solid #334155' : '1px solid #d1d5db',
             borderRadius: 8,
             padding: 8,
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -442,14 +443,15 @@ const GridMap = memo(function GridMap() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'background 0.2s',
+            transition: 'background 0.2s, border 0.2s',
           }}
           title={viewMode === 'satellite' ? 'Switch to Map View' : 'Switch to Satellite View'}
+          aria-label={viewMode === 'satellite' ? 'Switch to Map View' : 'Switch to Satellite View'}
         >
           {viewMode === 'satellite' ? (
-            <IconMap size={28} />
+            <IconMap size={28} color={iconColor} />
           ) : (
-            <IconSatellite size={28} />
+            <IconSatellite size={28} color={iconColor} />
           )}
         </button>
       </div>
