@@ -6,7 +6,7 @@ import { api } from "@/trpc/react";
 import { useMemo, useRef, useState } from "react";
 import { useAtom } from 'jotai';
 import { selectedTimeRangeAtom } from '@/app/components/filter-selector';
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "/Users/lore/Desktop/work/wf_projects/peskas.zanzibar.v2/packages/isomorphic-core/src/ui/select";
+import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
 import { DISTRICT_COLORS } from "./charts/utils";
 
 // Fallback colors for any districts not in the predefined mapping
