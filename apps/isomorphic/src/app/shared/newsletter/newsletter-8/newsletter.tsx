@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import cn from '@utils/class-names';
 import NewsLetterForm from './newsletter-form';
-import newsletterImg from '@public/newsletter-8.jpg';
 
 export default function NewsLetter({ className }: { className?: string }) {
   return (
@@ -15,7 +14,7 @@ export default function NewsLetter({ className }: { className?: string }) {
     >
       <div className="relative col-span-3 hidden aspect-[36/45] @[700px]:inline-block">
         <Image
-          src={newsletterImg}
+          src="/newsletter-8.jpg"
           alt="newsletter"
           fill
           priority
