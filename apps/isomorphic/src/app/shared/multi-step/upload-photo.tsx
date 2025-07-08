@@ -23,7 +23,7 @@ export default function UploadPhoto({ className }: BasicInfoProps) {
         name="gallery"
         control={control}
         render={({ field: { onChange, value } }) => (
-          <Upload accept="img" onChange={(v) => } />
+          <Upload accept="img" onChange={onChange} />
         )}
       />
       {!!errors.gallery?.message && (
