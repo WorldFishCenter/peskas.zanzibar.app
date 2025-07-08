@@ -15,7 +15,7 @@ export const siteConfig = {
   description: 'Peskas | Zanzibar Fisheries Dashboard',
   logo: logoImg,
   icon: logoIconImg,
-  mode: MODE.LIGHT,
+  mode: MODE.DARK,
   layout: LAYOUT_OPTIONS.LITHIUM,
   favicon: sailboatIcon,
   author: {

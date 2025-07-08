@@ -354,6 +354,8 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
 }
 
 export default function Header({ lang }: { lang?: string }) {
+  const { theme = 'light' } = useTheme();
+  const colorMode = (theme === 'dark' ? 'dark' : 'light') as 'light' | 'dark';
   return (
     <StickyHeader
       className={"z-[990] justify-between 2xl:py-5 2xl:pl-6 3xl:px-8"}
@@ -362,11 +364,11 @@ export default function Header({ lang }: { lang?: string }) {
         <LanguageLink
           aria-label="Site Logo"
           href="/"
-          className="me-4 hidden w-[155px] shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:block"
+          className="me-4 hidden w-[200px] shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:block"
         >
-          <div className="flex items-center gap-2">
-            <Logo className="max-w-[155px]" />
-            <Image src="/zanzibar-flag.svg" alt="Zanzibar flag" width={24} height={24} className="h-6 w-auto" />
+          <div className="flex items-center gap-3">
+            <Logo className="max-w-[200px] h-12" colorMode={colorMode} />
+            <Image src="/zanzibar-flag.svg" alt="Zanzibar flag" width={32} height={32} className="h-8 w-auto" />
           </div>
         </LanguageLink>
         <HeaderMenuLeft lang={lang} />
@@ -380,9 +382,9 @@ export default function Header({ lang }: { lang?: string }) {
           <LanguageLink
             aria-label="Site Logo"
             href="/"
-            className="me-2 w-8 sm:me-3 sm:w-9 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
+            className="me-2 w-12 sm:me-3 sm:w-14 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
           >
-            <Logo iconOnly={true} />
+            <Logo iconOnly={true} className="h-10 w-auto" colorMode={colorMode} />
           </LanguageLink>
           {/* Mobile filter selector */}
           <div className="sm:hidden">
