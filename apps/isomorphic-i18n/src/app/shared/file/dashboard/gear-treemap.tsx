@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useAtom } from "jotai";
+import type { TGearSummary } from "@repo/nosql/schema/gear-summary";
 import { ActionIcon, Popover } from "rizzui";
 import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import cn from "@utils/class-names";
 import { useTheme } from "next-themes";
 import MetricCard from "@components/cards/metric-card";
@@ -274,10 +275,12 @@ export default function GearHeatmap({
   className,
   lang,
   bmu,
+  district,
 }: {
   className?: string;
   lang?: string;
   bmu?: string;
+  district?: string;
 }) {
   const { theme } = useTheme();
   const [barData, setBarData] = useState<any[]>([]);
@@ -308,7 +311,7 @@ export default function GearHeatmap({
     };
   }, [i18n]);
   
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [visibilityState, setVisibilityState] = useState<VisibilityState>({});
@@ -317,7 +320,7 @@ export default function GearHeatmap({
   // Add refs to track initialization states
   const dataProcessed = useRef<boolean>(false);
   const previousMetric = useRef<string>(selectedMetric);
-  const previousBmus = useRef<string[]>(bmus);
+  const previousBmus = useRef<string[]>(districts);
   
   // Use the centralized permissions hook
   const {
@@ -331,14 +334,14 @@ export default function GearHeatmap({
     canCompareWithOthers
   } = useUserPermissions();
   
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
+  const effectiveBMU = district || bmu || userBMU;
   
   // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  const safeBmus = useMemo(() => districts || [], [districts]);
   
   // Force refetch when bmus changes by adding bmus to the query key
-  const { data: rawData, refetch } = api.gear.summaries.useQuery(
+  const { data: rawData = [], refetch } = api.gear.summaries.useQuery(
     { bmus: safeBmus },
     {
       refetchOnMount: true,
@@ -445,7 +448,7 @@ export default function GearHeatmap({
       const newSiteColors = uniqueBMUs.reduce<Record<string, string>>(
         (acc, site, index) => ({
           ...acc,
-          [site]: generateColor(index, site, effectiveBMU),
+          [site]: generateColor(index, site, effectiveBMU || undefined),
         }),
         {}
       );
@@ -473,9 +476,9 @@ export default function GearHeatmap({
       ).sort((a, b) => {
         const aValue = rawData.reduce(
           (sum, curr) => {
-            // Only add values that are actually numbers and not null/undefined
-            if (curr.gear === a && curr[selectedMetric] !== undefined && curr[selectedMetric] !== null) {
-              return sum + (typeof curr[selectedMetric] === "number" ? curr[selectedMetric] : 0);
+            if (curr.gear === a && (curr as any)[selectedMetric] !== undefined && (curr as any)[selectedMetric] !== null) {
+              // Type assertion: selectedMetric is always a valid key
+              return sum + (typeof (curr as any)[selectedMetric] === "number" ? (curr as any)[selectedMetric] : 0);
             }
             return sum;
           },
@@ -483,9 +486,9 @@ export default function GearHeatmap({
         );
         const bValue = rawData.reduce(
           (sum, curr) => {
-            // Only add values that are actually numbers and not null/undefined
-            if (curr.gear === b && curr[selectedMetric] !== undefined && curr[selectedMetric] !== null) {
-              return sum + (typeof curr[selectedMetric] === "number" ? curr[selectedMetric] : 0);
+            if (curr.gear === b && (curr as any)[selectedMetric] !== undefined && (curr as any)[selectedMetric] !== null) {
+              // Type assertion: selectedMetric is always a valid key
+              return sum + (typeof (curr as any)[selectedMetric] === "number" ? (curr as any)[selectedMetric] : 0);
             }
             return sum;
           },
@@ -506,9 +509,10 @@ export default function GearHeatmap({
         });
 
         // Add data for each BMU that has values
-        rawData.forEach((d: GearData) => {
-          if (d.gear === gear && d[selectedMetric] !== undefined && d[selectedMetric] !== null) {
-            gearData[d.BMU] = Number(d[selectedMetric].toFixed(2));
+        (rawData as TGearSummary[]).forEach((d: GearData) => {
+          if (d.gear === gear && (d as any)[selectedMetric] !== undefined && (d as any)[selectedMetric] !== null) {
+            // Type assertion: selectedMetric is always a valid key
+            gearData[d.BMU] = Number((d as any)[selectedMetric].toFixed(2));
           }
         });
 
@@ -519,7 +523,7 @@ export default function GearHeatmap({
 
       // Format data for the ranking chart
       // Filter data based on user permissions
-      const filteredRankingData = rawData.filter((d: GearData) => {
+      const filteredRankingData = (rawData as TGearSummary[]).filter((d: GearData) => {
         if (hasRestrictedAccess) {
           // For CIA users, only show their assigned BMU
           return d.BMU === effectiveBMU;
@@ -536,7 +540,8 @@ export default function GearHeatmap({
         const totalValue = filteredRankingData
           .filter(d => d.gear === gear)
           .reduce((sum, curr) => {
-            return sum + (typeof curr[selectedMetric] === "number" ? curr[selectedMetric] : 0);
+            // Type assertion: selectedMetric is always a valid key
+            return sum + (typeof (curr as any)[selectedMetric] === "number" ? (curr as any)[selectedMetric] : 0);
           }, 0);
 
         return {
@@ -559,9 +564,11 @@ export default function GearHeatmap({
       if (effectiveBMU) {
         const comparisonData = gearTypes.map((gear, index) => {
           // Get value for user's BMU
-          const bmuValue = rawData.find(
-            d => d.BMU === effectiveBMU && d.gear === gear && typeof d[selectedMetric] === "number"
-          )?.[selectedMetric] || 0;
+          const bmuValue = (rawData as TGearSummary[]).find(
+            d => d.BMU === effectiveBMU && d.gear === gear && typeof (d as any)[selectedMetric] === "number"
+          ) ? (rawData as TGearSummary[]).find(
+            d => d.BMU === effectiveBMU && d.gear === gear && typeof (d as any)[selectedMetric] === "number"
+          )![selectedMetric as keyof TGearSummary] as number : 0;
 
           // Get average value for other BMUs
           const otherBMUs = uniqueBMUs.filter(b => b !== effectiveBMU);
@@ -569,9 +576,11 @@ export default function GearHeatmap({
           let otherBMUsCount = 0;
 
           otherBMUs.forEach(otherBMU => {
-            const value = rawData.find(
-              d => d.BMU === otherBMU && d.gear === gear && typeof d[selectedMetric] === "number"
-            )?.[selectedMetric];
+            const value = (rawData as TGearSummary[]).find(
+              d => d.BMU === otherBMU && d.gear === gear && typeof (d as any)[selectedMetric] === "number"
+            ) ? (rawData as TGearSummary[]).find(
+              d => d.BMU === otherBMU && d.gear === gear && typeof (d as any)[selectedMetric] === "number"
+            )![selectedMetric as keyof TGearSummary] as number : undefined;
 
             if (value) {
               otherBMUsTotal += value;
@@ -606,7 +615,7 @@ export default function GearHeatmap({
     } finally {
       setLoading(false);
     }
-  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, bmus]);
+  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, safeBmus]);
 
   const getTabTitle = (tab: string): string => {
     // Custom titles for CIA users who can only see their own BMU

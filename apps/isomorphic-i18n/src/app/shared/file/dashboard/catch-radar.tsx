@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { bmusAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
@@ -22,7 +22,7 @@ import { useSession } from "next-auth/react";
 import useUserPermissions from "./hooks/useUserPermissions";
 // Import shared color function
 import { generateColor, updateBmuColorRegistry } from "./charts/utils";
-import { MetricKey, MetricOption } from "./charts/types";
+import { MetricKey, MetricOption, RadarMetricKey } from "./charts/types";
 
 interface RadarData {
   month: string;
@@ -42,9 +42,10 @@ interface VisibilityState {
 const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_effort: { translationKey: "text-metrics-effort", unit: "fishers/km²/day" },
   mean_cpue: { translationKey: "text-metrics-catch-rate", unit: "kg/fisher/day" },
-  mean_cpua: { translationKey: "text-metrics-catch-density", unit: "kg/km²/day" },
   mean_rpue: { translationKey: "text-metrics-fisher-revenue", unit: "KSH/fisher/day" },
-  mean_rpua: { translationKey: "text-metrics-area-revenue", unit: "KSH/km²/day" },
+  mean_price_kg: { translationKey: "text-metrics-price-per-kg", unit: "KSH/kg" },
+  mean_cpua: { translationKey: "text-metrics-catch-per-area", unit: "kg/km²/day" },
+  mean_rpua: { translationKey: "text-metrics-revenue-per-area", unit: "KSH/km²/day" },
 };
 
 const getMetricLabel = (metric: string, t: any): string => {
@@ -155,6 +156,7 @@ interface CatchRadarChartProps {
   className?: string;
   lang?: string;
   bmu?: string;
+  district?: string;
   activeTab?: string;
 }
 
@@ -162,11 +164,25 @@ export default function CatchRadarChart({
   className,
   lang,
   bmu,
+  district,
   activeTab = 'standard',
 }: CatchRadarChartProps) {
   const { t } = useTranslation(lang!, "common");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
+  
+  // Default districts list if none selected
+  const defaultDistricts = [
+    'Central', 'North A', 'North B', 'South', 'Urban', 'West',
+    'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
+  ];
+  
+  // Use default districts if none are selected
+  const selectedDistricts = useMemo(() => 
+    district ? [district] : 
+    (districts.length > 0 ? districts : defaultDistricts),
+    [district, districts, defaultDistricts]
+  );
   
   // Use centralized permissions hook
   const {
@@ -180,8 +196,8 @@ export default function CatchRadarChart({
     canCompareWithOthers
   } = useUserPermissions();
   
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
+  const effectiveBMU = district || bmu || userBMU;
 
   const [data, setData] = useState<RadarData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,41 +206,41 @@ export default function CatchRadarChart({
   const [siteColors, setSiteColors] = useState<Record<string, string>>({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Add ref to track bmus changes
-  const previousBmus = useRef<string[]>([]);
+  // Add ref to track districts changes
+  const previousDistricts = useRef<string[]>([]);
   const previousMetric = useRef<string>(selectedMetric);
   const previousActiveTab = useRef<string>(activeTab);
 
-  // Force refetch when bmus or metric changes - optimized with memoized dependency string
-  const bmsDependencyString = useMemo(() => JSON.stringify(bmus), [bmus]);
+  // Force refetch when districts or metric changes - optimized with memoized dependency string
+  const districtsDependencyString = useMemo(() => JSON.stringify(selectedDistricts), [selectedDistricts]);
   
   const { data: meanCatch, isLoading: isFetching, error: queryError, refetch } =
     api.aggregatedCatch.meanCatchRadar.useQuery(
-      { bmus, metric: selectedMetric },
+      { bmus: selectedDistricts, metric: selectedMetric as RadarMetricKey },
       {
         refetchOnMount: true,
         refetchOnWindowFocus: false,
         retry: 3,
-        enabled: bmus.length > 0,
+        enabled: true, // Always enabled now
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
       }
     );
 
-  // Force refetch when bmus or metric changes - more efficient check
+  // Force refetch when districts or metric changes - more efficient check
   useEffect(() => {
     // Save current scroll position
     const scrollPosition = window.scrollY || document.documentElement.scrollTop;
     
-    // Check if bmus array or metric has changed
-    const bmusChanged = JSON.stringify(previousBmus.current) !== bmsDependencyString;
+    // Check if districts array or metric has changed
+    const districtsChanged = JSON.stringify(previousDistricts.current) !== districtsDependencyString;
     const metricChanged = previousMetric.current !== selectedMetric;
     const tabChanged = previousActiveTab.current !== activeTab;
     
-    if (bmusChanged || metricChanged) {
-      console.log('BMUs or metric changed, refetching data');
+    if (districtsChanged || metricChanged) {
+      console.log('Districts or metric changed, refetching data');
       setData([]);
       setIsInitialLoad(true);
-      previousBmus.current = [...bmus];
+      previousDistricts.current = [...selectedDistricts];
       previousMetric.current = selectedMetric;
       previousActiveTab.current = activeTab;
       refetch();
@@ -238,7 +254,7 @@ export default function CatchRadarChart({
     setTimeout(() => {
       window.scrollTo(0, scrollPosition);
     }, 10);
-  }, [bmsDependencyString, selectedMetric, activeTab, refetch, bmus]);
+  }, [districtsDependencyString, selectedMetric, activeTab, refetch, selectedDistricts]);
 
   // Handle query errors
   useEffect(() => {
@@ -252,7 +268,7 @@ export default function CatchRadarChart({
   // Memoize data processing logic to avoid unnecessary recalculations
   const processedData = useMemo(() => {
     // Return early if conditions aren't met for processing
-    if (isFetching || !meanCatch || bmus.length === 0) {
+    if (isFetching || !meanCatch || selectedDistricts.length === 0) {
       return { data: [], error: null, siteColors: {}, visibilityState: {} };
     }
     
@@ -285,7 +301,7 @@ export default function CatchRadarChart({
 
       const newSiteColors = uniqueSites.reduce<Record<string, string>>(
         (acc: Record<string, string>, site: string, index: number) => {
-          acc[site] = generateColor(index, site, effectiveBMU);
+          acc[site] = generateColor(index, site, effectiveBMU || undefined);
           return acc;
         },
         {}
@@ -394,13 +410,13 @@ export default function CatchRadarChart({
         visibilityState: {}
       };
     }
-  }, [meanCatch, activeTab, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, t, isFetching, bmus.length]);
+  }, [meanCatch, activeTab, effectiveBMU, hasRestrictedAccess, getAccessibleBMUs, t, isFetching, selectedDistricts.length]);
 
   // Update state based on memoized processed data
   useEffect(() => {
     // Skip if we're still loading and have no changes
-    if (!isInitialLoad && !isFetching && bmus.length > 0 && 
-        JSON.stringify(previousBmus.current) === bmsDependencyString &&
+    if (!isInitialLoad && !isFetching && selectedDistricts.length > 0 && 
+        JSON.stringify(previousDistricts.current) === districtsDependencyString &&
         previousMetric.current === selectedMetric &&
         previousActiveTab.current === activeTab) return;
     
@@ -423,7 +439,7 @@ export default function CatchRadarChart({
       setLoading(false);
       setIsInitialLoad(false);
     }
-  }, [bmsDependencyString, selectedMetric, activeTab, processedData, isFetching, isInitialLoad, bmus.length]);
+  }, [districtsDependencyString, selectedMetric, activeTab, processedData, isFetching, isInitialLoad, selectedDistricts.length]);
 
   // Memoize legend click handler
   const handleLegendClick = useCallback((site: string) => {

@@ -12,7 +12,7 @@ import {
 import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
 
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useMedia } from "@hooks/use-media";
@@ -307,7 +307,7 @@ export default function FishCompositionChart({
     };
   }, [i18n, loading]);
 
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   
   // Use centralized permissions hook
   const {

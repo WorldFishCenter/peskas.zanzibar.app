@@ -127,7 +127,7 @@ importers:
         version: 8.17.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@uploadthing/react':
         specifier: ^6.5.1
-        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
+        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
       ahooks:
         specifier: ^3.8.0
         version: 3.8.0(react@18.3.1)
@@ -175,7 +175,7 @@ importers:
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nextjs-toploader:
         specifier: ^1.6.12
-        version: 1.6.12(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.12(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.13
         version: 6.9.13
@@ -289,7 +289,7 @@ importers:
         version: 5.4.5
       uploadthing:
         specifier: ^6.10.1
-        version: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
+        version: 6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
       zod:
         specifier: ^3.23.7
         version: 3.23.8
@@ -477,6 +477,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.10.1
         version: 0.10.1(typescript@5.4.5)(zod@3.23.8)
+      '@tabler/icons-react':
+        specifier: ^3.34.0
+        version: 3.34.0(react@18.3.1)
       '@tailwindcss/container-queries':
         specifier: ^0.1.1
         version: 0.1.1(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5)))
@@ -503,7 +506,7 @@ importers:
         version: 11.0.0-next-beta.264
       '@uploadthing/react':
         specifier: ^6.5.1
-        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
+        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
       accept-language:
         specifier: ^3.0.18
         version: 3.0.18
@@ -522,9 +525,18 @@ importers:
       cmdk:
         specifier: ^0.2.0
         version: 0.2.1(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      d3-color:
+        specifier: ^3.1.0
+        version: 3.1.0
       d3-dsv:
         specifier: ^3.0.1
         version: 3.0.1
+      d3-interpolate:
+        specifier: ^3.0.1
+        version: 3.0.1
+      d3-scale-chromatic:
+        specifier: ^3.1.0
+        version: 3.1.0
       date-arithmetic:
         specifier: ^4.1.0
         version: 4.1.0
@@ -590,7 +602,7 @@ importers:
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nextjs-toploader:
         specifier: ^1.6.12
-        version: 1.6.12(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.12(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.13
         version: 6.9.13
@@ -725,7 +737,7 @@ importers:
         version: 5.4.5
       uploadthing:
         specifier: ^6.10.1
-        version: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
+        version: 6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
       zod:
         specifier: ^3.23.7
         version: 3.23.8
@@ -897,7 +909,7 @@ importers:
         version: 0.1.1(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5)))
       '@uploadthing/react':
         specifier: ^6.5.1
-        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
+        version: 6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -939,7 +951,7 @@ importers:
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nextjs-toploader:
         specifier: ^1.6.12
-        version: 1.6.12(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.12(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.13
         version: 6.9.13
@@ -1053,7 +1065,7 @@ importers:
         version: 5.4.5
       uploadthing:
         specifier: ^6.10.1
-        version: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
+        version: 6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
       zod:
         specifier: ^3.23.7
         version: 3.23.8
@@ -1375,7 +1387,7 @@ importers:
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nextjs-toploader:
         specifier: ^1.6.12
-        version: 1.6.12(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.12(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.13
         version: 6.9.13
@@ -3813,6 +3825,14 @@ packages:
       typescript:
         optional: true
 
+  '@tabler/icons-react@3.34.0':
+    resolution: {integrity: sha512-OpEIR2iZsIXECtAIMbn1zfKfQ3zKJjXyIZlkgOGUL9UkMCFycEiF2Y8AVfEQsyre/3FnBdlWJvGr0NU47n2TbQ==}
+    peerDependencies:
+      react: '>= 16'
+
+  '@tabler/icons@3.34.0':
+    resolution: {integrity: sha512-jtVqv0JC1WU2TTEBN32D9+R6mc1iEBuPwLnBsWaR02SIEciu9aq5806AWkCHuObhQ4ERhhXErLEK7Fs+tEZxiA==}
+
   '@tailwindcss/container-queries@0.1.1':
     resolution: {integrity: sha512-p18dswChx6WnTSaJCSGx6lTmrGzNNvm2FtXmiO6AuA1V4U5REyoqwmT6kgAsIMdjo07QdAfYXHJ4hnMtfHzWgA==}
     peerDependencies:
@@ -4778,6 +4798,10 @@ packages:
 
   d3-path@3.1.0:
     resolution: {integrity: sha512-p3KP5HCf/bvjBSSKuXid6Zqijx7wIfNW+J/maPs+iwR35at5JCbLUT0LzF1cnjbCHWhqzQTIN2Jpe8pRebIEFQ==}
+    engines: {node: '>=12'}
+
+  d3-scale-chromatic@3.1.0:
+    resolution: {integrity: sha512-A3s5PWiZ9YCXFye1o246KoscMWqf8BsD9eRiJ3He7C9OBaxKhAd5TFCdEx/7VbKtxxTsu//1mMJFrEt572cEyQ==}
     engines: {node: '>=12'}
 
   d3-scale@4.0.2:
@@ -10472,6 +10496,13 @@ snapshots:
     optionalDependencies:
       typescript: 5.4.5
 
+  '@tabler/icons-react@3.34.0(react@18.3.1)':
+    dependencies:
+      '@tabler/icons': 3.34.0
+      react: 18.3.1
+
+  '@tabler/icons@3.34.0': {}
+
   '@tailwindcss/container-queries@0.1.1(tailwindcss@3.4.1(ts-node@10.9.2))':
     dependencies:
       tailwindcss: 3.4.1(ts-node@10.9.2)
@@ -10838,14 +10869,14 @@ snapshots:
 
   '@uploadthing/mime-types@0.2.10': {}
 
-  '@uploadthing/react@6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5))))':
+  '@uploadthing/react@6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))':
     dependencies:
       '@uploadthing/dropzone': 0.4.1(react@18.3.1)
       '@uploadthing/shared': 6.7.4(@uploadthing/mime-types@0.2.10)
       file-selector: 0.6.0
       react: 18.3.1
       tailwind-merge: 2.3.0
-      uploadthing: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5)))
+      uploadthing: 6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
     optionalDependencies:
       next: 14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
@@ -10854,14 +10885,14 @@ snapshots:
       - svelte
       - vue
 
-  '@uploadthing/react@6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))))':
+  '@uploadthing/react@6.5.4(@uploadthing/mime-types@0.2.10)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5))))':
     dependencies:
       '@uploadthing/dropzone': 0.4.1(react@18.3.1)
       '@uploadthing/shared': 6.7.4(@uploadthing/mime-types@0.2.10)
       file-selector: 0.6.0
       react: 18.3.1
       tailwind-merge: 2.3.0
-      uploadthing: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5)))
+      uploadthing: 6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5)))
     optionalDependencies:
       next: 14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
@@ -11542,6 +11573,11 @@ snapshots:
       d3-color: 3.1.0
 
   d3-path@3.1.0: {}
+
+  d3-scale-chromatic@3.1.0:
+    dependencies:
+      d3-color: 3.1.0
+      d3-interpolate: 3.0.1
 
   d3-scale@4.0.2:
     dependencies:
@@ -13472,7 +13508,7 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  nextjs-toploader@1.6.12(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  nextjs-toploader@1.6.12(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       next: 14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nprogress: 0.2.0
@@ -15523,7 +15559,7 @@ snapshots:
       registry-auth-token: 3.3.2
       registry-url: 3.1.0
 
-  uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5))):
+  uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))):
     dependencies:
       '@effect/schema': 0.66.16(effect@3.1.4)(fast-check@3.18.0)
       '@uploadthing/mime-types': 0.2.10
@@ -15537,7 +15573,7 @@ snapshots:
       next: 14.2.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss: 3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5))
 
-  uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.10)(typescript@5.4.5))):
+  uploadthing@6.10.4(h3@1.13.0)(next@14.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.3.101(@swc/helpers@0.5.15))(@types/node@20.12.10)(typescript@5.4.5))):
     dependencies:
       '@effect/schema': 0.66.16(effect@3.1.4)(fast-check@3.18.0)
       '@uploadthing/mime-types': 0.2.10

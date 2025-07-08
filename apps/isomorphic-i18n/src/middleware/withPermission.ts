@@ -1,5 +1,4 @@
-import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server"
-import { NextResponse } from "next/server"
+import { NextResponse, type NextFetchEvent, type NextMiddleware, type NextRequest } from "next/server"
 import { getToken } from 'next-auth/jwt'
 
 import { TPermission } from "@repo/nosql/schema/auth"

@@ -1,6 +1,6 @@
 import { CatchMonthlyModel } from "@repo/nosql/schema/catch-monthly";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import getDb from "@repo/nosql";
 
@@ -13,7 +13,7 @@ const metricSchema = z.enum([
 ]);
 
 export const aggregatedCatchRouter = createTRPCRouter({
-  monthly: protectedProcedure
+  monthly: publicProcedure
     .input(z.object({ bmus: z.string().array() }))
     .query(async ({ input }) => {
       try {
@@ -57,7 +57,7 @@ export const aggregatedCatchRouter = createTRPCRouter({
       }
     }),
 
-  performance: protectedProcedure
+  performance: publicProcedure
     .input(z.object({ bmus: z.string().array() }))
     .query(async ({ input }) => {
       try {
@@ -185,7 +185,7 @@ export const aggregatedCatchRouter = createTRPCRouter({
       }
     }),
 
-  meanCatchRadar: protectedProcedure
+  meanCatchRadar: publicProcedure
     .input(
       z.object({
         bmus: z.string().array(),

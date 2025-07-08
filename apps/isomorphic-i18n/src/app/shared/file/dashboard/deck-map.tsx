@@ -17,7 +17,7 @@ import { HexagonLayer } from "@deck.gl/aggregation-layers";
 import DeckGL from "@deck.gl/react";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 
 interface DataPoint {
   longitude: number;
@@ -92,8 +92,8 @@ export default function DeckMap() {
   const [data, setData] = useState<DataPoint[]>([]);
   const [radius, setRadius] = useState(1000);
   const [open, setOpen] = useState(false);
-  const [bmus] = useAtom(bmusAtom);
-  const { data: mapData } = api.mapDistribution.all.useQuery({ bmus });
+  const [districts] = useAtom(districtsAtom);
+  const { data: mapData } = api.mapDistribution.all.useQuery({ bmus: districts });
 
   useEffect(() => {
     if (!mapData) return

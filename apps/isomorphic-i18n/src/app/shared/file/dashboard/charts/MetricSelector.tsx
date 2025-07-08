@@ -30,12 +30,18 @@ export default function MetricSelector({
         return 'text-unit-fishers-km2-day';
       case 'kg/fisher/day':
         return 'text-unit-kg-fisher-day';
-      case 'kg/km²/day':
-        return 'text-unit-kg-km2-day';
       case 'KES/fisher/day':
         return 'text-unit-kes-fisher-day';
-      case 'KES/km²/day':
-        return 'text-unit-kes-km2-day';
+      case 'KES/kg':
+        return 'text-unit-kes-kg';
+      case 'kg':
+        return 'text-unit-kg';
+      case 'KES':
+        return 'text-unit-kes';
+      case 'trips':
+        return 'text-unit-trips';
+      case 'fishers':
+        return 'text-unit-fishers';
       default:
         return '';
     }
@@ -50,7 +56,7 @@ export default function MetricSelector({
               variant="text"
               className={cn(
                 "relative w-full sm:min-w-[200px] h-auto px-5 py-2.5 sm:py-2 rounded-md sm:rounded-full flex items-center justify-between",
-                selectedMetric === "mean_rpue" || selectedMetric === "mean_rpua"
+                selectedMetric === "mean_rpue" || selectedMetric === "mean_price_kg"
                   ? "bg-amber-50 text-amber-900"
                   : "bg-blue-50 text-blue-900"
               )}

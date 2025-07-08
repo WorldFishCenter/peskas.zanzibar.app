@@ -17,7 +17,7 @@ import {
   ComposedChart,
 } from "recharts";
 
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useMedia } from "@hooks/use-media";
@@ -367,13 +367,13 @@ export default function CatchMetricsChart({
 
   const isTablet = useMedia("(max-width: 800px)", false);
   const { t } = useTranslation("common");
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
   const { data: session } = useSession();
 
   // Determine if the user is part of the CIA group
   const isCiaUser = session?.user?.groups?.some((group: { name: string }) => group.name === 'CIA');
 
-  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus });
+  const { data: monthlyData } = api.aggregatedCatch.monthly.useQuery({ bmus: districts });
 
   // Keep in sync with parent component, handling old tab names too
   useEffect(() => {

@@ -4,7 +4,7 @@ import WidgetCard from "@components/cards/widget-card";
 import { useAtom } from "jotai";
 import { useEffect, useState, useCallback, useRef, useMemo, createContext, useContext } from "react";
 
-import { bmusAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useMedia } from "@hooks/use-media";
@@ -64,6 +64,7 @@ interface CatchMetricsChartProps {
   lang?: string;
   selectedMetric: MetricKey;
   bmu?: string;
+  district?: string;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
@@ -190,6 +191,7 @@ export default function CatchMetricsChart({
   lang,
   selectedMetric,
   bmu,
+  district,
   activeTab = 'standard', // Keep the original default for backwards compatibility
   onTabChange,
 }: CatchMetricsChartProps) {
@@ -252,7 +254,13 @@ export default function CatchMetricsChart({
     };
   }, [i18n, loading]);
 
-  const [bmus] = useAtom(bmusAtom);
+  const [districts] = useAtom(districtsAtom);
+  
+  // Default districts list if none selected - memoized to prevent infinite loops
+  const defaultDistricts = useMemo(() => [
+    'Central', 'North A', 'North B', 'South', 'Urban', 'West',
+    'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
+  ], []);
   
   // Use centralized permissions hook
   const {
@@ -266,11 +274,15 @@ export default function CatchMetricsChart({
     canCompareWithOthers
   } = useUserPermissions();
 
-  // Determine which BMU to use for filtering - prefer passed prop, then user's BMU
-  const effectiveBMU = bmu || userBMU;
+  // Determine which district/BMU to use for filtering - prefer district, then bmu, then user's BMU
+  const effectiveBMU = district || bmu || userBMU || undefined;
   
-  // Ensure bmus is always an array
-  const safeBmus = bmus || [];
+  // Ensure districts is always an array - use defaults if none selected - memoized to prevent infinite loops
+  const safeBmus = useMemo(() => 
+    district ? [district] : 
+    (districts.length > 0 ? districts : defaultDistricts),
+    [district, districts]
+  );
   
   // Fetch monthly data
   const { data: monthlyData, refetch } = api.aggregatedCatch.monthly.useQuery(
@@ -279,7 +291,7 @@ export default function CatchMetricsChart({
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       retry: 3,
-      enabled: safeBmus.length > 0,
+      enabled: true, // Always enabled now
     }
   );
 
@@ -323,7 +335,7 @@ export default function CatchMetricsChart({
     if (lang && i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
-  }, [lang, i18n, chartData.length, loading, visibilityState]);
+  }, [lang, i18n]);
 
   const handleLegendClick = useCallback((site: string) => {
     // Don't toggle visibility for the average line or special CIA comparison lines

@@ -280,9 +280,9 @@ export default function UserModal({
   const [searchFilter, setSearchFilter] = useState('');
   
   // States for BMUs multi-select with regional filtering
-  const [bmusOpen, setBmusOpen] = useState(false);
+  const [bmusOpen, setDistrictsOpen] = useState(false);
   const [selectedBmus, setSelectedBmus] = useState<string[]>([]);
-  const [bmusSearchFilter, setBmusSearchFilter] = useState('');
+  const [bmusSearchFilter, setDistrictsSearchFilter] = useState('');
 
   // Organize BMUs by group using the format from filter-selector
   const groupedBmus: BmuGrouped[] = useMemo(() => 
@@ -677,12 +677,12 @@ export default function UserModal({
                     <div className={cn("flex flex-col gap-y-2")}>
                       <FormLabel>BMUs</FormLabel>
                       <div className="relative" onFocus={() => handleDropdownOpen('bmus')}>
-                        <Popover open={bmusOpen} onOpenChange={setBmusOpen}>
+                        <Popover open={bmusOpen} onOpenChange={setDistrictsOpen}>
                           <PopoverTrigger asChild>
                             <button
                               className="bmu-trigger"
                               onClick={() => {
-                                setBmusOpen(!bmusOpen);
+                                setDistrictsOpen(!bmusOpen);
                                 handleDropdownOpen('bmus');
                               }}
                               type="button"
@@ -717,7 +717,7 @@ export default function UserModal({
                             <Input
                               placeholder="Search BMUs..."
                               value={bmusSearchFilter}
-                              onChange={(e) => setBmusSearchFilter(e.target.value)}
+                              onChange={(e) => setDistrictsSearchFilter(e.target.value)}
                               className="mb-2"
                             />
                             <SimpleBar className="bmu-filter-content">

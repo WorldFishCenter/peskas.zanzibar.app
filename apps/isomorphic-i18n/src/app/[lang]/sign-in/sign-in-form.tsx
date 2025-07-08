@@ -11,7 +11,7 @@ import { PiArrowRightBold } from "react-icons/pi";
 import { Button, Checkbox, Input, Loader, Password, Text } from "rizzui";
 
 import Alert from "@/app/_components/alert";
-import { bmusAtom, dropdownAtom } from "@/app/components/filter-selector";
+import { districtsAtom, dropdownAtom } from "@/app/components/filter-selector";
 import { routes } from "@/config/routes";
 import { loginSchema, LoginType } from "@/validators/login.schema";
 import { Form } from "@ui/form";
@@ -28,8 +28,8 @@ export default function SignInForm({ lang }: { lang?: string }) {
   const [loginErr, setLoginErr] = useState("");
   const [reset] = useState({});
   const router = useRouter();
-  const setBmus = useSetAtom(bmusAtom);
-  const setBmusDropdown = useSetAtom(dropdownAtom);
+  const setDistricts = useSetAtom(districtsAtom);
+  const setDistrictsDropdown = useSetAtom(dropdownAtom);
 
   const onSubmit: SubmitHandler<LoginType> = async (data) => {
     setLoading(true);
@@ -40,8 +40,8 @@ export default function SignInForm({ lang }: { lang?: string }) {
     });
 
     if (resp?.ok) {
-      setBmus(RESET);
-      setBmusDropdown(RESET);
+      setDistricts(RESET);
+      setDistrictsDropdown(RESET);
       router.refresh();
     } else if (
       !resp?.ok &&
