@@ -71,10 +71,27 @@ export function changeAppLanguage(newLang: string): void {
       localStorage.setItem('selectedLanguage', newLang);
       localStorage.setItem('peskas-language', newLang);
     }
-    
     // Restore scroll position
     window.scrollTo(0, scrollPosition);
   });
+
+  // --- NEW: Update the URL to include the new language prefix ---
+  const currentPath = window.location.pathname;
+  const langRegex = /^\/(en|sw)(?=\/|$)/;
+  let newPath;
+
+  if (langRegex.test(currentPath)) {
+    // Replace existing language prefix
+    newPath = currentPath.replace(langRegex, `/${newLang}`);
+  } else {
+    // Add language prefix if not present
+    newPath = `/${newLang}${currentPath.startsWith('/') ? '' : '/'}${currentPath}`;
+  }
+
+  // Only navigate if the path actually changes
+  if (newPath !== currentPath) {
+    window.location.pathname = newPath;
+  }
 }
 
 /**

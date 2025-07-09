@@ -12,6 +12,7 @@ import {
 import { api } from '@/trpc/react';
 import { IconSatellite, IconMap } from '@tabler/icons-react';
 import { useTheme } from 'next-themes';
+import { useTranslation } from '@/app/i18n/client';
 
 // Types
 export type Theme = 'light' | 'dark';
@@ -133,6 +134,7 @@ const InfoPanel = memo(function InfoPanel({
   selectedRanges,
   onRangeToggle,
 }: InfoPanelProps) {
+  const { t } = useTranslation('common');
   const stats = useMemo(() => calculateStats(data), [data]);
   return (
     <div
@@ -152,7 +154,7 @@ const InfoPanel = memo(function InfoPanel({
           ...(SHARED_STYLES.text.heading(theme) as React.CSSProperties),
         }}
       >
-        Fishing Effort Distribution
+        {t('info-fishing-effort-title')}
       </h3>
       <div
         style={{
@@ -165,7 +167,7 @@ const InfoPanel = memo(function InfoPanel({
         }}
       >
         <div style={{ marginBottom: '4px' }}>
-          <strong>Grid Resolution:</strong> 1 × 1 km
+          <strong>{t('info-grid-resolution')}</strong> {t('info-grid-resolution-value')}
         </div>
         <div
           style={{
@@ -177,7 +179,7 @@ const InfoPanel = memo(function InfoPanel({
             lineHeight: '1.4',
           }}
         >
-          Each cell represents a 1 square kilometer area where fishing activity has been recorded
+          {t('info-each-cell')}
         </div>
       </div>
       <div style={{ marginBottom: '20px' }}>
@@ -187,7 +189,7 @@ const InfoPanel = memo(function InfoPanel({
             ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
           }}
         >
-          AVERAGE TIME SPENT
+          {t('info-average-time-spent')}
         </div>
         <div
           style={{
@@ -215,8 +217,8 @@ const InfoPanel = memo(function InfoPanel({
             ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
           }}
         >
-          <span>Fewer Hours</span>
-          <span>More Hours</span>
+          <span>{t('info-fewer-hours')}</span>
+          <span>{t('info-more-hours')}</span>
         </div>
       </div>
       <div style={{ marginBottom: '20px' }}>
@@ -226,7 +228,7 @@ const InfoPanel = memo(function InfoPanel({
             ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
           }}
         >
-          TIME RANGES (select to filter)
+          {t('info-time-ranges')}
         </div>
         <div
           style={{
@@ -265,13 +267,13 @@ const InfoPanel = memo(function InfoPanel({
               ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
             }}
           >
-            ACTIVITY
+            {t('info-activity')}
           </div>
           <div>
-            <strong>{stats.totalVisits}</strong> total visits recorded
+            <strong>{t('info-total-visits', { count: Number(stats.totalVisits) })}</strong>
           </div>
           <div>
-            <strong>{stats.gridCells}</strong> active grid cells
+            <strong>{t('info-active-cells', { count: Number(stats.gridCells) })}</strong>
           </div>
         </div>
         <div>
@@ -281,16 +283,16 @@ const InfoPanel = memo(function InfoPanel({
               ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
             }}
           >
-            TIME & SPEED
+            {t('info-time-speed')}
           </div>
           <div>
-            <strong>{stats.avgTime}h</strong> average time per visit
+            <strong>{t('info-avg-time', { value: stats.avgTime })}</strong>
           </div>
           <div>
-            <strong>{stats.maxTime}h</strong> maximum time recorded
+            <strong>{t('info-max-time', { value: stats.maxTime })}</strong>
           </div>
           <div>
-            <strong>{stats.avgSpeed} km/h</strong> average speed
+            <strong>{t('info-avg-speed', { value: stats.avgSpeed })}</strong>
           </div>
         </div>
         <div
@@ -304,7 +306,7 @@ const InfoPanel = memo(function InfoPanel({
             ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
           }}
         >
-          ⌘ + Drag to rotate view
+          {t('info-rotate-hint')}
         </div>
       </div>
     </div>
