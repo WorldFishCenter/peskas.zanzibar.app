@@ -7,7 +7,7 @@ import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 import DistrictRanking from "@/app/shared/file/dashboard/district-ranking";
 import GridMap from "./grid-map";
-import { selectedMetricAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
+import { selectedTimeRangeAtom } from "@/app/components/filter-selector";
 import Table, { HeaderCell } from "@/app/shared/table";
 import TableFilter from "@/app/shared/controlled-table/table-filter";
 import { api } from "@/trpc/react";
@@ -89,11 +89,12 @@ function DistrictMetricsTable() {
     });
   }, [data, sorter]);
 
+  const { t } = useTranslation("common");
   const columns = [
     {
       title: (
         <HeaderCell
-          title="District"
+          title={t('district')}
           align="center"
           sortable
           ascending={sorter.columnKey === 'district' ? sorter.order === 'ascend' : undefined}
@@ -115,7 +116,7 @@ function DistrictMetricsTable() {
     ...metricKeys.map(key => ({
       title: (
         <HeaderCell
-          title={key}
+          title={t(`metric-${key}-title`)}
           align="center"
           sortable
           ascending={sorter.columnKey === key ? sorter.order === 'ascend' : undefined}
@@ -165,8 +166,6 @@ function DistrictMetricsTable() {
 }
 
 export default function FileDashboard({ lang }: { lang?: string }) {
-  const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
-  const [activeTab, setActiveTab] = useState("trends");
   const { t } = useTranslation("common");
 
   // Default district-level dashboard for all users

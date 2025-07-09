@@ -49,6 +49,7 @@ import FinancialStatisticsIcon from '@components/icons/financial-statistics';
 import BusinessIcon from '@components/icons/business';
 import SuitcaseIcon from '@components/icons/suitcase';
 import InfoIcon from '@components/icons/info';
+import { CurrencyDollar, ChartPie , ZoomQuestion} from 'tabler-icons-react';
 
 export const lithiumMenuIcons = {
   FishIcon,
@@ -102,6 +103,9 @@ export const lithiumMenuIcons = {
   ScheduleIcon,
   SuitcaseIcon,
   InfoIcon,
+  CurrencyDollar,
+  ChartPie,
+  ZoomQuestion,
 };
 
 export type LithiumMenuIconType = keyof typeof lithiumMenuIcons;

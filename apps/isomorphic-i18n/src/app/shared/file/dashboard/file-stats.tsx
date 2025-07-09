@@ -22,44 +22,44 @@ type FileStatsType = {
 
 const METRIC_CONFIG = {
   n_submissions: {
-    title: 'n_submissions',
-    unit: '',
-    description: 'Number of submissions per month by island',
+    titleKey: 'metric-n_submissions-title',
+    unitKey: 'metric-n_submissions-unit',
+    descKey: 'metric-n_submissions-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
   n_fishers: {
-    title: 'n_fishers',
-    unit: '',
-    description: 'Number of fishers per month by island',
+    titleKey: 'metric-n_fishers-title',
+    unitKey: 'metric-n_fishers-unit',
+    descKey: 'metric-n_fishers-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
   trip_duration: {
-    title: 'trip_duration',
-    unit: '',
-    description: 'Average trip duration per month by island',
+    titleKey: 'metric-trip_duration-title',
+    unitKey: 'metric-trip_duration-unit',
+    descKey: 'metric-trip_duration-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
   mean_cpue: {
-    title: 'mean_cpue',
-    unit: '',
-    description: 'Mean catch per unit effort (CPUE) per month by island',
+    titleKey: 'metric-mean_cpue-title',
+    unitKey: 'metric-mean_cpue-unit',
+    descKey: 'metric-mean_cpue-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
   mean_rpue: {
-    title: 'mean_rpue',
-    unit: '',
-    description: 'Mean revenue per unit effort (RPUE) per month by island',
+    titleKey: 'metric-mean_rpue-title',
+    unitKey: 'metric-mean_rpue-unit',
+    descKey: 'metric-mean_rpue-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
   mean_price_kg: {
-    title: 'mean_price_kg',
-    unit: '',
-    description: 'Mean price per kg per month by island',
+    titleKey: 'metric-mean_price_kg-title',
+    unitKey: 'metric-mean_price_kg-unit',
+    descKey: 'metric-mean_price_kg-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
@@ -101,9 +101,9 @@ function MetricBarCard({
     <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
       <div className="mb-2" style={{ minHeight: 48 }}>
         <Text className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-700">
-          {config.title} <span className="text-[11px] sm:text-sm font-normal text-gray-500 dark:text-gray-400">{config.unit}</span>
+          {t(config.titleKey)} <span className="text-[11px] sm:text-sm font-normal text-gray-500 dark:text-gray-400">{t(config.unitKey)}</span>
         </Text>
-        <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{config.description}</Text>
+        <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t(config.descKey)}</Text>
       </div>
       <div className="flex items-baseline gap-3 mb-2">
         <div className="flex gap-2 text-sm sm:text-base">

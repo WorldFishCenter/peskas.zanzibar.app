@@ -52,7 +52,7 @@ export const lithiumMenuItems: LithiumMenuItem = {
       {
         name: 'Revenue',
         href: routes.revenue,
-        icon: 'FishIcon',
+        icon: 'CurrencyDollar',
       },
     ],
   },
@@ -63,7 +63,18 @@ export const lithiumMenuItems: LithiumMenuItem = {
       {
         name: 'Catch Composition',
         href: routes.catch_composition,
-        icon: 'FishIcon',
+        icon: 'ChartPie',
+      },
+    ],
+  },
+  ask_data: {
+    name: 'Ask Data',
+    type: 'link',
+    dropdownItems: [
+      {
+        name: 'Ask Data',
+        href: '/ask-data',
+        icon: 'ZoomQuestion',
       },
     ],
   },

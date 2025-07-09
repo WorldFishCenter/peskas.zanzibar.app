@@ -45,8 +45,12 @@ import FlightIcon from '@components/icons/flight-icon';
 import FinancialStatisticsIcon from '@components/icons/financial-statistics';
 import BusinessIcon from '@components/icons/business';
 import SuitcaseIcon from '@components/icons/suitcase';
+import { CurrencyDollar, ChartPie } from 'tabler-icons-react';
+import { FileText } from 'tabler-icons-react';
 
 export const lithiumMenuIcons = {
+  CurrencyDollar,
+  ChartPie,
   FilesIcon,
   TruckIcon,
   ShopIcon,
@@ -94,6 +98,7 @@ export const lithiumMenuIcons = {
   BusinessIcon,
   ScheduleIcon,
   SuitcaseIcon,
+  FileText,
 };
 
 export type LithiumMenuIconType = keyof typeof lithiumMenuIcons;

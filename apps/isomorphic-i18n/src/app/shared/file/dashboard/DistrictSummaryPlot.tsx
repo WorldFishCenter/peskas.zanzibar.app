@@ -16,15 +16,16 @@ const FALLBACK_COLORS = [
 
 // List of metrics to show in tooltip
 const METRICS = [
-  { key: "mean_cpue", label: "CPUE", unit: "kg/fisher/day" },
-  { key: "mean_rpue", label: "RPUE", unit: "KES/fisher/day" },
-  { key: "n_fishers", label: "Fishers", unit: "" },
-  { key: "n_submissions", label: "Submissions", unit: "" },
-  { key: "trip_duration", label: "Trip Duration", unit: "hours" },
-  { key: "mean_price_kg", label: "Price/kg", unit: "KES/kg" },
+  { key: "mean_cpue", labelKey: "metric-mean_cpue-title", unitKey: "metric-mean_cpue-unit", descKey: "metric-mean_cpue-desc" },
+  { key: "mean_rpue", labelKey: "metric-mean_rpue-title", unitKey: "metric-mean_rpue-unit", descKey: "metric-mean_rpue-desc" },
+  { key: "n_fishers", labelKey: "metric-n_fishers-title", unitKey: "metric-n_fishers-unit", descKey: "metric-n_fishers-desc" },
+  { key: "n_submissions", labelKey: "metric-n_submissions-title", unitKey: "metric-n_submissions-unit", descKey: "metric-n_submissions-desc" },
+  { key: "trip_duration", labelKey: "metric-trip_duration-title", unitKey: "metric-trip_duration-unit", descKey: "metric-trip_duration-desc" },
+  { key: "mean_price_kg", labelKey: "metric-mean_price_kg-title", unitKey: "metric-mean_price_kg-unit", descKey: "metric-mean_price_kg-desc" },
 ];
 
 function DistrictTooltip({ active, payload, allData, selectedMetric }: any) {
+  const { t } = useTranslation("common");
   if (!active || !payload || !payload.length) return null;
   const { name } = payload[0].payload;
   const districtData = allData.find((d: any) => d.district === name);
@@ -35,12 +36,12 @@ function DistrictTooltip({ active, payload, allData, selectedMetric }: any) {
       <div className="space-y-1">
         {METRICS.map(m => (
           <div key={m.key} className={`flex justify-between text-xs${m.key === selectedMetric ? ' font-bold' : ''}`}>
-            <span className="text-gray-500 dark:text-gray-400">{m.label}:</span>
+            <span className="text-gray-500 dark:text-gray-400">{t(m.labelKey)}:</span>
             <span className="font-medium text-gray-900 dark:text-gray-700">
               {districtData[m.key] !== null && districtData[m.key] !== undefined && !isNaN(districtData[m.key])
                 ? Number(districtData[m.key]).toLocaleString(undefined, { maximumFractionDigits: 2 })
                 : "-"}
-              {m.unit ? ` ${m.unit}` : ''}
+              {t(m.unitKey) ? ` ${t(m.unitKey)}` : ''}
             </span>
           </div>
         ))}
@@ -111,18 +112,18 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
   return (
     <WidgetCard
       title={
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-3">
           <span className="font-semibold text-gray-900 dark:text-gray-700">
-            {t("text-district-summary") || "District Summary"} — {metricConfig.label}{metricConfig.unit ? ` (${metricConfig.unit})` : ''}
+            {t("text-district-summary")}
           </span>
-          <div className="w-48 mb-4 mt-2">
+          <div className="min-w-fit">
             <Select value={selectedMetric} onValueChange={setSelectedMetric}>
               <SelectTrigger>
-                <SelectValue>{METRICS.find(m => m.key === selectedMetric)?.label}</SelectValue>
+                <SelectValue>{t(METRICS.find(m => m.key === selectedMetric)?.labelKey || "")}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {METRICS.map(m => (
-                  <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>
+                  <SelectItem key={m.key} value={m.key}>{t(m.labelKey)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -139,10 +140,10 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
               type="number"
               tick={{ fontSize: 12, fill: "#64748b" }}
               label={{
-                value: `${metricConfig.label}${metricConfig.unit ? ` (${metricConfig.unit})` : ''}`,
-                position: 'insideBottomRight',
-                offset: 0,
-                style: { fontSize: 13, fill: '#64748b', fontWeight: 500 }
+                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''}`,
+                position: 'insideBottom', // Centered below the axis
+                offset: -5, // Adjust as needed
+                style: { fontSize: 13, fill: '#64748b', fontWeight: 500, textAnchor: 'middle' }
               }}
               axisLine={{ stroke: '#cbd5e1', strokeWidth: 1, className: 'dark:stroke-gray-700' }}
               tickLine={{ stroke: '#cbd5e1', className: 'dark:stroke-gray-700' }}
