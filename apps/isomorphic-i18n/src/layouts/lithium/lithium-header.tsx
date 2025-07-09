@@ -186,50 +186,48 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1 md:gap-2 xl:gap-3">
-      {/* Time Range Dropdown */}
-      {!isHomepage && (
-        <div className="relative">
-          <button
-            onClick={() => setIsTimeOpen(!isTimeOpen)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
-              isTimeOpen && "ring-2 ring-blue-200"
-            )}
-          >
-            <span className="truncate">
-              {TIME_RANGES.find(r => r.value === selectedTimeRange)?.label || TIME_RANGES[0].label}
-            </span>
-            <PiCaretDownBold className={cn("h-3 w-3 transition-transform flex-shrink-0", isTimeOpen && "rotate-180")} />
-          </button>
-          {isTimeOpen && (
-            <>
-              <div className="fixed inset-0 z-[1000]" onClick={() => setIsTimeOpen(false)} />
-              <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-48 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
-                <div className="p-2">
-                  {TIME_RANGES.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setSelectedTimeRange(option.value);
-                        setIsTimeOpen(false);
-                      }}
-                      className={cn(
-                        "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
-                        selectedTimeRange === option.value
-                          ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
-                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+      {/* Time Range Dropdown: always show */}
+      <div className="relative">
+        <button
+          onClick={() => setIsTimeOpen(!isTimeOpen)}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
+            isTimeOpen && "ring-2 ring-blue-200"
           )}
-        </div>
-      )}
-      {/* <ReferenceBMU /> */}
+        >
+          <span className="truncate">
+            {TIME_RANGES.find(r => r.value === selectedTimeRange)?.label || TIME_RANGES[0].label}
+          </span>
+          <PiCaretDownBold className={cn("h-3 w-3 transition-transform flex-shrink-0", isTimeOpen && "rotate-180")} />
+        </button>
+        {isTimeOpen && (
+          <>
+            <div className="fixed inset-0 z-[1000]" onClick={() => setIsTimeOpen(false)} />
+            <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-48 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
+              <div className="p-2">
+                {TIME_RANGES.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSelectedTimeRange(option.value);
+                      setIsTimeOpen(false);
+                    }}
+                    className={cn(
+                      "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
+                      selectedTimeRange === option.value
+                        ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
+                        : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      {/* Only hide MetricSelectorDropdown and FilterSelector on homepage */}
       {!isHomepage && <MetricSelectorDropdown />}
       {!isHomepage && (
         <div className="hidden sm:block">
