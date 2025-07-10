@@ -24,144 +24,144 @@ export type LithiumMenuItem = {
 
 export const lithiumMenuItems: LithiumMenuItem = {
   about: {
-    name: 'About',
+    name: 'nav-about',
     type: 'link',
     dropdownItems: [
       {
-        name: 'About',
+        name: 'nav-about',
         href: '/about',
         icon: 'InfoIcon',
       },
     ],
   },
   catch: {
-    name: 'Catch',
+    name: 'nav-catch',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Aggregated',
+        name: 'nav-aggregated',
         href: routes.catch,
         icon: 'FishIcon',
       },
     ],
   },
   revenue: {
-    name: 'Revenue',
+    name: 'nav-revenue',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Revenue',
+        name: 'nav-revenue',
         href: routes.revenue,
         icon: 'CurrencyDollar',
       },
     ],
   },
   catch_composition: {
-    name: 'Catch Composition',
+    name: 'nav-catch-composition',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Catch Composition',
+        name: 'nav-catch-composition',
         href: routes.catch_composition,
         icon: 'ChartPie',
       },
     ],
   },
   ask_data: {
-    name: 'Ask Data',
+    name: 'nav-ask-data',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Ask Data',
+        name: 'nav-ask-data',
         href: '/ask-data',
         icon: 'ZoomQuestion',
       },
     ],
   },
   map: {
-    name: 'sidebar-map',
+    name: 'nav-map',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Map',
+        name: 'nav-map',
         href: routes.map,
         icon: 'MapIcon',
       },
     ],
   },
   widgets: {
-    name: 'sidebar-menu-widgets',
+    name: 'nav-widgets',
     type: 'link',
     dropdownItems: [
       {
-        name: 'sidebar-menu-cards',
+        name: 'nav-cards',
         href: routes.widgets.cards,
         icon: 'DicesIcon',
       },
       {
-        name: 'sidebar-menu-charts',
+        name: 'nav-charts',
         href: routes.widgets.charts,
         icon: 'PieChartCurrencyIcon',
       },
       {
-        name: 'sidebar-menu-charts',
+        name: 'nav-charts',
         href: routes.forms.personalInformation,
         icon: 'PieChartCurrencyIcon',
       },
     ],
   },
   forms: {
-    name: 'sidebar-menu-forms',
+    name: 'nav-forms',
     type: 'link',
     dropdownItems: [
       {
-        name: 'sidebar-menu-account-settings',
+        name: 'nav-account-settings',
         href: routes.forms.profileSettings,
         icon: 'UserSettingsIcon',
       },
       {
-        name: 'sidebar-menu-notification-preference',
+        name: 'nav-notification-preference',
         href: routes.forms.notificationPreference,
         icon: 'NotificationSettingsIcon',
       },
       {
-        name: 'sidebar-menu-personal-information',
+        name: 'nav-personal-information',
         href: routes.forms.personalInformation,
         icon: 'UserInfoIcon',
       },
       {
-        name: 'sidebar-menu-newsletter',
+        name: 'nav-newsletter',
         href: routes.forms.newsletter,
         icon: 'NewsletterAnnouncement',
       },
     ],
   },
   groups: {
-    name: 'sidebar-menu-groups',
+    name: 'nav-groups',
     type: 'link',
     dropdownItems: [
       {
-        name: 'Control',
+        name: 'nav-control',
         href: routes.groups.control,
         icon: 'PageBlankIcon',
       },
       {
-        name: 'IIA',
+        name: 'nav-iia',
         href: routes.groups.iia,
         icon: 'PageBlankIcon',
       },
       {
-        name: 'CIA',
+        name: 'nav-cia',
         href: routes.groups.cia,
         icon: 'PageBlankIcon',
       },
       {
-        name: 'WBCIA',
+        name: 'nav-wbcia',
         href: routes.groups.wbcia,
         icon: 'PageBlankIcon',
       },
       {
-        name: 'AIA',
+        name: 'nav-aia',
         href: routes.groups.aia,
         icon: 'PageBlankIcon',
       },      

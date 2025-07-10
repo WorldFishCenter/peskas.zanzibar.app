@@ -912,5 +912,27 @@
   "info-avg-time": "{{value}}h muda wa wastani kwa kila ziara",
   "info-max-time": "{{value}}h muda wa juu zaidi ulioripotiwa",
   "info-avg-speed": "{{value}} km/h kasi ya wastani",
-  "info-rotate-hint": "⌘ + Buruta kubadilisha mtazamo"
+  "info-rotate-hint": "⌘ + Buruta kubadilisha mtazamo",
+
+  "nav-about": "Kuhusu",
+  "nav-catch": "Samaki",
+  "nav-revenue": "Mapato",
+  "nav-catch-composition": "Muundo wa Samaki",
+  "nav-ask-data": "Uliza Data",
+  "nav-map": "Ramani",
+  "nav-widgets": "Vifaa vidogo",
+  "nav-forms": "Fomu",
+  "nav-groups": "Makundi",
+  "nav-control": "Udhibiti",
+  "nav-iia": "IIA",
+  "nav-cia": "CIA",
+  "nav-wbcia": "WBCIA",
+  "nav-aia": "AIA",
+  "nav-aggregated": "Iliyokusanywa",
+  "nav-cards": "Kadi",
+  "nav-charts": "Chati",
+  "nav-account-settings": "Mipangilio ya Akaunti",
+  "nav-notification-preference": "Mapendeleo ya Arifa",
+  "nav-personal-information": "Taarifa Binafsi",
+  "nav-newsletter": "Jarida"
 }
