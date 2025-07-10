@@ -90,11 +90,22 @@ function DistrictMetricsTable() {
   }, [data, sorter]);
 
   const { t } = useTranslation("common");
+  
+  // Define units for each metric
+  const metricUnits: Record<string, string> = {
+    n_submissions: t('text-unit-submissions'),
+    n_fishers: t('text-unit-fishers'),
+    trip_duration: t('text-unit-hours'),
+    mean_cpue: t('text-unit-kg-fisher-hour'),
+    mean_rpue: t('text-unit-tzs-fisher-hour'),
+    mean_price_kg: t('text-unit-tzs-kg')
+  };
+
   const columns = [
     {
       title: (
         <HeaderCell
-          title={t('district')}
+          title={t('text-district')}
           align="center"
           sortable
           ascending={sorter.columnKey === 'district' ? sorter.order === 'ascend' : undefined}
@@ -116,7 +127,16 @@ function DistrictMetricsTable() {
     ...metricKeys.map(key => ({
       title: (
         <HeaderCell
-          title={t(`metric-${key}-title`)}
+          title={
+            <div className="text-center">
+              <div>{t(`metric-${key}-title`)}</div>
+              {metricUnits[key] && (
+                <div className="text-xs text-gray-500 font-normal">
+                  ({metricUnits[key]})
+                </div>
+              )}
+            </div>
+          }
           align="center"
           sortable
           ascending={sorter.columnKey === key ? sorter.order === 'ascend' : undefined}

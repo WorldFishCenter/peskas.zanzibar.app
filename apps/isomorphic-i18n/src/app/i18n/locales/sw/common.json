@@ -934,5 +934,12 @@
   "nav-account-settings": "Mipangilio ya Akaunti",
   "nav-notification-preference": "Mapendeleo ya Arifa",
   "nav-personal-information": "Taarifa Binafsi",
-  "nav-newsletter": "Jarida"
+  "nav-newsletter": "Jarida",
+  "text-district": "Wilaya",
+  "text-unit-submissions": "",
+  "text-unit-fishers": "",
+  "text-unit-hours": "masaa",
+  "text-unit-kg-fisher-hour": "kg/mvuvi/saa",
+  "text-unit-tzs-fisher-hour": "TZS/mvuvi/saa",
+  "text-unit-tzs-kg": "TZS/kg"
 }
