@@ -99,13 +99,18 @@ function MetricBarCard({
   });
 
   // Robust custom label component
-  const BarValueLabel = (region: 'Unguja' | 'Pemba') => (props: any) => {
-    const { index, x, y, fill } = props;
-    const value = chartData[index]?.[region];
-    const display = (value === null || value === undefined || isNaN(value)) ? '-' : Math.round(value).toLocaleString();
-    return (
-      <text x={x} y={y - 4} fill={fill} textAnchor="middle" fontSize={11} fontWeight={600}>{display}</text>
-    );
+  const BarValueLabel = (region: 'Unguja' | 'Pemba') => {
+    const Label = (props: any) => {
+      const { index, x, y, width, fill } = props;
+      const value = chartData[index]?.[region];
+      const display = (value === null || value === undefined || isNaN(value)) ? '-' : Math.round(value).toLocaleString();
+      const centerX = x + (width ? width / 2 : 0);
+      return (
+        <text x={centerX} y={y - 4} fill={fill} textAnchor="middle" fontSize={11} fontWeight={600}>{display}</text>
+      );
+    };
+    Label.displayName = `BarValueLabel_${region}`;
+    return Label;
   };
 
   // Get individual region values for current month
@@ -131,7 +136,7 @@ function MetricBarCard({
         </div>
       </div>
       <div className="flex-1 flex items-end">
-        <div className="w-full h-32 sm:h-40"> {/* Increased height */}
+        <div className="w-full h-32 sm:h-30"> {/* Increased height */}
           <ResponsiveContainer width="99%" height="100%">
             <BarChart 
               data={chartData}
