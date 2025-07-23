@@ -14,7 +14,6 @@ const DISTRICT_REGIONS: Record<string, 'Unguja' | 'Pemba'> = {
   'Urban': 'Unguja',
   'West': 'Unguja',
   'Chake chake': 'Pemba',
-  'Chake Chake': 'Pemba',
   'Mkoani': 'Pemba',
   'Micheweni': 'Pemba',
   'Wete': 'Pemba',
@@ -185,8 +184,8 @@ export const districtSummaryRouter = createTRPCRouter({
             const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
               return {
               month: monthLabel,
-                Unguja: regions.Unguja.length ? regions.Unguja.reduce((a, b) => a + b, 0) / regions.Unguja.length : 0,
-                Pemba: regions.Pemba.length ? regions.Pemba.reduce((a, b) => a + b, 0) / regions.Pemba.length : 0,
+                Unguja: regions.Unguja.length ? regions.Unguja.reduce((a, b) => a + b, 0) / regions.Unguja.length : null,
+                Pemba: regions.Pemba.length ? regions.Pemba.reduce((a, b) => a + b, 0) / regions.Pemba.length : null,
               };
             }),
             months: last3.map(([dateStr]) => {

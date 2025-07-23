@@ -85,18 +85,37 @@ function MetricBarCard({
   // Take last 3 months of data
   const last3Months = data.data.slice(-3);
 
-  // Prepare chart data for grouped bars
-  const chartData = last3Months.map((item: any) => ({
-    month: item.month.split(' ')[0], // Only show the month name (e.g., 'May')
-    Unguja: item.Unguja,
-    Pemba: item.Pemba,
-  }));
+  // Use the months from the API if available, otherwise fallback to last3Months
+  const allMonths = (data.months && data.months.slice(-3)) || last3Months.map((item: any) => item.month);
+
+  // Build chartData for all months, filling missing values with null
+  const chartData = allMonths.map((month: string) => {
+    const item = last3Months.find((d: any) => d.month === month) || {};
+    return {
+      month,
+      Unguja: item.Unguja ?? null,
+      Pemba: item.Pemba ?? null,
+    };
+  });
+
+  // Robust custom label component
+  const BarValueLabel = (region: 'Unguja' | 'Pemba') => (props: any) => {
+    const { index, x, y, fill } = props;
+    const value = chartData[index]?.[region];
+    const display = (value === null || value === undefined || isNaN(value)) ? '-' : Math.round(value).toLocaleString();
+    return (
+      <text x={x} y={y - 4} fill={fill} textAnchor="middle" fontSize={11} fontWeight={600}>{display}</text>
+    );
+  };
 
   // Get individual region values for current month
   const lastDataPoint = last3Months[last3Months.length - 1];
-  const ungujaValue = Math.round(lastDataPoint?.Unguja || 0);
-  const pembaValue = Math.round(lastDataPoint?.Pemba || 0);
+  const ungujaValue = lastDataPoint?.Unguja;
+  const pembaValue = lastDataPoint?.Pemba;
 
+  const displayValue = (value: any) => (value === null || value === undefined || isNaN(value) ? '-' : Math.round(value));
+
+  // Use built-in LabelList with formatter and theme-consistent color
   return (
     <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
       <div className="mb-2" style={{ minHeight: 48 }}>
@@ -107,12 +126,12 @@ function MetricBarCard({
       </div>
       <div className="flex items-baseline gap-3 mb-2">
         <div className="flex gap-2 text-sm sm:text-base">
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {ungujaValue}</span></span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {pembaValue}</span></span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {displayValue(ungujaValue)}</span></span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {displayValue(pembaValue)}</span></span>
         </div>
       </div>
       <div className="flex-1 flex items-end">
-        <div className="w-full h-16 sm:h-24">
+        <div className="w-full h-32 sm:h-40"> {/* Increased height */}
           <ResponsiveContainer width="99%" height="100%">
             <BarChart 
               data={chartData}
@@ -126,11 +145,23 @@ function MetricBarCard({
                 tickLine={false}
                 className="dark:fill-gray-300"
               />
-              <Bar dataKey="Unguja" fill="#F28F3B" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Unguja" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 11, fontWeight: 600, fill: '#F28F3B' }} className="dark:fill-gray-100" />
+              <Bar dataKey="Unguja" fill="#F28F3B" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}> {/* minPointSize added */}
+                <LabelList
+                  dataKey="Unguja"
+                  position="top"
+                  content={BarValueLabel('Unguja')}
+                  fill="#F28F3B"
+                  style={{ fontSize: 11, fontWeight: 600 }}
+                />
               </Bar>
-              <Bar dataKey="Pemba" fill="#75ABBC" radius={[2, 2, 0, 0]} barSize={18}>
-                <LabelList dataKey="Pemba" position="top" formatter={(value: number) => Math.round(value)} style={{ fontSize: 11, fontWeight: 600, fill: '#75ABBC' }} className="dark:fill-gray-100" />
+              <Bar dataKey="Pemba" fill="#75ABBC" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}> {/* minPointSize added */}
+                <LabelList
+                  dataKey="Pemba"
+                  position="top"
+                  content={BarValueLabel('Pemba')}
+                  fill="#75ABBC"
+                  style={{ fontSize: 11, fontWeight: 600 }}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -151,7 +182,7 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
       staleTime: 1000 * 60 * 5,
     }
   );
-  console.log('monthlyData', monthlyData);
+  console.log('DEBUG monthlyData', JSON.stringify(monthlyData, null, 2));
 
   if (isLoading) {
     return (
