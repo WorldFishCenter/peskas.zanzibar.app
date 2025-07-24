@@ -6,12 +6,13 @@ export const MONTHLY_METRICS = [
   "mean_cpue",
   "mean_rpue", 
   "mean_price_kg",
-  "total_catch_kg",
-  "total_value",
-  "n_trips",
-  "n_fishers",
-  "mean_effort"
+  "mean_catch_kg",
+  "mean_catch_price",
+  "estimated_fishing_trips",
+  "estimated_catch_tn",
+  "estimated_revenue_TZS",
 ] as const;
+
 
 export type TMonthlyMetric = (typeof MONTHLY_METRICS)[number] | string;
 

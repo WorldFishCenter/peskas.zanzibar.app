@@ -11,7 +11,6 @@ import {
   Bar,
   XAxis,
   ResponsiveContainer,
-  Cell,
   LabelList,
 } from 'recharts';
 
@@ -28,20 +27,20 @@ const METRIC_CONFIG = {
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
-  n_fishers: {
-    titleKey: 'metric-n_fishers-title',
-    unitKey: 'metric-n_fishers-unit',
-    descKey: 'metric-n_fishers-desc',
-    color: '#F28F3B',
-    currentColor: '#75ABBC',
-  },
-  trip_duration: {
-    titleKey: 'metric-trip_duration-title',
-    unitKey: 'metric-trip_duration-unit',
-    descKey: 'metric-trip_duration-desc',
-    color: '#F28F3B',
-    currentColor: '#75ABBC',
-  },
+  // n_fishers: {
+  //   titleKey: 'metric-n_fishers-title',
+  //   unitKey: 'metric-n_fishers-unit',
+  //   descKey: 'metric-n_fishers-desc',
+  //   color: '#F28F3B',
+  //   currentColor: '#75ABBC',
+  // },
+  // trip_duration: {
+  //   titleKey: 'metric-trip_duration-title',
+  //   unitKey: 'metric-trip_duration-unit',
+  //   descKey: 'metric-trip_duration-desc',
+  //   color: '#F28F3B',
+  //   currentColor: '#75ABBC',
+  // },
   mean_cpue: {
     titleKey: 'metric-mean_cpue-title',
     unitKey: 'metric-mean_cpue-unit',
@@ -56,17 +55,31 @@ const METRIC_CONFIG = {
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
-  mean_price_kg: {
-    titleKey: 'metric-mean_price_kg-title',
-    unitKey: 'metric-mean_price_kg-unit',
-    descKey: 'metric-mean_price_kg-desc',
+  // mean_price_kg: {
+  //   titleKey: 'metric-mean_price_kg-title',
+  //   unitKey: 'metric-mean_price_kg-unit',
+  //   descKey: 'metric-mean_price_kg-desc',
+  //   color: '#F28F3B',
+  //   currentColor: '#75ABBC',
+  // },
+  estimated_catch_tn: {
+    titleKey: 'metric-estimated_catch_tn-title',
+    unitKey: 'metric-estimated_catch_tn-unit',
+    descKey: 'metric-estimated_catch_tn-desc',
+    color: '#F28F3B',
+    currentColor: '#75ABBC',
+  },
+  estimated_revenue_TZS: {
+    titleKey: 'metric-estimated_revenue_TZS-title',
+    unitKey: 'metric-estimated_revenue_TZS-unit',
+    descKey: 'metric-estimated_revenue_TZS-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
 };
 
 function MetricBarCard({ 
-  metric, 
+  metric,
   config, 
   data,
   lang 
@@ -113,26 +126,42 @@ function MetricBarCard({
     return Label;
   };
 
+  // Helper to format values with commas or compact notation for large numbers
+  const formatValue = (value: any) => {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    // Special case: Estimated Revenue (TZS) always in millions
+    if (metric === 'estimated_revenue_TZS') {
+      const millions = value / 1_000_000;
+      return millions.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 }) + 'M';
+    }
+    if (Math.abs(value) >= 1_000_000) {
+      // Use compact notation for millions and above, max 1 decimal
+      return new Intl.NumberFormat(lang || 'en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(value);
+    }
+    // For regular numbers, show at most 1 decimal
+    return Number(value).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+  };
+
   // Get individual region values for current month
   const lastDataPoint = last3Months[last3Months.length - 1];
   const ungujaValue = lastDataPoint?.Unguja;
   const pembaValue = lastDataPoint?.Pemba;
 
-  const displayValue = (value: any) => (value === null || value === undefined || isNaN(value) ? '-' : Math.round(value));
-
   // Use built-in LabelList with formatter and theme-consistent color
   return (
     <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
       <div className="mb-2" style={{ minHeight: 48 }}>
+        {/* 1st row: Metric name (unit) */}
         <Text className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-700">
-          {t(config.titleKey)} <span className="text-[11px] sm:text-sm font-normal text-gray-500 dark:text-gray-400">{t(config.unitKey)}</span>
+          {t(config.titleKey)}{t(config.unitKey) ? ` (${t(config.unitKey)})` : ''}
         </Text>
+        {/* 2nd row: Metric description */}
         <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t(config.descKey)}</Text>
       </div>
       <div className="flex items-baseline gap-3 mb-2">
         <div className="flex gap-2 text-sm sm:text-base">
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {displayValue(ungujaValue)}</span></span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {displayValue(pembaValue)}</span></span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {formatValue(ungujaValue)}</span></span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {formatValue(pembaValue)}</span></span>
         </div>
       </div>
       <div className="flex-1 flex items-end">
@@ -154,7 +183,7 @@ function MetricBarCard({
                 <LabelList
                   dataKey="Unguja"
                   position="top"
-                  content={BarValueLabel('Unguja')}
+                  formatter={formatValue}
                   fill="#F28F3B"
                   style={{ fontSize: 11, fontWeight: 600 }}
                 />
@@ -163,7 +192,7 @@ function MetricBarCard({
                 <LabelList
                   dataKey="Pemba"
                   position="top"
-                  content={BarValueLabel('Pemba')}
+                  formatter={formatValue}
                   fill="#75ABBC"
                   style={{ fontSize: 11, fontWeight: 600 }}
                 />

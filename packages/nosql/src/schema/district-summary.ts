@@ -9,10 +9,8 @@ export const DISTRICT_INDICATORS = [
   "mean_cpue",
   "mean_rpue",
   "mean_price_kg",
-  "total_catch_kg",
-  "total_value",
-  "n_trips",
-  "n_species",
+  "estimated_revenue_TZS",
+  "estimated_catch_tn",
 ] as const;
 
 export type TDistrictIndicator = (typeof DISTRICT_INDICATORS)[number];

@@ -8,6 +8,7 @@ import { useAtom } from 'jotai';
 import { selectedTimeRangeAtom } from '@/app/components/filter-selector';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
 import { DISTRICT_COLORS } from "./charts/utils";
+import { formatDashboardNumber, getAggregatedDistrictValue } from "./utils";
 
 // Fallback colors for any districts not in the predefined mapping
 const FALLBACK_COLORS = [
@@ -22,9 +23,11 @@ const METRICS = [
   { key: "n_submissions", labelKey: "metric-n_submissions-title", unitKey: "metric-n_submissions-unit", descKey: "metric-n_submissions-desc" },
   { key: "trip_duration", labelKey: "metric-trip_duration-title", unitKey: "metric-trip_duration-unit", descKey: "metric-trip_duration-desc" },
   { key: "mean_price_kg", labelKey: "metric-mean_price_kg-title", unitKey: "metric-mean_price_kg-unit", descKey: "metric-mean_price_kg-desc" },
+  { key: "estimated_revenue_TZS", labelKey: "metric-estimated_revenue_TZS-title", unitKey: "metric-estimated_revenue_TZS-unit", descKey: "metric-estimated_revenue_TZS-desc" },
+  { key: "estimated_catch_tn", labelKey: "metric-estimated_catch_tn-title", unitKey: "metric-estimated_catch_tn-unit", descKey: "metric-estimated_catch_tn-desc" },
 ];
 
-function DistrictTooltip({ active, payload, allData, selectedMetric }: any) {
+function DistrictTooltip({ active, payload, allData, selectedMetric, lang }: any) {
   const { t } = useTranslation("common");
   if (!active || !payload || !payload.length) return null;
   const { name } = payload[0].payload;
@@ -39,7 +42,7 @@ function DistrictTooltip({ active, payload, allData, selectedMetric }: any) {
             <span className="text-gray-500 dark:text-gray-400">{t(m.labelKey)}:</span>
             <span className="font-medium text-gray-900 dark:text-gray-700">
               {districtData[m.key] !== null && districtData[m.key] !== undefined && !isNaN(districtData[m.key])
-                ? Number(districtData[m.key]).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                ? formatDashboardNumber(districtData[m.key], m.key, lang)
                 : "-"}
               {t(m.unitKey) ? ` ${t(m.unitKey)}` : ''}
             </span>
@@ -50,7 +53,8 @@ function DistrictTooltip({ active, payload, allData, selectedMetric }: any) {
   );
 }
 
-export default function DistrictSummaryPlot({ className }: { className?: string }) {
+export default function DistrictSummaryPlot({ className, lang: propLang }: { className?: string, lang?: string }) {
+  const lang = propLang || 'en';
   const { t } = useTranslation("common");
   const [range] = useAtom(selectedTimeRangeAtom);
   const { start, end } = useMemo(() => {
@@ -67,13 +71,16 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
 
   // Prepare and sort chart data by selected metric
   const chartData = useMemo(() => {
-    return data
+    const mapped = data
       .map((row: any) => ({
         name: row.district,
-        value: row[selectedMetric],
+        value: getAggregatedDistrictValue(row, selectedMetric),
         ...row,
-      }))
-      .filter((d: any) => d.value !== null && !isNaN(d.value))
+      }));
+    
+    const filtered = mapped.filter((d: any) => d.value !== null && !isNaN(d.value));
+    
+    return filtered
       .sort((a: any, b: any) => b.value - a.value)
       .map((d: any, idx: number) => ({ ...d, rank: idx + 1 }));
   }, [data, selectedMetric]);
@@ -118,7 +125,7 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
           </span>
           <div className="min-w-fit">
             <Select value={selectedMetric} onValueChange={setSelectedMetric}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full max-w-[180px] sm:max-w-[240px] md:max-w-[300px]">
                 <SelectValue>{t(METRICS.find(m => m.key === selectedMetric)?.labelKey || "")}</SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -139,10 +146,11 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
             <XAxis
               type="number"
               tick={{ fontSize: 12, fill: "#64748b" }}
+              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, lang)}
               label={{
-                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''}`,
-                position: 'insideBottom', // Centered below the axis
-                offset: -5, // Adjust as needed
+                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''} ${['n_submissions', 'estimated_catch_tn', 'estimated_revenue_TZS'].includes(selectedMetric) ? '(Aggregated)' : '(Average)'}`,
+                position: 'insideBottom',
+                offset: -5,
                 style: { fontSize: 13, fill: '#64748b', fontWeight: 500, textAnchor: 'middle' }
               }}
               axisLine={{ stroke: '#cbd5e1', strokeWidth: 1, className: 'dark:stroke-gray-700' }}
@@ -160,7 +168,7 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
               axisLine={{ stroke: '#cbd5e1', strokeWidth: 1, className: 'dark:stroke-gray-700' }}
               tickLine={{ stroke: '#cbd5e1', className: 'dark:stroke-gray-700' }}
             />
-            <Tooltip content={<DistrictTooltip allData={data} selectedMetric={selectedMetric} />} wrapperStyle={{ background: 'transparent' }} />
+            <Tooltip content={<DistrictTooltip allData={data} selectedMetric={selectedMetric} lang={lang} />} wrapperStyle={{ background: 'transparent' }} />
             <Bar 
               dataKey="value" 
               radius={[0, 4, 4, 0]} 
@@ -174,7 +182,7 @@ export default function DistrictSummaryPlot({ className }: { className?: string 
                 return <Cell key={`cell-${index}`} fill={color} />;
               })}
               {/* Show value at end of bar */}
-              <LabelList dataKey="value" position="right" formatter={(value: number) => value?.toLocaleString(undefined, { maximumFractionDigits: 2 })} style={{ fontSize: 12, fill: '#222', filter: 'invert(1) brightness(2)'}} className="dark:fill-white" />
+              <LabelList dataKey="value" position="right" formatter={(value: number) => formatDashboardNumber(value, selectedMetric, lang)} style={{ fontSize: 12, fill: '#222', filter: 'invert(1) brightness(2)'}} className="dark:fill-white" />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

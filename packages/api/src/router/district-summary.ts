@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { DistrictSummaryModel } from "@repo/nosql/schema/district-summary";
-import { MonthlySummaryDistrictModel } from "@repo/nosql/schema/monthly-summary-district";
 import getDb from "@repo/nosql";
 import { TRPCError } from "@trpc/server";
 
@@ -151,7 +150,16 @@ export const districtSummaryRouter = createTRPCRouter({
         const endDate = new Date('2025-07-01T00:00:00Z');
 
         // Fetch all relevant district summaries in the date range for the required metrics
-        const metrics = ['n_submissions', 'n_fishers', 'trip_duration', 'mean_cpue', 'mean_rpue', 'mean_price_kg'];
+        const metrics = [
+          'n_submissions',
+          'n_fishers',
+          'trip_duration',
+          'mean_cpue',
+          'mean_rpue',
+          'mean_price_kg',
+          'estimated_revenue_TZS',
+          'estimated_catch_tn'
+        ];
         const summaries = await DistrictSummaryModel.find({
           indicator: { $in: metrics },
           date: { $gte: startDate, $lte: endDate },
@@ -184,9 +192,15 @@ export const districtSummaryRouter = createTRPCRouter({
             const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
               return {
               month: monthLabel,
-                Unguja: regions.Unguja.length ? regions.Unguja.reduce((a, b) => a + b, 0) / regions.Unguja.length : null,
-                Pemba: regions.Pemba.length ? regions.Pemba.reduce((a, b) => a + b, 0) / regions.Pemba.length : null,
-              };
+              Unguja: (() => {
+                const vals = (regions.Unguja || []).filter(v => v !== null && v !== undefined && !isNaN(v));
+                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+              })(),
+              Pemba: (() => {
+                const vals = (regions.Pemba || []).filter(v => v !== null && v !== undefined && !isNaN(v));
+                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+              })(),
+            };
             }),
             months: last3.map(([dateStr]) => {
               const date = new Date(dateStr);
@@ -215,27 +229,38 @@ export const districtSummaryRouter = createTRPCRouter({
     .query(async ({ input }) => {
       try {
         await getDb();
-        const metrics = ['n_submissions', 'n_fishers', 'trip_duration', 'mean_cpue', 'mean_rpue', 'mean_price_kg'];
         const start = new Date(input.startDate);
         const end = new Date(input.endDate);
-        // Fetch all relevant district summaries in the date range for the required metrics
+        // Fetch all indicators for the date range
         const summaries = await DistrictSummaryModel.find({
-          indicator: { $in: metrics },
           date: { $gte: start, $lte: end },
         }).lean();
-        // Group by district and metric
+        // Group by district and indicator
         const grouped: Record<string, Record<string, number[]>> = {};
         for (const s of summaries) {
           if (!grouped[s.district]) grouped[s.district] = {};
           if (!grouped[s.district][s.indicator]) grouped[s.district][s.indicator] = [];
           grouped[s.district][s.indicator].push(s.value);
         }
-        // Prepare result: array of { district, metric1: avg, ... }
-        const result = Object.entries(grouped).map(([district, metricsObj]) => {
+        // List of all districts (update as needed)
+        const ALL_DISTRICTS = [
+          "Central", "Chake chake", "Micheweni", "Mkoani", "North a", "North b", "South", "Urban", "West a", "West b", "Wete"
+        ];
+        const ALL_METRICS = [
+          "mean_cpue", "mean_rpue", "n_fishers", "n_submissions", "trip_duration", "mean_price_kg", "estimated_revenue_TZS", "estimated_catch_tn"
+        ];
+        // Prepare result: array of { district, indicator1: avg, ... }
+        const result = ALL_DISTRICTS.map((district) => {
+          const indicatorsObj = grouped[district] || {};
           const row: any = { district };
-          for (const metric of metrics) {
-            const values = metricsObj[metric] || [];
-            row[metric] = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+          for (const indicator of ALL_METRICS) {
+            // Filter out null/undefined/NaN values before aggregating
+            const values = (indicatorsObj[indicator] || []).filter(v => v !== null && v !== undefined && !isNaN(v));
+            if (["n_submissions", "estimated_catch_tn", "estimated_revenue_TZS"].includes(indicator)) {
+              row[indicator] = values.length ? values.reduce((a, b) => a + b, 0) : null;
+            } else {
+              row[indicator] = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+            }
           }
           return row;
         });
