@@ -45,9 +45,9 @@ export function formatDashboardNumber(value: any, metric?: string, lang: string 
 export function getAggregatedDistrictValue(row: any, metricKey: string) {
   // If the row has an array of values for the metric, aggregate accordingly
   const values = Array.isArray(row[metricKey]) ? row[metricKey] : [row[metricKey]];
-  const valid = values.filter(v => v !== null && v !== undefined && !isNaN(v));
+  const valid = values.filter((v: number) => v !== null && v !== undefined && !isNaN(v));
   if (["n_submissions", "estimated_catch_tn", "estimated_revenue_TZS"].includes(metricKey)) {
-    return valid.length ? valid.reduce((a, b) => a + b, 0) : null;
+    return valid.length ? valid.reduce((a: number, b: number) => a + b, 0) : null;
   }
-  return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : null;
+  return valid.length ? valid.reduce((a: number, b: number) => a + b, 0) / valid.length : null;
 } 
