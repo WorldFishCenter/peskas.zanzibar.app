@@ -191,7 +191,7 @@ export default function CpueGearTreemap({
   lang?: string;
 }) {
   const { theme } = useTheme();
-  const [cpueData, setCpueData] = useState<CpueDataItem[]>([]);
+  // Removed cpueData state - using transformedData directly instead
   const [loading, setLoading] = useState(true);
   const [processingError, setProcessingError] = useState<string | null>(null);
   
@@ -260,24 +260,30 @@ export default function CpueGearTreemap({
     }));
   }, [rawData]);
 
-  // Set initial visibility state if empty
+  // Initialize visibility state when data changes
   useEffect(() => {
-    if (transformedData.length > 0 && Object.keys(visibilityState).length === 0) {
-      const initialVisibility = transformedData.reduce<VisibilityState>(
-        (acc, item) => ({
-          ...acc,
-          [item.gear]: { opacity: 1 },
-        }),
-        {}
-      );
-      setVisibilityState(initialVisibility);
+    if (transformedData.length > 0) {
+      setVisibilityState(prevState => {
+        // Only update if we don't have visibility state for all gears
+        const currentGears = Object.keys(prevState);
+        const dataGears = transformedData.map(item => item.gear);
+        const needsUpdate = dataGears.some(gear => !currentGears.includes(gear));
+        
+        if (needsUpdate || currentGears.length === 0) {
+          return transformedData.reduce<VisibilityState>(
+            (acc, item) => ({
+              ...acc,
+              [item.gear]: prevState[item.gear] || { opacity: 1 },
+            }),
+            {}
+          );
+        }
+        return prevState;
+      });
     }
-  }, [transformedData, visibilityState]);
-
-  // Update cpueData when transformed data changes
-  useEffect(() => {
-    setCpueData(transformedData);
   }, [transformedData]);
+
+  // Removed unnecessary useEffect - using transformedData directly
 
   const getTimeRangeLabel = () => {
     const timeRangeOption = TIME_RANGES.find(option => 
@@ -357,7 +363,7 @@ export default function CpueGearTreemap({
         <div className="w-full h-[600px] pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
-              data={cpueData.filter(item => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
+              data={transformedData.filter((item: CpueDataItem) => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
               dataKey="avg_cpue"
               aspectRatio={1.6}
               stroke="#ffffff"
@@ -367,7 +373,7 @@ export default function CpueGearTreemap({
                 <CustomizedTreemapContent />
               }
             >
-              {cpueData.map((entry, index) => (
+              {transformedData.map((entry: CpueDataItem, index: number) => (
                 <Cell 
                   key={`cell-${index}`} 
                   name={entry.name}
