@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/trpc/react";
 import { useAtom } from "jotai";
 import { districtsAtom } from "@/app/components/filter-selector";
@@ -66,6 +66,40 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
   return null;
 };
 
+// Custom legend component with click-to-mute functionality
+const CustomLegend = ({ payload, onLegendClick, hiddenDistricts }: any) => {
+  const { t } = useTranslation("common");
+  
+  return (
+    <div className="flex flex-wrap gap-3 justify-center mt-4">
+      {payload.map((entry: any, index: number) => {
+        const isHidden = hiddenDistricts.includes(entry.value);
+        return (
+          <button
+            key={index}
+            onClick={() => onLegendClick(entry.value)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              isHidden 
+                ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 opacity-50' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
+            }`}
+          >
+            <div 
+              className={`w-3 h-3 rounded-full transition-opacity duration-200 ${
+                isHidden ? 'opacity-30' : 'opacity-100'
+              }`}
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className={isHidden ? 'line-through' : ''}>
+              {entry.value}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 interface CatchTimeSeriesProps {
   selectedMetrics: string[];
   months?: number;
@@ -79,6 +113,7 @@ export default function CatchTimeSeries({
 }: CatchTimeSeriesProps) {
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
+  const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
 
   const { data, isLoading, error } = api.monthlySummary.timeSeries.useQuery(
     {
@@ -104,6 +139,14 @@ export default function CatchTimeSeries({
       return point;
     });
   }, [data, selectedMetrics]);
+
+  const handleLegendClick = (district: string) => {
+    setHiddenDistricts(prev => 
+      prev.includes(district) 
+        ? prev.filter(d => d !== district)
+        : [...prev, district]
+    );
+  };
 
   if (isLoading) {
     return (
@@ -142,20 +185,20 @@ export default function CatchTimeSeries({
   return (
     <WidgetCard 
       title={
-        <div className="flex items-center justify-between">
-          <span className="font-semibold text-gray-900 dark:text-gray-100">
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold text-gray-900 dark:text-gray-100">
             {formatChartTitle(selectedMetric, "Time Series")}
-          </span>
+          </div>
           {metricConfig?.unit && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
               Unit: {metricConfig.unit}
-            </span>
+            </div>
           )}
         </div>
       } 
       className={className}
     >
-      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[30rem]">
+      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart 
             data={chartData} 
@@ -169,13 +212,22 @@ export default function CatchTimeSeries({
                 const date = new Date(value);
                 return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
               }}
+              interval="preserveStartEnd"
+              minTickGap={30}
             />
             <YAxis {...CHART_STYLES.axis} />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}
             />
-            <Legend {...CHART_STYLES.legend} />
+            <Legend 
+              content={
+                <CustomLegend 
+                  onLegendClick={handleLegendClick}
+                  hiddenDistricts={hiddenDistricts}
+                />
+              }
+            />
             {Object.keys(chartData[0] || {}).filter(key => key !== 'date').map((district, idx) => {
               const color = getDistrictColor(district, idx, DISTRICT_COLORS);
               return (
@@ -188,6 +240,7 @@ export default function CatchTimeSeries({
                   dot={{ r: 4, fill: color, stroke: color }}
                   activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
                   name={district}
+                  hide={hiddenDistricts.includes(district)}
                   {...CHART_STYLES.animation}
                 />
               );

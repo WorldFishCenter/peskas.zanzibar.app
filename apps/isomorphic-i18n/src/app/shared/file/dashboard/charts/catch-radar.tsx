@@ -149,10 +149,19 @@ export default function CatchRadar({
 
   return (
     <WidgetCard 
-      title={`Catch Metrics Seasonality (${year})`}
+      title={
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold text-gray-900 dark:text-gray-100">
+            Catch Metrics Seasonality
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+            Year: {year}
+          </div>
+        </div>
+      }
       className={className}
     >
-      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[30rem]">
+      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
       <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <PolarGrid />
