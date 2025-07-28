@@ -191,7 +191,7 @@ export default function RpueGearTreemap({
   lang?: string;
 }) {
   const { theme } = useTheme();
-  const [rpueData, setRpueData] = useState<RpueDataItem[]>([]);
+  // Removed rpueData state - using transformedData directly instead
   const [loading, setLoading] = useState(true);
   const [processingError, setProcessingError] = useState<string | null>(null);
   
@@ -260,23 +260,27 @@ export default function RpueGearTreemap({
     }));
   }, [rawData]);
 
-  // Set initial visibility state if empty
+  // Initialize visibility state when data changes
   useEffect(() => {
-    if (transformedData.length > 0 && Object.keys(visibilityState).length === 0) {
-      const initialVisibility = transformedData.reduce<VisibilityState>(
-        (acc: VisibilityState, item: RpueDataItem) => ({
-          ...acc,
-          [item.gear]: { opacity: 1 },
-        }),
-        {}
-      );
-      setVisibilityState(initialVisibility);
+    if (transformedData.length > 0) {
+      setVisibilityState(prevState => {
+        // Only update if we don't have visibility state for all gears
+        const currentGears = Object.keys(prevState);
+        const dataGears = transformedData.map(item => item.gear);
+        const needsUpdate = dataGears.some(gear => !currentGears.includes(gear));
+        
+        if (needsUpdate || currentGears.length === 0) {
+          return transformedData.reduce<VisibilityState>(
+            (acc: VisibilityState, item: RpueDataItem) => ({
+              ...acc,
+              [item.gear]: prevState[item.gear] || { opacity: 1 },
+            }),
+            {}
+          );
+        }
+        return prevState;
+      });
     }
-  }, [transformedData, visibilityState]);
-
-  // Update rpueData when transformed data changes
-  useEffect(() => {
-    setRpueData(transformedData);
   }, [transformedData]);
 
   const getTimeRangeLabel = () => {
@@ -357,7 +361,7 @@ export default function RpueGearTreemap({
         <div className="w-full h-[600px] pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
-              data={rpueData.filter(item => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
+              data={transformedData.filter((item: RpueDataItem) => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
               dataKey="avg_rpue"
               aspectRatio={1.6}
               stroke="#ffffff"
@@ -367,7 +371,7 @@ export default function RpueGearTreemap({
                 <CustomizedTreemapContent />
               }
             >
-              {rpueData.map((entry, index) => (
+              {transformedData.map((entry: RpueDataItem, index: number) => (
                 <Cell 
                   key={`cell-${index}`} 
                   name={entry.name}
