@@ -19,6 +19,7 @@ import WidgetCard from "@components/cards/widget-card";
 import { Title } from "rizzui";
 import { useTranslation } from "@/app/i18n/client";
 import { DISTRICT_COLORS } from "../charts/utils";
+import { formatDashboardNumber } from "../utils";
 import { 
   CHART_STYLES, 
   SHARED_METRIC_CONFIG, 
@@ -68,7 +69,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
                   isHighest ? 'text-green-600 dark:text-green-400' :
                   isLowest ? 'text-red-600 dark:text-red-400' : ''
                 }`}>
-                  {entry.value?.toFixed(2)}
+                  {formatDashboardNumber(entry.value, selectedMetric, 'en')}
                 </span>
               </div>
             );
@@ -198,7 +199,9 @@ export default function RevenueRadar({
           <RadarChart data={chartData} margin={CHART_STYLES.margins}>
             <PolarGrid />
             <PolarAngleAxis dataKey="month" />
-            <PolarRadiusAxis />
+            <PolarRadiusAxis 
+              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, 'en')}
+            />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}

@@ -36,7 +36,7 @@ const formatNumber = (num: number, precision = 0): string => {
   });
 };
 
-type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
+type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua" | "estimated_revenue_TZS";
 
 interface ChartDataPoint {
   date: number;
@@ -52,6 +52,7 @@ interface ApiDataPoint {
   mean_cpua: number;
   mean_rpue: number;
   mean_rpua: number;
+  estimated_revenue_TZS: number;
 }
 
 interface MetricOption {
@@ -545,7 +546,7 @@ export default function CatchMetricsChart({
     } finally {
       setLoading(false);
     }
-  }, [monthlyData, selectedMetric, bmu]);
+  }, [monthlyData, selectedMetric, bmu, isCiaUser, localActiveTab]);
 
   const CustomLegend = ({ payload }: any) => {
     // Filter out the auto-generated average entry from the payload

@@ -663,7 +663,7 @@ export default function CatchMetricsChart({
       // Annual data is the same for all users
       setAnnualData(getAnnualData(chartData, !canCompareWithOthers, siteColors));
     
-  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length, loading, visibilityState]);
+  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length, loading, visibilityState, chartData.length]);
 
   // Find the selected metric option
   const selectedMetricOption = METRIC_OPTIONS.find(

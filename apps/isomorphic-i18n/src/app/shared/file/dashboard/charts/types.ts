@@ -21,6 +21,7 @@ export interface ApiDataPoint {
   mean_cpua: number;
   mean_rpua: number;
   estimated_catch_tn: number;
+  estimated_revenue_TZS: number;
   total_catch_kg: number;
   total_value: number;
   n_trips: number;
