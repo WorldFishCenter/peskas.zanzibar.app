@@ -1,12 +1,11 @@
 import { useAtom } from 'jotai';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PiCaretDownBold } from 'react-icons/pi';
 import cn from '@utils/class-names';
 import { METRIC_OPTIONS, MetricOption, MetricKey } from '@/app/shared/file/dashboard/charts/types';
 import { selectedMetricAtom } from '@/app/components/filter-selector';
 import { useTranslation } from '@/app/i18n/client';
 import { usePathname } from 'next/navigation';
-import React from 'react';
 
 export default function MetricSelectorDropdown() {
   const { t } = useTranslation('common');
@@ -60,7 +59,7 @@ export default function MetricSelectorDropdown() {
   };
 
   // If on catch page and selected metric is not available, default to mean_cpue
-  React.useEffect(() => {
+  useEffect(() => {
     if (isCatchPage && selectedMetric && !availableMetrics.find(m => m.value === selectedMetric)) {
       setSelectedMetric('mean_cpue' as MetricKey);
     }

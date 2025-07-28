@@ -141,7 +141,7 @@ export default function CatchRadar({
       
       return point;
     });
-  }, [data, selectedDistricts, selectedMetrics, MONTHS]);
+  }, [data, selectedDistricts, MONTHS]);
 
   const handleLegendClick = (entry: any) => {
     const district = entry.dataKey;

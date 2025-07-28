@@ -17,6 +17,7 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
+import { CHART_STYLES } from "./chart-styles";
 
 // Colors for gear types (consistent set)
 const GEAR_COLORS = [
@@ -233,7 +234,7 @@ export default function CpueGearTreemap({
   const queryParams = useMemo(() => ({
     districts: districts || [],
     ...getDateRange()
-  }), [districts, selectedTimeRange, getDateRange]);
+  }), [districts, getDateRange]);
   
   // Use the same query pattern as catch-time-series
   const { data: rawData = [], isLoading, error } = api.gear.cpueByGear.useQuery(
@@ -366,7 +367,7 @@ export default function CpueGearTreemap({
               aspectRatio={1.6}
               stroke="#ffffff"
               nameKey="name"
-              isAnimationActive={false}
+              {...CHART_STYLES.animation}
               content={
                 <CustomizedTreemapContent />
               }

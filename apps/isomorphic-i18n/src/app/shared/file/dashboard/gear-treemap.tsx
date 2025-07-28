@@ -615,7 +615,7 @@ export default function GearHeatmap({
     } finally {
       setLoading(false);
     }
-  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, safeBmus]);
+  }, [rawData, selectedMetric, effectiveBMU, hasRestrictedAccess, isWbciaUser, getAccessibleBMUs, safeBmus, barData.length, loading, visibilityState]);
 
   const getTabTitle = (tab: string): string => {
     // Custom titles for CIA users who can only see their own BMU

@@ -46,6 +46,7 @@ const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_price_kg: { translationKey: "text-metrics-price-per-kg", unit: "KSH/kg" },
   mean_cpua: { translationKey: "text-metrics-catch-per-area", unit: "kg/km²/day" },
   mean_rpua: { translationKey: "text-metrics-revenue-per-area", unit: "KSH/km²/day" },
+  estimated_catch_tn: { translationKey: "text-metrics-estimated-catch", unit: "tons" },
 };
 
 const getMetricLabel = (metric: string, t: any): string => {
@@ -172,10 +173,10 @@ export default function CatchRadarChart({
   const [selectedMetric] = useAtom(selectedMetricAtom);
   
   // Default districts list if none selected
-  const defaultDistricts = [
+  const defaultDistricts = useMemo(() => [
     'Central', 'North A', 'North B', 'South', 'Urban', 'West',
     'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
-  ];
+  ], []);
   
   // Use default districts if none are selected
   const selectedDistricts = useMemo(() => 

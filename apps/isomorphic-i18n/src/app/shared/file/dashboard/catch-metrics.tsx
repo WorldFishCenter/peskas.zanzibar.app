@@ -281,7 +281,7 @@ export default function CatchMetricsChart({
   const safeBmus = useMemo(() => 
     district ? [district] : 
     (districts.length > 0 ? districts : defaultDistricts),
-    [district, districts]
+    [district, districts, defaultDistricts]
   );
   
   // Fetch monthly data
@@ -663,7 +663,7 @@ export default function CatchMetricsChart({
       // Annual data is the same for all users
       setAnnualData(getAnnualData(chartData, !canCompareWithOthers, siteColors));
     
-  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length]);
+  }, [chartData, canCompareWithOthers, isCiaUser, effectiveBMU, siteColors, recentData.length, annualData.length, loading, visibilityState]);
 
   // Find the selected metric option
   const selectedMetricOption = METRIC_OPTIONS.find(
