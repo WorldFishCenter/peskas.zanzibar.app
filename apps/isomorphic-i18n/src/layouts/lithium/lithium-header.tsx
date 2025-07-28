@@ -183,6 +183,9 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
 
   // Detect homepage (with or without language prefix)
   const isHomepage = pathname === '/' || /^\/[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(pathname);
+  
+  // Detect catch page
+  const isCatchPage = pathname?.includes('/catch');
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1 md:gap-2 xl:gap-3">

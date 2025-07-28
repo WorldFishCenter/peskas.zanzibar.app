@@ -58,6 +58,11 @@ const METRIC_CONFIG = {
     label: "Number of Fishers",
     color: "#3498DB",
     unit: "fishers"
+  },
+  estimated_catch_tn: {
+    label: "Estimated Catch",
+    color: "#8E44AD",
+    unit: "tonnes"
   }
 };
 
@@ -147,8 +152,8 @@ export default function CatchRadar({
       title={`Catch Metrics Seasonality (${year})`}
       className={className}
     >
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[30rem]">
+      <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <PolarGrid />
             <PolarAngleAxis dataKey="month" />

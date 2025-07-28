@@ -17,48 +17,53 @@ import {
 import WidgetCard from "@components/cards/widget-card";
 import { Title } from "rizzui";
 import { useTranslation } from "@/app/i18n/client";
+import { DISTRICT_COLORS } from "../charts/utils";
+import { 
+  CHART_STYLES, 
+  SHARED_METRIC_CONFIG, 
+  getDistrictColor, 
+  formatChartTitle 
+} from "./chart-styles";
 
-const METRIC_CONFIG = {
-  mean_effort: {
-    label: "Effort",
-    color: "#F28F3B",
-    unit: "fishers/km²/day"
-  },
-  mean_cpue: {
-    label: "Catch Rate",
-    color: "#75ABBC",
-    unit: "kg/fisher/day"
-  },
-  mean_rpue: {
-    label: "Fisher Revenue", 
-    color: "#4A90E2",
-    unit: "KES/fisher/day"
-  },
-  mean_price_kg: {
-    label: "Price per KG",
-    color: "#9B59B6", 
-    unit: "KES/kg"
-  },
-  total_catch_kg: {
-    label: "Total Catch",
-    color: "#E74C3C",
-    unit: "kg"
-  },
-  total_value: {
-    label: "Total Value",
-    color: "#27AE60",
-    unit: "KES"
-  },
-  n_trips: {
-    label: "Number of Trips",
-    color: "#F39C12",
-    unit: "trips"
-  },
-  n_fishers: {
-    label: "Number of Fishers",
-    color: "#3498DB",
-    unit: "fishers"
+// Custom tooltip component for modern styling
+const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
+  const { t } = useTranslation("common");
+  
+  if (active && payload && payload.length) {
+    const metricConfig = SHARED_METRIC_CONFIG[selectedMetric as keyof typeof SHARED_METRIC_CONFIG];
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 min-w-[200px]">
+        <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          {new Date(label).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}
+        </div>
+        <div className="space-y-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {entry.name}
+                </span>
+              </div>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {entry.value?.toFixed(2) || '-'}
+                {metricConfig?.unit && ` ${metricConfig.unit}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
+  return null;
 };
 
 interface CatchTimeSeriesProps {
@@ -131,48 +136,62 @@ export default function CatchTimeSeries({
     );
   }
 
+  const selectedMetric = selectedMetrics[0];
+  const metricConfig = SHARED_METRIC_CONFIG[selectedMetric as keyof typeof SHARED_METRIC_CONFIG];
+
   return (
-    <WidgetCard title="Catch Metrics Time Series" className={className}>
-      
-      <div className="h-80">
+    <WidgetCard 
+      title={
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
+            {formatChartTitle(selectedMetric, "Time Series")}
+          </span>
+          {metricConfig?.unit && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Unit: {metricConfig.unit}
+            </span>
+          )}
+        </div>
+      } 
+      className={className}
+    >
+      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[30rem]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
+          <LineChart 
+            data={chartData} 
+            margin={CHART_STYLES.margins}
+          >
+            <CartesianGrid {...CHART_STYLES.grid} />
             <XAxis 
               dataKey="date" 
+              {...CHART_STYLES.axis}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
               }}
             />
-            <YAxis />
+            <YAxis {...CHART_STYLES.axis} />
             <Tooltip 
-              formatter={(value: any, name: string) => [
-                value,
-                name
-              ]}
-              labelFormatter={(label) => {
-                const date = new Date(label);
-                return date.toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                });
-              }}
+              content={<CustomTooltip selectedMetric={selectedMetric} />}
+              wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}
             />
-            <Legend />
-            {Object.keys(chartData[0] || {}).filter(key => key !== 'date').map((district, idx) => (
-              <Line
-                key={district}
-                type="monotone"
-                dataKey={district}
-                stroke={['#4A90E2', '#F28F3B', '#27AE60', '#E74C3C', '#9B59B6', '#F39C12', '#3498DB', '#75ABBC', '#FC3468', '#2ECC71'][idx % 10]}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-                name={district}
-              />
-            ))}
+            <Legend {...CHART_STYLES.legend} />
+            {Object.keys(chartData[0] || {}).filter(key => key !== 'date').map((district, idx) => {
+              const color = getDistrictColor(district, idx, DISTRICT_COLORS);
+              return (
+                <Line
+                  key={district}
+                  type="monotone"
+                  dataKey={district}
+                  stroke={color}
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: color, stroke: color }}
+                  activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
+                  name={district}
+                  {...CHART_STYLES.animation}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>

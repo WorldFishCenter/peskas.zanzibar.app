@@ -30,16 +30,20 @@ export default function CatchPage() {
       />
       
       <div className="space-y-6">
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <CatchTimeSeries 
-            selectedMetrics={[selectedMetric]}
-            months={12}
-          />
-          <CatchRadar 
-            selectedMetrics={[selectedMetric]}
-            year={new Date().getFullYear()}
-          />
+        {/* Charts Section - 8:4 ratio layout */}
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-8">
+            <CatchTimeSeries 
+              selectedMetrics={[selectedMetric]}
+              months={12}
+            />
+          </div>
+          <div className="col-span-4">
+            <CatchRadar 
+              selectedMetrics={[selectedMetric]}
+              year={new Date().getFullYear()}
+            />
+          </div>
         </div>
       </div>
     </>

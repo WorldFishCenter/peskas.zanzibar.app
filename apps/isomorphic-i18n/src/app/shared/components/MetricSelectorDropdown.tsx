@@ -2,21 +2,46 @@ import { useAtom } from 'jotai';
 import { useState } from 'react';
 import { PiCaretDownBold } from 'react-icons/pi';
 import cn from '@utils/class-names';
-import { METRIC_OPTIONS } from '@/app/shared/file/dashboard/charts/types';
+import { METRIC_OPTIONS, MetricOption, MetricKey } from '@/app/shared/file/dashboard/charts/types';
 import { selectedMetricAtom } from '@/app/components/filter-selector';
 import { useTranslation } from '@/app/i18n/client';
+import { usePathname } from 'next/navigation';
+import React from 'react';
 
 export default function MetricSelectorDropdown() {
   const { t } = useTranslation('common');
   const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
   const [isMetricOpen, setIsMetricOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Check if we're on the catch page
+  const isCatchPage = pathname?.includes('/catch');
+
+  // Define catch-specific metrics
+  const CATCH_METRIC_OPTIONS: MetricOption[] = [
+    {
+      value: "mean_cpue",
+      label: "Catch Rate",
+      unit: "kg/fisher/day",
+      category: "catch",
+    },
+    {
+      value: "estimated_catch_tn",
+      label: "Estimated Catch",
+      unit: "tonnes",
+      category: "catch",
+    },
+  ];
+
+  // Use catch-specific metrics if on catch page, otherwise use all metrics
+  const availableMetrics = isCatchPage ? CATCH_METRIC_OPTIONS : METRIC_OPTIONS;
 
   const groupedMetrics = {
-    catch: METRIC_OPTIONS.filter((m) => m.category === 'catch'),
-    revenue: METRIC_OPTIONS.filter((m) => m.category === 'revenue'),
+    catch: availableMetrics.filter((m) => m.category === 'catch'),
+    revenue: availableMetrics.filter((m) => m.category === 'revenue'),
   };
 
-  const selectedMetricOption = METRIC_OPTIONS.find((m) => m.value === selectedMetric);
+  const selectedMetricOption = availableMetrics.find((m) => m.value === selectedMetric);
 
   const getDisplayLabel = (option: any) => {
     switch (option.value) {
@@ -25,6 +50,7 @@ export default function MetricSelectorDropdown() {
       case 'mean_cpua': return t('text-metrics-catch-density');
       case 'mean_rpue': return t('text-metrics-fisher-revenue');
       case 'mean_rpua': return t('text-metrics-area-revenue');
+      case 'estimated_catch_tn': return t('metric-estimated_catch_tn-title');
       default: return option.label;
     }
   };
@@ -32,6 +58,13 @@ export default function MetricSelectorDropdown() {
   const getUnitDisplay = (unit: string) => {
     return unit;
   };
+
+  // If on catch page and selected metric is not available, default to mean_cpue
+  React.useEffect(() => {
+    if (isCatchPage && selectedMetric && !availableMetrics.find(m => m.value === selectedMetric)) {
+      setSelectedMetric('mean_cpue' as MetricKey);
+    }
+  }, [isCatchPage, selectedMetric, availableMetrics, setSelectedMetric]);
 
   return (
     <div className="relative">
@@ -63,7 +96,7 @@ export default function MetricSelectorDropdown() {
                     <button
                       key={option.value}
                       onClick={() => {
-                        setSelectedMetric(option.value);
+                        setSelectedMetric(option.value as MetricKey);
                         setIsMetricOpen(false);
                       }}
                       className={cn(
@@ -82,36 +115,38 @@ export default function MetricSelectorDropdown() {
                   ))}
                 </div>
               </div>
-              {/* Revenue Metrics */}
-              <div>
-                <div className="flex items-center gap-2 px-2 py-1 mb-1">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-200">{t('text-metrics-revenue')}</span>
+              {/* Revenue Metrics - only show if not on catch page */}
+              {!isCatchPage && groupedMetrics.revenue.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 px-2 py-1 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-200">{t('text-metrics-revenue')}</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {groupedMetrics.revenue.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSelectedMetric(option.value as MetricKey);
+                          setIsMetricOpen(false);
+                        }}
+                        className={cn(
+                          'w-full px-2 py-1.5 text-left text-sm rounded transition-colors',
+                          'flex flex-col items-start gap-0.5',
+                          selectedMetric === option.value
+                            ? 'bg-amber-50 dark:bg-amber-800 text-amber-900 dark:text-amber-200'
+                            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        )}
+                      >
+                        <span className="font-medium">{getDisplayLabel(option)}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {getUnitDisplay(option.unit)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  {groupedMetrics.revenue.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setSelectedMetric(option.value);
-                        setIsMetricOpen(false);
-                      }}
-                      className={cn(
-                        'w-full px-2 py-1.5 text-left text-sm rounded transition-colors',
-                        'flex flex-col items-start gap-0.5',
-                        selectedMetric === option.value
-                          ? 'bg-amber-50 dark:bg-amber-800 text-amber-900 dark:text-amber-200'
-                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      )}
-                    >
-                      <span className="font-medium">{getDisplayLabel(option)}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {getUnitDisplay(option.unit)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </>

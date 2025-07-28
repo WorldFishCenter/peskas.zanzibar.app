@@ -1,6 +1,6 @@
 import { Session } from "next-auth";
 
-export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua";
+export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua" | "estimated_catch_tn";
 
 // Type for metrics supported by radar API
 export type RadarMetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
@@ -78,6 +78,12 @@ export const METRIC_OPTIONS: MetricOption[] = [
     label: "Fisher Revenue",
     unit: "KES/fisher/day",
     category: "revenue",
+  },
+  {
+    value: "estimated_catch_tn",
+    label: "Estimated Catch",
+    unit: "tonnes",
+    category: "catch",
   },
 ];
 
