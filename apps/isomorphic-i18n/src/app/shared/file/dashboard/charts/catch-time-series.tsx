@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { api } from "@/trpc/react";
 import { useAtom } from "jotai";
-import { districtsAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
 import {
   LineChart,
   Line,
@@ -30,35 +30,49 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
   const { t } = useTranslation("common");
   
   if (active && payload && payload.length) {
-    const metricConfig = SHARED_METRIC_CONFIG[selectedMetric as keyof typeof SHARED_METRIC_CONFIG];
+    // Sort payload by value to rank districts
+    const sortedPayload = [...payload].sort((a, b) => (b.value || 0) - (a.value || 0));
+    const maxValue = sortedPayload[0]?.value || 0;
+    const minValue = sortedPayload[sortedPayload.length - 1]?.value || 0;
     
     return (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 min-w-[200px]">
         <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {new Date(label).toLocaleDateString('en-US', { 
             year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+            month: 'long'
           })}
         </div>
         <div className="space-y-2">
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {entry.name}
+          {sortedPayload.map((entry: any, index: number) => {
+            const isHighest = entry.value === maxValue && maxValue > 0;
+            const isLowest = entry.value === minValue && minValue > 0 && maxValue !== minValue;
+            
+            return (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className={`text-sm font-medium ${
+                    isHighest ? 'text-green-600 dark:text-green-400 font-semibold' :
+                    isLowest ? 'text-red-600 dark:text-red-400 font-semibold' :
+                    'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {entry.name}
+                  </span>
+                </div>
+                <span className={`text-sm font-semibold ${
+                  isHighest ? 'text-green-600 dark:text-green-400' :
+                  isLowest ? 'text-red-600 dark:text-red-400' :
+                  'text-gray-900 dark:text-gray-100'
+                }`}>
+                  {entry.value?.toFixed(2) || '-'}
                 </span>
               </div>
-              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {entry.value?.toFixed(2) || '-'}
-                {metricConfig?.unit && ` ${metricConfig.unit}`}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -66,55 +80,25 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
   return null;
 };
 
-// Custom legend component with click-to-mute functionality
-const CustomLegend = ({ payload, onLegendClick, hiddenDistricts }: any) => {
-  const { t } = useTranslation("common");
-  
-  return (
-    <div className="flex flex-wrap gap-3 justify-center mt-4">
-      {payload.map((entry: any, index: number) => {
-        const isHidden = hiddenDistricts.includes(entry.value);
-        return (
-          <button
-            key={index}
-            onClick={() => onLegendClick(entry.value)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-              isHidden 
-                ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 opacity-50' 
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-            }`}
-          >
-            <div 
-              className={`w-3 h-3 rounded-full transition-opacity duration-200 ${
-                isHidden ? 'opacity-30' : 'opacity-100'
-              }`}
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className={isHidden ? 'line-through' : ''}>
-              {entry.value}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-};
+
 
 interface CatchTimeSeriesProps {
   selectedMetrics: string[];
-  months?: number;
   className?: string;
 }
 
 export default function CatchTimeSeries({ 
   selectedMetrics, 
-  months = 12,
   className = "" 
 }: CatchTimeSeriesProps) {
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
+  const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
-
+  
+  // Convert time range to months
+  const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
+  
   const { data, isLoading, error } = api.monthlySummary.timeSeries.useQuery(
     {
       districts: selectedDistricts,
@@ -140,13 +124,16 @@ export default function CatchTimeSeries({
     });
   }, [data, selectedMetrics]);
 
-  const handleLegendClick = (district: string) => {
+  const handleLegendClick = (entry: any) => {
+    const district = entry.dataKey;
     setHiddenDistricts(prev => 
       prev.includes(district) 
         ? prev.filter(d => d !== district)
         : [...prev, district]
     );
   };
+
+
 
   if (isLoading) {
     return (
@@ -221,12 +208,8 @@ export default function CatchTimeSeries({
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}
             />
             <Legend 
-              content={
-                <CustomLegend 
-                  onLegendClick={handleLegendClick}
-                  hiddenDistricts={hiddenDistricts}
-                />
-              }
+              {...CHART_STYLES.legend} 
+              onClick={handleLegendClick}
             />
             {Object.keys(chartData[0] || {}).filter(key => key !== 'date').map((district, idx) => {
               const color = getDistrictColor(district, idx, DISTRICT_COLORS);
@@ -239,7 +222,7 @@ export default function CatchTimeSeries({
                   strokeWidth={3}
                   dot={{ r: 4, fill: color, stroke: color }}
                   activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
-                  name={district}
+                                    name={district}
                   hide={hiddenDistricts.includes(district)}
                   {...CHART_STYLES.animation}
                 />

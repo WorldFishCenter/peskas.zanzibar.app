@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/trpc/react";
 import { useAtom } from "jotai";
-import { districtsAtom } from "@/app/components/filter-selector";
+import { districtsAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
 import {
   RadarChart,
   PolarGrid,
@@ -17,74 +17,93 @@ import {
 import WidgetCard from "@components/cards/widget-card";
 import { Title } from "rizzui";
 import { useTranslation } from "@/app/i18n/client";
-
-const METRIC_CONFIG = {
-  mean_effort: {
-    label: "Effort",
-    color: "#F28F3B",
-    unit: "fishers/km²/day"
-  },
-  mean_cpue: {
-    label: "Catch Rate",
-    color: "#75ABBC",
-    unit: "kg/fisher/day"
-  },
-  mean_rpue: {
-    label: "Fisher Revenue", 
-    color: "#4A90E2",
-    unit: "KES/fisher/day"
-  },
-  mean_price_kg: {
-    label: "Price per KG",
-    color: "#9B59B6", 
-    unit: "KES/kg"
-  },
-  total_catch_kg: {
-    label: "Total Catch",
-    color: "#E74C3C",
-    unit: "kg"
-  },
-  total_value: {
-    label: "Total Value",
-    color: "#27AE60",
-    unit: "KES"
-  },
-  n_trips: {
-    label: "Number of Trips",
-    color: "#F39C12",
-    unit: "trips"
-  },
-  n_fishers: {
-    label: "Number of Fishers",
-    color: "#3498DB",
-    unit: "fishers"
-  },
-  estimated_catch_tn: {
-    label: "Estimated Catch",
-    color: "#8E44AD",
-    unit: "tonnes"
-  }
-};
+import { DISTRICT_COLORS } from "../charts/utils";
+import { 
+  CHART_STYLES, 
+  SHARED_METRIC_CONFIG, 
+  getDistrictColor, 
+  formatChartTitle 
+} from "./chart-styles";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
+// Custom tooltip component for modern styling
+const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
+  const { t } = useTranslation("common");
+  
+  if (active && payload && payload.length) {
+    // Only show entries with a real value (not null/undefined/NA)
+    const filteredPayload = payload.filter((entry: any) => entry.value !== null && entry.value !== undefined);
+    if (filteredPayload.length === 0) return null;
+    // Sort payload by value to rank districts
+    const sortedPayload = [...filteredPayload].sort((a, b) => (b.value || 0) - (a.value || 0));
+    const maxValue = sortedPayload[0]?.value || 0;
+    const minValue = sortedPayload[sortedPayload.length - 1]?.value || 0;
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 min-w-[200px]">
+        <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          {label}
+        </div>
+        <div className="space-y-2">
+          {sortedPayload.map((entry: any, index: number) => {
+            const isHighest = entry.value === maxValue && maxValue > 0;
+            const isLowest = entry.value === minValue && minValue > 0 && maxValue !== minValue;
+            return (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className={`text-sm font-medium ${
+                    isHighest ? 'text-green-600 dark:text-green-400 font-semibold' :
+                    isLowest ? 'text-red-600 dark:text-red-400 font-semibold' :
+                    'text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {entry.name}
+                  </span>
+                </div>
+                <span className={`text-sm font-semibold ${
+                  isHighest ? 'text-green-600 dark:text-green-400' :
+                  isLowest ? 'text-red-600 dark:text-red-400' :
+                  'text-gray-900 dark:text-gray-100'
+                }`}>
+                  {entry.value?.toFixed(2)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+
+
 interface CatchRadarProps {
   selectedMetrics: string[];
-  year?: number;
   className?: string;
 }
 
 export default function CatchRadar({ 
   selectedMetrics, 
-  year = new Date().getFullYear(),
   className = "" 
 }: CatchRadarProps) {
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
-
+  const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
+  const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
+  
+  // Calculate year based on time range
+  const currentYear = new Date().getFullYear();
+  const year = currentYear;
+  
   const { data, isLoading, error } = api.monthlySummary.radarData.useQuery(
     {
       districts: selectedDistricts,
@@ -104,17 +123,33 @@ export default function CatchRadar({
     return MONTHS.map((month, index) => {
       const point: any = { month };
       
-      selectedMetrics.forEach(metric => {
-        if (data[index] && data[index][metric] !== undefined) {
-          point[metric] = Math.round(data[index][metric] * 100) / 100; // Round to 2 decimals
-        } else {
-          point[metric] = 0;
+      // For each district, get the district-specific value
+      selectedDistricts.forEach(district => {
+        if (data[index] && district in data[index]) {
+          const value = data[index][district];
+          // Only include if it's a non-zero value
+          if (value > 0) {
+            point[district] = Math.round(value * 100) / 100;
+          }
+          // If value is 0 or undefined, don't set it at all (leave it undefined)
         }
+        // If district not in data, leave it undefined
       });
       
       return point;
     });
-  }, [data, selectedMetrics]);
+  }, [data, selectedDistricts, selectedMetrics]);
+
+  const handleLegendClick = (entry: any) => {
+    const district = entry.dataKey;
+    setHiddenDistricts(prev => 
+      prev.includes(district) 
+        ? prev.filter(d => d !== district)
+        : [...prev, district]
+    );
+  };
+
+
 
   if (isLoading) {
     return (
@@ -147,12 +182,15 @@ export default function CatchRadar({
     );
   }
 
+  const selectedMetric = selectedMetrics[0];
+  const metricConfig = SHARED_METRIC_CONFIG[selectedMetric as keyof typeof SHARED_METRIC_CONFIG];
+
   return (
     <WidgetCard 
       title={
         <div className="flex flex-col gap-1">
           <div className="font-semibold text-gray-900 dark:text-gray-100">
-            Catch Metrics Seasonality
+            {formatChartTitle(selectedMetric, "Seasonality")}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Year: {year}
@@ -162,29 +200,35 @@ export default function CatchRadar({
       className={className}
     >
       <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
-      <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={chartData} margin={CHART_STYLES.margins}>
             <PolarGrid />
             <PolarAngleAxis dataKey="month" />
             <PolarRadiusAxis />
             <Tooltip 
-              formatter={(value: any, name: string) => [
-                `${value} ${METRIC_CONFIG[name as keyof typeof METRIC_CONFIG]?.unit || ''}`,
-                METRIC_CONFIG[name as keyof typeof METRIC_CONFIG]?.label || name
-              ]}
+              content={<CustomTooltip selectedMetric={selectedMetric} />}
+              wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}
             />
-            <Legend />
-            {selectedMetrics.map((metric) => (
-              <Radar
-                key={metric}
-                name={METRIC_CONFIG[metric as keyof typeof METRIC_CONFIG]?.label}
-                dataKey={metric}
-                stroke={METRIC_CONFIG[metric as keyof typeof METRIC_CONFIG]?.color}
-                fill={METRIC_CONFIG[metric as keyof typeof METRIC_CONFIG]?.color}
-                fillOpacity={0.3}
-                strokeWidth={2}
-              />
-            ))}
+            <Legend 
+              {...CHART_STYLES.legend} 
+              onClick={handleLegendClick}
+            />
+            {selectedDistricts.map((district, idx) => {
+              const color = getDistrictColor(district, idx, DISTRICT_COLORS);
+              return (
+                <Radar
+                  key={district}
+                  name={district}
+                  dataKey={district}
+                  stroke={color}
+                  fill={color}
+                  fillOpacity={0.3}
+                  strokeWidth={2}
+                  hide={hiddenDistricts.includes(district)}
+                  {...CHART_STYLES.animation}
+                />
+              );
+            })}
           </RadarChart>
         </ResponsiveContainer>
       </div>

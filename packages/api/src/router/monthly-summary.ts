@@ -74,23 +74,23 @@ export const monthlySummaryRouter = createTRPCRouter({
 
       console.log('Found data points:', data.length);
 
-      // Group by month and calculate averages
-      const monthlyAverages: Record<number, Record<string, number>> = {};
+      // Group by month and district for the selected metric
+      const monthlyDistrictData: Record<number, Record<string, number>> = {};
       for (let month = 0; month < 12; month++) {
         const monthData = data.filter(item => 
-          item.date.getMonth() === month
+          item.date.getMonth() === month && item.metric === metrics[0]
         );
         
-        monthlyAverages[month] = {};
-        metrics.forEach(metric => {
-          const metricData = monthData.filter(item => item.metric === metric);
-          if (metricData.length > 0) {
-            const avg = metricData.reduce((sum, item) => sum + (item.value || 0), 0) / metricData.length;
-            monthlyAverages[month][metric] = avg;
+        monthlyDistrictData[month] = {};
+        districts.forEach(district => {
+          const districtData = monthData.filter(item => item.district === district);
+          if (districtData.length > 0) {
+            const avg = districtData.reduce((sum, item) => sum + (item.value || 0), 0) / districtData.length;
+            monthlyDistrictData[month][district] = avg;
           }
         });
       }
 
-      return monthlyAverages;
+      return monthlyDistrictData;
     }),
 }); 
