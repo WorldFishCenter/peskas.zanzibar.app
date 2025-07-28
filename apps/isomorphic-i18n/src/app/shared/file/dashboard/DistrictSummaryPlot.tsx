@@ -5,7 +5,7 @@ import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { useMemo, useRef, useState } from "react";
 import { useAtom } from 'jotai';
-import { selectedTimeRangeAtom } from '@/app/components/filter-selector';
+import { selectedTimeRangeAtom } from '@/app/components/time-range-selector';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
 import { DISTRICT_COLORS } from "./charts/utils";
 import { formatDashboardNumber, getAggregatedDistrictValue } from "./utils";

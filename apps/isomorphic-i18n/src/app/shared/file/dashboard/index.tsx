@@ -7,7 +7,7 @@ import GearTreemap from "@/app/shared/file/dashboard/gear-treemap";
 import CatchRadarChart from "@/app/shared/file/dashboard/catch-radar";
 import DistrictRanking from "@/app/shared/file/dashboard/district-ranking";
 import GridMap from "./grid-map";
-import { selectedTimeRangeAtom } from "@/app/components/filter-selector";
+import { selectedTimeRangeAtom } from "@/app/components/time-range-selector";
 import Table, { HeaderCell } from "@/app/shared/table";
 import TableFilter from "@/app/shared/controlled-table/table-filter";
 import { api } from "@/trpc/react";

@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import { useTranslation } from "@/app/i18n/client";
 import Table, { HeaderCell } from "@/app/shared/table";
-import { selectedTimeRangeAtom } from "@/app/components/filter-selector";
+import { selectedTimeRangeAtom } from "@/app/components/time-range-selector";
 import { api } from "@/trpc/react";
 import { useState, useMemo } from "react";
 import type { AlignType } from "rc-table/lib/interface";

@@ -72,14 +72,7 @@ export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', '
 // Global metric selector atom
 export const selectedMetricAtom = atom<MetricKey>("mean_cpue");
 
-// Global time range selector atom and options
-export const TIME_RANGES = [
-  { label: "Last 3 months", value: 3 },
-  { label: "Last 6 months", value: 6 },
-  { label: "Last year", value: 12 },
-  { label: "All time", value: "all" },
-];
-export const selectedTimeRangeAtom = atom<string | number>(3);
+
 
 export const FilterSelector = () => {
   const { t } = useTranslation("common");

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { api } from "@/trpc/react";
 import { useAtom } from "jotai";
-import { districtsAtom, selectedTimeRangeAtom } from "@/app/components/filter-selector";
+import { districtsAtom } from "@/app/components/filter-selector";
+import { selectedTimeRangeAtom } from "@/app/components/time-range-selector";
 import {
   RadarChart,
   PolarGrid,
