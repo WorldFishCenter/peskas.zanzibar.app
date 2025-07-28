@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { GearSummaryModel } from "@repo/nosql/schema/gear-summary";
+import { GearSummaryDistrictModel } from "@repo/nosql/schema/gear-summary-district";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import getDb from "@repo/nosql";
+import { TRPCError } from "@trpc/server";
 
 export const gearRouter = createTRPCRouter({
   summaries: publicProcedure
@@ -23,5 +26,67 @@ export const gearRouter = createTRPCRouter({
           mean_rpua: 1   
         })
         .exec();
+    }),
+
+  cpueByGear: publicProcedure
+    .input(z.object({ 
+      districts: z.string().array(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      try {
+        await getDb();
+        
+        // Prepare match stage with district and date filtering
+        const matchStage: any = {
+          district: { $in: input.districts },
+          indicator: "cpue",
+          value: { $ne: null, $exists: true }
+        };
+        
+        if (input.startDate || input.endDate) {
+          matchStage.date = {};
+          if (input.startDate) {
+            matchStage.date.$gte = new Date(input.startDate);
+          }
+          if (input.endDate) {
+            matchStage.date.$lte = new Date(input.endDate);
+          }
+        }
+        
+        return await GearSummaryDistrictModel.aggregate([
+          {
+            $match: matchStage,
+          },
+          {
+            $group: {
+              _id: "$gear",
+              avg_cpue: { $avg: "$value" },
+              total_records: { $sum: 1 },
+              districts: { $addToSet: "$district" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              gear: "$_id",
+              avg_cpue: { $round: ["$avg_cpue", 2] },
+              total_records: 1,
+              district_count: { $size: "$districts" },
+            },
+          },
+          {
+            $sort: { avg_cpue: -1 },
+          },
+        ]).exec();
+      } catch (error) {
+        console.error('Error in CPUE by gear query:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch CPUE by gear data',
+          cause: error,
+        });
+      }
     }),
 });

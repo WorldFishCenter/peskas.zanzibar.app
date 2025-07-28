@@ -25,10 +25,6 @@ import {
   formatChartTitle 
 } from "./chart-styles";
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
 
 // Custom tooltip component for modern styling
 const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
@@ -100,6 +96,12 @@ export default function CatchRadar({
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
   
+  // Memoized month names with translations
+  const MONTHS = useMemo(() => [
+    t("text-jan") || "Jan", t("text-feb") || "Feb", t("text-mar") || "Mar", t("text-apr") || "Apr", t("text-may") || "May", t("text-jun") || "Jun",
+    t("text-jul") || "Jul", t("text-aug") || "Aug", t("text-sep") || "Sep", t("text-oct") || "Oct", t("text-nov") || "Nov", t("text-dec") || "Dec"
+  ], [t]);
+  
   // Calculate year based on time range
   const currentYear = new Date().getFullYear();
   const year = currentYear;
@@ -138,7 +140,7 @@ export default function CatchRadar({
       
       return point;
     });
-  }, [data, selectedDistricts, selectedMetrics]);
+  }, [data, selectedDistricts, selectedMetrics, MONTHS]);
 
   const handleLegendClick = (entry: any) => {
     const district = entry.dataKey;
@@ -153,7 +155,7 @@ export default function CatchRadar({
 
   if (isLoading) {
     return (
-      <WidgetCard title="Loading..." className={className}>
+      <WidgetCard title={t("text-loading") || "Loading..."} className={className}>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -164,7 +166,7 @@ export default function CatchRadar({
 
   if (error || !data) {
     return (
-      <WidgetCard title="Error" className={className}>
+      <WidgetCard title={t("text-error") || "Error"} className={className}>
         <div className="flex flex-col items-center justify-center h-64">
           <p className="text-gray-500">{t('text-no-data-available')}</p>
         </div>
@@ -174,9 +176,9 @@ export default function CatchRadar({
 
   if (chartData.length === 0) {
     return (
-      <WidgetCard title="No Data" className={className}>
+      <WidgetCard title={t("text-no-data") || "No Data"} className={className}>
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-gray-500">No data available for selected filters</p>
+          <p className="text-gray-500">{t("text-no-data-available-for-filters") || "No data available for selected filters"}</p>
         </div>
       </WidgetCard>
     );
@@ -190,7 +192,7 @@ export default function CatchRadar({
       title={
         <div className="flex flex-col gap-1">
           <div className="font-semibold text-gray-900 dark:text-gray-100">
-            {formatChartTitle(selectedMetric, "Seasonality")}
+            {formatChartTitle(selectedMetric, t("text-seasonality") || "Seasonality")}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Year: {year}

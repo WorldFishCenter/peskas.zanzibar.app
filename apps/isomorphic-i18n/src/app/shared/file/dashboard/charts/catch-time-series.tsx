@@ -137,7 +137,7 @@ export default function CatchTimeSeries({
 
   if (isLoading) {
     return (
-      <WidgetCard title="Loading..." className={className}>
+      <WidgetCard title={t("text-loading") || "Loading..."} className={className}>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -148,7 +148,7 @@ export default function CatchTimeSeries({
 
   if (error || !data) {
     return (
-      <WidgetCard title="Error" className={className}>
+      <WidgetCard title={t("text-error") || "Error"} className={className}>
         <div className="flex flex-col items-center justify-center h-64">
           <p className="text-gray-500">{t('text-no-data-available')}</p>
         </div>
@@ -158,9 +158,9 @@ export default function CatchTimeSeries({
 
   if (chartData.length === 0) {
     return (
-      <WidgetCard title="No Data" className={className}>
+      <WidgetCard title={t("text-no-data") || "No Data"} className={className}>
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-gray-500">No data available for selected filters</p>
+          <p className="text-gray-500">{t("text-no-data-available-for-filters") || "No data available for selected filters"}</p>
         </div>
       </WidgetCard>
     );
@@ -174,7 +174,7 @@ export default function CatchTimeSeries({
       title={
         <div className="flex flex-col gap-1">
           <div className="font-semibold text-gray-900 dark:text-gray-100">
-            {formatChartTitle(selectedMetric, "Time Series")}
+            {formatChartTitle(selectedMetric, t("text-time-series") || "Time Series")}
           </div>
           {metricConfig?.unit && (
             <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
