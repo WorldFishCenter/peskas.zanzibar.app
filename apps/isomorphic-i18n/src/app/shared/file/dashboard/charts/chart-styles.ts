@@ -97,49 +97,54 @@ export const DISTRICT_COLOR_PALETTE = [
 // Shared metric configuration
 export const SHARED_METRIC_CONFIG = {
   mean_effort: {
-    label: "Effort",
+    labelKey: "text-metrics-effort",
     color: "#F28F3B",
     unit: "fishers/km²/day"
   },
   mean_cpue: {
-    label: "Catch Rate",
+    labelKey: "text-metrics-catch-rate",
     color: "#75ABBC",
     unit: "kg/fisher/day"
   },
   mean_rpue: {
-    label: "Fisher Revenue", 
+    labelKey: "text-metrics-fisher-revenue", 
     color: "#4A90E2",
-    unit: "KES/fisher/day"
+    unit: "TZS/fisher/day"
   },
   mean_price_kg: {
-    label: "Price per KG",
+    labelKey: "metric-mean_price_kg-title",
     color: "#9B59B6", 
-    unit: "KES/kg"
+    unit: "TZS/kg"
   },
   total_catch_kg: {
-    label: "Total Catch",
+    labelKey: "text-total-catch",
     color: "#E74C3C",
     unit: "kg"
   },
   total_value: {
-    label: "Total Value",
+    labelKey: "text-total-value",
     color: "#27AE60",
-    unit: "KES"
+    unit: "TZS"
   },
   n_trips: {
-    label: "Number of Trips",
+    labelKey: "text-number-of-trips",
     color: "#F39C12",
     unit: "trips"
   },
   n_fishers: {
-    label: "Number of Fishers",
+    labelKey: "text-number-of-fishers",
     color: "#3498DB",
     unit: "fishers"
   },
   estimated_catch_tn: {
-    label: "Estimated Catch",
+    labelKey: "metric-estimated_catch_tn-title",
     color: "#8E44AD",
     unit: "tonnes"
+  },
+  estimated_revenue_TZS: {
+    labelKey: "metric-estimated_revenue_TZS-title",
+    color: "#27AE60",
+    unit: "TZS"
   }
 };
 
@@ -149,7 +154,8 @@ export const getDistrictColor = (districtName: string, index: number, districtCo
 };
 
 // Utility function to format chart titles
-export const formatChartTitle = (metricKey: string, chartType: string) => {
+export const formatChartTitle = (metricKey: string, chartType: string, t?: (key: string) => string) => {
   const metricConfig = SHARED_METRIC_CONFIG[metricKey as keyof typeof SHARED_METRIC_CONFIG];
-  return `${metricConfig?.label || "Metric"} ${chartType}`;
+  const metricLabel = t && metricConfig?.labelKey ? t(metricConfig.labelKey) : metricConfig?.labelKey || "Metric";
+  return `${metricLabel} ${chartType}`;
 }; 

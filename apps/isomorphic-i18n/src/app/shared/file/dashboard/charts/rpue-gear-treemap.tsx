@@ -51,10 +51,10 @@ const capitalizeGearType = (gear: string) => {
     .join(" ");
 };
 
-interface CpueDataItem {
+interface RpueDataItem {
   gear: string;
   name: string;
-  avg_cpue: number;
+  avg_rpue: number;
   total_records: number;
   district_count: number;
   fill?: string;
@@ -91,7 +91,7 @@ const TreemapTooltip = ({ active, payload, selectedTimeRange }: any) => {
   
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const isValidValue = data.avg_cpue !== undefined && data.avg_cpue !== null;
+    const isValidValue = data.avg_rpue !== undefined && data.avg_rpue !== null;
     
     return (
       <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
@@ -103,10 +103,10 @@ const TreemapTooltip = ({ active, payload, selectedTimeRange }: any) => {
               style={{ backgroundColor: data.fill }}
             />
             <div className={`flex justify-between text-xs`}>
-              <span className="text-gray-500 dark:text-gray-400">{t("text-average-cpue") || "Average CPUE"}:</span>
+              <span className="text-gray-500 dark:text-gray-400">{t("text-average-rpue") || "Average RPUE"}:</span>
               <span className="font-medium text-gray-900 dark:text-gray-700">
-                {isValidValue ? formatNumber(data.avg_cpue) : t("text-na")}
-                {isValidValue && ` kg/fisher/day`}
+                {isValidValue ? formatNumber(data.avg_rpue) : t("text-na")}
+                {isValidValue && ` TZS/fisher/day`}
               </span>
             </div>
           </div>
@@ -183,7 +183,7 @@ const CustomizedTreemapContent = (props: any) => {
   );
 };
 
-export default function CpueGearTreemap({
+export default function RpueGearTreemap({
   className,
   lang,
 }: {
@@ -191,7 +191,7 @@ export default function CpueGearTreemap({
   lang?: string;
 }) {
   const { theme } = useTheme();
-  const [cpueData, setCpueData] = useState<CpueDataItem[]>([]);
+  const [rpueData, setRpueData] = useState<RpueDataItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingError, setProcessingError] = useState<string | null>(null);
   
@@ -232,7 +232,7 @@ export default function CpueGearTreemap({
   }), [districts, getDateRange]);
   
   // Use the same query pattern as catch-time-series
-  const { data: rawData = [], isLoading, error } = api.gear.cpueByGear.useQuery(
+  const { data: rawData = [], isLoading, error } = api.gear.rpueByGear.useQuery(
     queryParams,
     {
       enabled: queryParams.districts.length > 0,
@@ -253,7 +253,7 @@ export default function CpueGearTreemap({
     return rawData.map((item: any, index: number) => ({
       gear: capitalizeGearType(item.gear.replace(/_/g, " ")),
       name: capitalizeGearType(item.gear.replace(/_/g, " ")), // Add name field for treemap
-      avg_cpue: Number(item.avg_cpue.toFixed(2)),
+      avg_rpue: Number(item.avg_rpue.toFixed(2)),
       total_records: item.total_records,
       district_count: item.district_count,
       fill: GEAR_COLORS[index % GEAR_COLORS.length]
@@ -264,7 +264,7 @@ export default function CpueGearTreemap({
   useEffect(() => {
     if (transformedData.length > 0 && Object.keys(visibilityState).length === 0) {
       const initialVisibility = transformedData.reduce<VisibilityState>(
-        (acc, item) => ({
+        (acc: VisibilityState, item: RpueDataItem) => ({
           ...acc,
           [item.gear]: { opacity: 1 },
         }),
@@ -274,9 +274,9 @@ export default function CpueGearTreemap({
     }
   }, [transformedData, visibilityState]);
 
-  // Update cpueData when transformed data changes
+  // Update rpueData when transformed data changes
   useEffect(() => {
-    setCpueData(transformedData);
+    setRpueData(transformedData);
   }, [transformedData]);
 
   const getTimeRangeLabel = () => {
@@ -326,11 +326,11 @@ export default function CpueGearTreemap({
           </div>
           <div className="hidden sm:block text-base font-medium text-gray-800 mx-auto">
             <div className="text-center">
-              {t("text-cpue-by-gear") || "CPUE by Gear Type"}
+              {t("text-rpue-by-gear") || "RPUE by Gear Type"}
             </div>
             <div className="text-xs text-gray-500 text-center mt-1">
-              {t("text-cpue-treemap-description") || 
-                `Average CPUE (Catch Per Unit Effort) by gear type for selected districts. Time range: ${getTimeRangeLabel()}`}
+              {t("text-rpue-treemap-description") || 
+                `Average RPUE (Revenue Per Unit Effort) by gear type for selected districts. Time range: ${getTimeRangeLabel()}`}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -345,11 +345,11 @@ export default function CpueGearTreemap({
       {/* Mobile-only title - shows on small screens */}
       <div className="sm:hidden text-center mb-4">
         <div className="text-base font-medium text-gray-800">
-          {t("text-cpue-by-gear") || "CPUE by Gear Type"}
+          {t("text-rpue-by-gear") || "RPUE by Gear Type"}
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          {t("text-cpue-treemap-description") || 
-            `Average CPUE by gear type for selected districts. Time range: ${getTimeRangeLabel()}`}
+          {t("text-rpue-treemap-description") || 
+            `Average RPUE by gear type for selected districts. Time range: ${getTimeRangeLabel()}`}
         </div>
       </div>
       
@@ -357,8 +357,8 @@ export default function CpueGearTreemap({
         <div className="w-full h-[600px] pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
-              data={cpueData.filter(item => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
-              dataKey="avg_cpue"
+              data={rpueData.filter(item => (visibilityState[item.gear]?.opacity || 1) > 0.2)}
+              dataKey="avg_rpue"
               aspectRatio={1.6}
               stroke="#ffffff"
               nameKey="name"
@@ -367,7 +367,7 @@ export default function CpueGearTreemap({
                 <CustomizedTreemapContent />
               }
             >
-              {cpueData.map((entry, index) => (
+              {rpueData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
                   name={entry.name}

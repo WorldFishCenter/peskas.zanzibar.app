@@ -41,11 +41,11 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
     const minValue = sortedPayload[sortedPayload.length - 1]?.value || 0;
     
     return (
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 min-w-[200px]">
-        <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
+        <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">
           {label}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {sortedPayload.map((entry: any, index: number) => {
             const isHighest = entry.value === maxValue && maxValue > 0;
             const isLowest = entry.value === minValue && minValue > 0 && maxValue !== minValue;
@@ -56,18 +56,17 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
                     className="w-3 h-3 rounded-full" 
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className={`text-sm font-medium ${
+                  <span className={`text-xs ${
                     isHighest ? 'text-green-600 dark:text-green-400 font-semibold' :
                     isLowest ? 'text-red-600 dark:text-red-400 font-semibold' :
-                    'text-gray-700 dark:text-gray-300'
+                    'text-gray-500 dark:text-gray-400'
                   }`}>
                     {entry.name}
                   </span>
                 </div>
-                <span className={`text-sm font-semibold ${
+                <span className={`text-xs font-medium text-gray-900 dark:text-gray-700 ${
                   isHighest ? 'text-green-600 dark:text-green-400' :
-                  isLowest ? 'text-red-600 dark:text-red-400' :
-                  'text-gray-900 dark:text-gray-100'
+                  isLowest ? 'text-red-600 dark:text-red-400' : ''
                 }`}>
                   {entry.value?.toFixed(2)}
                 </span>
@@ -190,16 +189,8 @@ export default function CatchRadar({
 
   return (
     <WidgetCard 
-      title={
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold text-gray-900 dark:text-gray-100">
-            {formatChartTitle(selectedMetric, t("text-seasonality") || "Seasonality")}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-            Year: {year}
-          </div>
-        </div>
-      }
+      title={formatChartTitle(selectedMetric, t("text-seasonality") || "Seasonality", t)}
+      description={`Year: ${year}`}
       className={className}
     >
       <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">

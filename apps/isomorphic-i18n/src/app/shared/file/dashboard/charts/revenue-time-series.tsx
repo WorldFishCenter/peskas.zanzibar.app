@@ -82,15 +82,15 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
 
 
 
-interface CatchTimeSeriesProps {
+interface RevenueTimeSeriesProps {
   selectedMetrics: string[];
   className?: string;
 }
 
-export default function CatchTimeSeries({ 
+export default function RevenueTimeSeries({ 
   selectedMetrics, 
   className = "" 
-}: CatchTimeSeriesProps) {
+}: RevenueTimeSeriesProps) {
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
@@ -212,7 +212,7 @@ export default function CatchTimeSeries({
                   strokeWidth={3}
                   dot={{ r: 4, fill: color, stroke: color }}
                   activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
-                                    name={district}
+                  name={district}
                   hide={hiddenDistricts.includes(district)}
                   {...CHART_STYLES.animation}
                 />

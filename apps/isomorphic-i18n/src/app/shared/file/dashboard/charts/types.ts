@@ -1,9 +1,9 @@
 import { Session } from "next-auth";
 
-export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua" | "estimated_catch_tn";
+export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua" | "estimated_catch_tn" | "estimated_revenue_TZS";
 
 // Type for metrics supported by radar API
-export type RadarMetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
+export type RadarMetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua" | "estimated_revenue_TZS";
 
 export interface ChartDataPoint {
   date: number;
@@ -85,6 +85,12 @@ export const METRIC_OPTIONS: MetricOption[] = [
     label: "Estimated Catch",
     unit: "tonnes",
     category: "catch",
+  },
+  {
+    value: "estimated_revenue_TZS",
+    label: "Estimated Revenue",
+    unit: "TZS",
+    category: "revenue",
   },
 ];
 

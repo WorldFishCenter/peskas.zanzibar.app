@@ -3,18 +3,20 @@ import { useState, useEffect } from 'react';
 import { PiCaretDownBold } from 'react-icons/pi';
 import cn from '@utils/class-names';
 import { METRIC_OPTIONS, MetricOption, MetricKey } from '@/app/shared/file/dashboard/charts/types';
-import { selectedMetricAtom } from '@/app/components/filter-selector';
+import { selectedMetricAtom, selectedRevenueMetricAtom } from '@/app/components/filter-selector';
 import { useTranslation } from '@/app/i18n/client';
 import { usePathname } from 'next/navigation';
 
 export default function MetricSelectorDropdown() {
   const { t } = useTranslation('common');
   const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
+  const [selectedRevenueMetric, setSelectedRevenueMetric] = useAtom(selectedRevenueMetricAtom);
   const [isMetricOpen, setIsMetricOpen] = useState(false);
   const pathname = usePathname();
 
-  // Check if we're on the catch page
+  // Check if we're on the catch page or revenue page
   const isCatchPage = pathname?.includes('/catch');
+  const isRevenuePage = pathname?.includes('/revenue');
 
   // Define catch-specific metrics
   const CATCH_METRIC_OPTIONS: MetricOption[] = [
@@ -32,15 +34,44 @@ export default function MetricSelectorDropdown() {
     },
   ];
 
-  // Use catch-specific metrics if on catch page, otherwise use all metrics
-  const availableMetrics = isCatchPage ? CATCH_METRIC_OPTIONS : METRIC_OPTIONS;
+  // Define revenue-specific metrics
+  const REVENUE_METRIC_OPTIONS: MetricOption[] = [
+    {
+      value: "mean_rpue",
+      label: "Fisher Revenue",
+      unit: "TZS/fisher/day",
+      category: "revenue",
+    },
+    {
+      value: "estimated_revenue_TZS",
+      label: "Estimated Revenue",
+      unit: "TZS",
+      category: "revenue",
+    },
+  ];
 
-  const groupedMetrics = {
+  // Use page-specific metrics based on current page
+  const availableMetrics = isCatchPage ? CATCH_METRIC_OPTIONS : 
+                          isRevenuePage ? REVENUE_METRIC_OPTIONS : 
+                          METRIC_OPTIONS;
+
+  // Only show the relevant category based on the current page
+  const groupedMetrics = isCatchPage ? {
+    catch: availableMetrics.filter((m) => m.category === 'catch'),
+    revenue: []
+  } : isRevenuePage ? {
+    catch: [],
+    revenue: availableMetrics.filter((m) => m.category === 'revenue')
+  } : {
     catch: availableMetrics.filter((m) => m.category === 'catch'),
     revenue: availableMetrics.filter((m) => m.category === 'revenue'),
   };
 
-  const selectedMetricOption = availableMetrics.find((m) => m.value === selectedMetric);
+  // Use the appropriate metric based on the current page
+  const currentMetric = isRevenuePage ? selectedRevenueMetric : selectedMetric;
+  const setCurrentMetric = isRevenuePage ? setSelectedRevenueMetric : setSelectedMetric;
+  
+  const selectedMetricOption = availableMetrics.find((m) => m.value === currentMetric);
 
   const getDisplayLabel = (option: any) => {
     switch (option.value) {
@@ -65,6 +96,13 @@ export default function MetricSelectorDropdown() {
     }
   }, [isCatchPage, selectedMetric, availableMetrics, setSelectedMetric]);
 
+  // If on revenue page and selected metric is not available, default to estimated_revenue_TZS
+  useEffect(() => {
+    if (isRevenuePage && selectedRevenueMetric && !availableMetrics.find(m => m.value === selectedRevenueMetric)) {
+      setSelectedRevenueMetric('estimated_revenue_TZS' as MetricKey);
+    }
+  }, [isRevenuePage, selectedRevenueMetric, availableMetrics, setSelectedRevenueMetric]);
+
   return (
     <div className="relative">
       <button
@@ -83,39 +121,41 @@ export default function MetricSelectorDropdown() {
         <>
           <div className="fixed inset-0 z-[1000]" onClick={() => setIsMetricOpen(false)} />
           <div className="absolute left-1/2 sm:left-auto sm:right-0 top-full mt-1 w-80 sm:w-64 -translate-x-1/2 sm:translate-x-0 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-[1001] max-h-96 overflow-y-auto">
-            <div className="p-2">
-              {/* Catch Metrics */}
-              <div className="mb-3">
-                <div className="flex items-center gap-2 px-2 py-1 mb-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-500" />
-                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-200">{t('text-metrics-catch')}</span>
+                        <div className="p-2">
+              {/* Catch Metrics - only show if on catch page or if there are catch metrics */}
+              {groupedMetrics.catch.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center gap-2 px-2 py-1 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-200">{t('text-metrics-catch')}</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {groupedMetrics.catch.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setCurrentMetric(option.value as MetricKey);
+                          setIsMetricOpen(false);
+                        }}
+                        className={cn(
+                          'w-full px-2 py-1.5 text-left text-sm rounded transition-colors',
+                          'flex flex-col items-start gap-0.5',
+                          currentMetric === option.value
+                            ? 'bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200'
+                            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        )}
+                      >
+                        <span className="font-medium">{getDisplayLabel(option)}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {getUnitDisplay(option.unit)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  {groupedMetrics.catch.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setSelectedMetric(option.value as MetricKey);
-                        setIsMetricOpen(false);
-                      }}
-                      className={cn(
-                        'w-full px-2 py-1.5 text-left text-sm rounded transition-colors',
-                        'flex flex-col items-start gap-0.5',
-                        selectedMetric === option.value
-                          ? 'bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200'
-                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      )}
-                    >
-                      <span className="font-medium">{getDisplayLabel(option)}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {getUnitDisplay(option.unit)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Revenue Metrics - only show if not on catch page */}
-              {!isCatchPage && groupedMetrics.revenue.length > 0 && (
+              )}
+              {/* Revenue Metrics - only show if on revenue page or if there are revenue metrics */}
+              {groupedMetrics.revenue.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 px-2 py-1 mb-1">
                     <div className="w-2 h-2 rounded-full bg-amber-500" />
@@ -126,13 +166,13 @@ export default function MetricSelectorDropdown() {
                       <button
                         key={option.value}
                         onClick={() => {
-                          setSelectedMetric(option.value as MetricKey);
+                          setCurrentMetric(option.value as MetricKey);
                           setIsMetricOpen(false);
                         }}
                         className={cn(
                           'w-full px-2 py-1.5 text-left text-sm rounded transition-colors',
                           'flex flex-col items-start gap-0.5',
-                          selectedMetric === option.value
+                          currentMetric === option.value
                             ? 'bg-amber-50 dark:bg-amber-800 text-amber-900 dark:text-amber-200'
                             : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}

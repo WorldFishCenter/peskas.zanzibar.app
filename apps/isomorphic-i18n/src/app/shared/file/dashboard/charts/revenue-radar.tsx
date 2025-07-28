@@ -6,14 +6,14 @@ import { useAtom } from "jotai";
 import { districtsAtom } from "@/app/components/filter-selector";
 import { selectedTimeRangeAtom } from "@/app/components/time-range-selector";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
   Legend,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 import WidgetCard from "@components/cards/widget-card";
 import { Title } from "rizzui";
@@ -26,29 +26,29 @@ import {
   formatChartTitle 
 } from "./chart-styles";
 
+
 // Custom tooltip component for modern styling
 const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
   const { t } = useTranslation("common");
   
   if (active && payload && payload.length) {
+    // Only show entries with a real value (not null/undefined/NA)
+    const filteredPayload = payload.filter((entry: any) => entry.value !== null && entry.value !== undefined);
+    if (filteredPayload.length === 0) return null;
     // Sort payload by value to rank districts
-    const sortedPayload = [...payload].sort((a, b) => (b.value || 0) - (a.value || 0));
+    const sortedPayload = [...filteredPayload].sort((a, b) => (b.value || 0) - (a.value || 0));
     const maxValue = sortedPayload[0]?.value || 0;
     const minValue = sortedPayload[sortedPayload.length - 1]?.value || 0;
     
     return (
       <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
         <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">
-          {new Date(label).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long'
-          })}
+          {label}
         </div>
         <div className="space-y-1">
           {sortedPayload.map((entry: any, index: number) => {
             const isHighest = entry.value === maxValue && maxValue > 0;
             const isLowest = entry.value === minValue && minValue > 0 && maxValue !== minValue;
-            
             return (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
                   isHighest ? 'text-green-600 dark:text-green-400' :
                   isLowest ? 'text-red-600 dark:text-red-400' : ''
                 }`}>
-                  {entry.value?.toFixed(2) || '-'}
+                  {entry.value?.toFixed(2)}
                 </span>
               </div>
             );
@@ -82,28 +82,35 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
 
 
 
-interface CatchTimeSeriesProps {
+interface RevenueRadarProps {
   selectedMetrics: string[];
   className?: string;
 }
 
-export default function CatchTimeSeries({ 
+export default function RevenueRadar({ 
   selectedMetrics, 
   className = "" 
-}: CatchTimeSeriesProps) {
+}: RevenueRadarProps) {
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
   
-  // Convert time range to months
-  const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
+  // Memoized month names with translations
+  const MONTHS = useMemo(() => [
+    t("text-jan") || "Jan", t("text-feb") || "Feb", t("text-mar") || "Mar", t("text-apr") || "Apr", t("text-may") || "May", t("text-jun") || "Jun",
+    t("text-jul") || "Jul", t("text-aug") || "Aug", t("text-sep") || "Sep", t("text-oct") || "Oct", t("text-nov") || "Nov", t("text-dec") || "Dec"
+  ], [t]);
   
-  const { data, isLoading, error } = api.monthlySummary.timeSeries.useQuery(
+  // Calculate year based on time range
+  const currentYear = new Date().getFullYear();
+  const year = currentYear;
+  
+  const { data, isLoading, error } = api.monthlySummary.radarData.useQuery(
     {
       districts: selectedDistricts,
       metrics: selectedMetrics,
-      months
+      year
     },
     {
       enabled: selectedDistricts.length > 0 && selectedMetrics.length > 0,
@@ -114,15 +121,26 @@ export default function CatchTimeSeries({
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    const dates = Object.keys(data).sort();
-    return dates.map(date => {
-      const point: any = { date };
-      Object.keys(data[date][selectedMetrics[0]] || {}).forEach(district => {
-        point[district] = data[date][selectedMetrics[0]][district];
+
+    return MONTHS.map((month, index) => {
+      const point: any = { month };
+      
+      // For each district, get the district-specific value
+      selectedDistricts.forEach(district => {
+        if (data[index] && district in data[index]) {
+          const value = data[index][district];
+          // Only include if it's a non-zero value
+          if (value > 0) {
+            point[district] = Math.round(value * 100) / 100;
+          }
+          // If value is 0 or undefined, don't set it at all (leave it undefined)
+        }
+        // If district not in data, leave it undefined
       });
+      
       return point;
     });
-  }, [data, selectedMetrics]);
+  }, [data, selectedDistricts, MONTHS]);
 
   const handleLegendClick = (entry: any) => {
     const district = entry.dataKey;
@@ -171,28 +189,16 @@ export default function CatchTimeSeries({
 
   return (
     <WidgetCard 
-      title={formatChartTitle(selectedMetric, t("text-time-series") || "Time Series", t)}
-      description={metricConfig?.unit ? `Unit: ${metricConfig.unit}` : undefined}
+      title={formatChartTitle(selectedMetric, t("text-seasonality") || "Seasonality", t)}
+      description={`Year: ${year}`}
       className={className}
     >
       <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-            data={chartData} 
-            margin={CHART_STYLES.margins}
-          >
-            <CartesianGrid {...CHART_STYLES.grid} />
-            <XAxis 
-              dataKey="date" 
-              {...CHART_STYLES.axis}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-              }}
-              interval="preserveStartEnd"
-              minTickGap={30}
-            />
-            <YAxis {...CHART_STYLES.axis} />
+          <RadarChart data={chartData} margin={CHART_STYLES.margins}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="month" />
+            <PolarRadiusAxis />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}
@@ -201,24 +207,23 @@ export default function CatchTimeSeries({
               {...CHART_STYLES.legend} 
               onClick={handleLegendClick}
             />
-            {Object.keys(chartData[0] || {}).filter(key => key !== 'date').map((district, idx) => {
+            {selectedDistricts.map((district, idx) => {
               const color = getDistrictColor(district, idx, DISTRICT_COLORS);
               return (
-                <Line
+                <Radar
                   key={district}
-                  type="monotone"
+                  name={district}
                   dataKey={district}
                   stroke={color}
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: color, stroke: color }}
-                  activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
-                                    name={district}
+                  fill={color}
+                  fillOpacity={0.3}
+                  strokeWidth={2}
                   hide={hiddenDistricts.includes(district)}
                   {...CHART_STYLES.animation}
                 />
               );
             })}
-          </LineChart>
+          </RadarChart>
         </ResponsiveContainer>
       </div>
     </WidgetCard>

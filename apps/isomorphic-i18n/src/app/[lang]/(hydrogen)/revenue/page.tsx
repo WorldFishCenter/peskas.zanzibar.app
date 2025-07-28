@@ -2,25 +2,25 @@
 
 import { useAtom } from "jotai";
 import PageHeader from "@/app/shared/page-header";
-import CatchTimeSeries from "@/app/shared/file/dashboard/charts/catch-time-series";
-import CatchRadar from "@/app/shared/file/dashboard/charts/catch-radar";
-import CpueGearTreemap from "@/app/shared/file/dashboard/charts/cpue-gear-treemap";
-import { selectedMetricAtom } from "@/app/components/filter-selector";
+import RevenueTimeSeries from "@/app/shared/file/dashboard/charts/revenue-time-series";
+import RevenueRadar from "@/app/shared/file/dashboard/charts/revenue-radar";
+import RpueGearTreemap from "@/app/shared/file/dashboard/charts/rpue-gear-treemap";
+import { selectedRevenueMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
 
-export default function CatchPage() {
-  const [selectedMetric] = useAtom(selectedMetricAtom);
+export default function RevenuePage() {
+  const [selectedMetric] = useAtom(selectedRevenueMetricAtom);
   const { t } = useTranslation("common");
 
   const pageHeader = {
-    title: t("text-catch-analysis") || "Catch Analysis",
+    title: t("text-revenue-analysis") || "Revenue Analysis",
     breadcrumb: [
       {
         href: "/",
         name: t("text-home") || "Home",
       },
       {
-        name: t("nav-catch") || "Catch",
+        name: t("nav-revenue") || "Revenue",
       },
     ],
   };
@@ -36,21 +36,21 @@ export default function CatchPage() {
         {/* Charts Section - 8:4 ratio layout */}
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-8">
-            <CatchTimeSeries 
+            <RevenueTimeSeries 
               selectedMetrics={[selectedMetric]}
             />
           </div>
           <div className="col-span-4">
-            <CatchRadar 
+            <RevenueRadar 
               selectedMetrics={[selectedMetric]}
             />
           </div>
         </div>
         
-        {/* CPUE Treemap Section - Full width */}
+        {/* RPUE Treemap Section - Full width */}
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12">
-            <CpueGearTreemap />
+            <RpueGearTreemap />
           </div>
         </div>
       </div>

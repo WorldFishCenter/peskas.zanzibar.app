@@ -89,4 +89,66 @@ export const gearRouter = createTRPCRouter({
         });
       }
     }),
+
+  rpueByGear: publicProcedure
+    .input(z.object({ 
+      districts: z.string().array(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      try {
+        await getDb();
+        
+        // Prepare match stage with district and date filtering
+        const matchStage: any = {
+          district: { $in: input.districts },
+          indicator: "rpue",
+          value: { $ne: null, $exists: true }
+        };
+        
+        if (input.startDate || input.endDate) {
+          matchStage.date = {};
+          if (input.startDate) {
+            matchStage.date.$gte = new Date(input.startDate);
+          }
+          if (input.endDate) {
+            matchStage.date.$lte = new Date(input.endDate);
+          }
+        }
+        
+        return await GearSummaryDistrictModel.aggregate([
+          {
+            $match: matchStage,
+          },
+          {
+            $group: {
+              _id: "$gear",
+              avg_rpue: { $avg: "$value" },
+              total_records: { $sum: 1 },
+              districts: { $addToSet: "$district" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              gear: "$_id",
+              avg_rpue: { $round: ["$avg_rpue", 2] },
+              total_records: 1,
+              district_count: { $size: "$districts" },
+            },
+          },
+          {
+            $sort: { avg_rpue: -1 },
+          },
+        ]).exec();
+      } catch (error) {
+        console.error('Error in RPUE by gear query:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch RPUE by gear data',
+          cause: error,
+        });
+      }
+    }),
 });
