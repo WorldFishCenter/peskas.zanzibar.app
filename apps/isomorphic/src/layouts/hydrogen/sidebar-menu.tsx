@@ -30,7 +30,7 @@ export function SidebarMenu() {
                       <div
                         onClick={toggle}
                         className={cn(
-                          'group relative mx-3 flex cursor-pointer items-center justify-between rounded-md px-3 py-2 font-medium lg:my-1 2xl:mx-5 2xl:my-2',
+                          'group relative mx-4 flex cursor-pointer items-center justify-between rounded-md px-3 py-2 font-medium lg:my-1 md:mx-5 lg:mx-6 3xl:mx-8 4xl:mx-10 2xl:my-2',
                           isDropdownOpen
                             ? 'before:top-2/5 text-primary before:absolute before:-start-3 before:block before:h-4/5 before:w-1 before:rounded-ee-md before:rounded-se-md before:bg-primary 2xl:before:-start-5'
                             : 'text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:text-gray-700/90 dark:hover:text-gray-700'
@@ -71,7 +71,7 @@ export function SidebarMenu() {
                           href={dropdownItem?.href}
                           key={dropdownItem?.name + index}
                           className={cn(
-                            'mx-3.5 mb-0.5 flex items-center justify-between rounded-md px-3.5 py-2 font-medium capitalize last-of-type:mb-1 lg:last-of-type:mb-2 2xl:mx-5',
+                            'mx-5 mb-0.5 flex items-center justify-between rounded-md px-3.5 py-2 font-medium capitalize last-of-type:mb-1 lg:last-of-type:mb-2 md:mx-6 lg:mx-7 3xl:mx-9 4xl:mx-11',
                             isChildActive
                               ? 'text-primary'
                               : 'text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900'
@@ -101,7 +101,7 @@ export function SidebarMenu() {
                   <Link
                     href={item?.href}
                     className={cn(
-                      'group relative mx-3 my-0.5 flex items-center justify-between rounded-md px-3 py-2 font-medium capitalize lg:my-1 2xl:mx-5 2xl:my-2',
+                      'group relative mx-4 my-0.5 flex items-center justify-between rounded-md px-3 py-2 font-medium capitalize lg:my-1 md:mx-5 lg:mx-6 3xl:mx-8 4xl:mx-10 2xl:my-2',
                       isActive
                         ? 'before:top-2/5 text-primary before:absolute before:-start-3 before:block before:h-4/5 before:w-1 before:rounded-ee-md before:rounded-se-md before:bg-primary 2xl:before:-start-5'
                         : 'text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-700/90'
