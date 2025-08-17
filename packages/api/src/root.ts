@@ -9,7 +9,8 @@ import {
   individualDataRouter,
   districtSummaryRouter,
   gridSummaryRouter,
-  monthlySummaryRouter
+  monthlySummaryRouter,
+  taxaSummariesRouter
 } from "./router";
 import { createTRPCRouter } from "./trpc";
 
@@ -25,6 +26,7 @@ export const appRouter = createTRPCRouter({
   districtSummary: districtSummaryRouter,
   gridSummary: gridSummaryRouter,
   monthlySummary: monthlySummaryRouter,
+  taxaSummaries: taxaSummariesRouter,
 });
 
 // export type definition of API

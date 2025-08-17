@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PiCaretDownBold } from "react-icons/pi";
+import { Badge } from "rizzui";
 import cn from "@utils/class-names";
 import NavMenu from "@/layouts/nav-menu/nav-menu";
 import { DropdownItemType, LithiumMenuItemsKeys, lithiumMenuItems } from "@/layouts/lithium/lithium-menu-items";
@@ -25,11 +26,24 @@ function MenuTriggerButton({
   showCaret?: boolean;
 }) {
   const { t } = useTranslation(lang!, "nav");
+  const isWorkInProgress = name === "catch_composition";
+  
   return (
     <>
-      <span className="text-sm font-medium text-gray-900">
-        {t(lithiumMenuItems[name].name)}
-      </span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-900">
+          {t(lithiumMenuItems[name].name)}
+        </span>
+        {isWorkInProgress && (
+          <Badge 
+            size="sm"
+            variant="outline"
+            className="text-xs px-1.5 py-0.5 bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
+          >
+            Beta
+          </Badge>
+        )}
+      </div>
       {showCaret && <PiCaretDownBold className="text-gray-600 ml-1" />}
     </>
   );
@@ -64,7 +78,18 @@ function LinkMenu({
               )}
             >
               {IconComponent && <IconComponent className="h-5 w-5 text-gray-600" />}
-              <span>{t(item.name)}</span>
+              <div className="flex items-center gap-2">
+                <span>{t(item.name)}</span>
+                {item.name === 'nav-catch-composition' && (
+                  <Badge 
+                    size="sm"
+                    variant="outline"
+                    className="text-xs px-1.5 py-0.5 bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
+                  >
+                    Beta
+                  </Badge>
+                )}
+              </div>
             </Link>
           </li>
         );

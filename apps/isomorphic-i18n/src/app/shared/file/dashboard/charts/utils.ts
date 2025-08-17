@@ -288,6 +288,28 @@ export const getAnnualData = (chartData: ChartDataPoint[], isCiaUser: boolean, s
   return result.sort((a, b) => a.date - b.date);
 };
 
+// Species color palette for consistent visualization
+export const SPECIES_COLORS = [
+  "#4F46E5", // Indigo
+  "#06B6D4", // Cyan
+  "#10B981", // Emerald
+  "#F59E0B", // Amber
+  "#EF4444", // Red
+  "#8B5CF6", // Purple
+  "#F97316", // Orange
+  "#14B8A6", // Teal
+  "#EC4899", // Pink
+  "#84CC16", // Lime
+  "#6366F1", // Blue
+  "#F472B6", // Hot Pink
+  "#9CA3AF", // Gray for Others
+];
+
+// Species color generator - ensures consistent coloring across components
+export const generateSpeciesColor = (index: number): string => {
+  return SPECIES_COLORS[index % SPECIES_COLORS.length];
+};
+
 // Fish category color generator - ensures consistent coloring across components
 export const generateFishCategoryColor = (category: string): string => {
   if (!category) return "#6B7280"; // Default gray for empty categories

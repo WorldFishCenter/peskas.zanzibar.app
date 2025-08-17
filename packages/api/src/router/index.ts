@@ -11,6 +11,7 @@ import { individualDataRouter } from "./individual-data";
 import { districtSummaryRouter } from "./district-summary";
 import { gridSummaryRouter } from "./grid-summary";
 import { monthlySummaryRouter } from "./monthly-summary";
+import { taxaSummariesRouter } from "./taxa-summaries";
 
 // Export all routers for easier imports
 export {
@@ -27,4 +28,5 @@ export {
   districtSummaryRouter,
   gridSummaryRouter,
   monthlySummaryRouter,
+  taxaSummariesRouter,
 }; 
