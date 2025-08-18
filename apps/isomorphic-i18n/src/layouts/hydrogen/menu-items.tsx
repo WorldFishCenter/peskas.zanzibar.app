@@ -3,7 +3,9 @@ import { DUMMY_ID } from '@/config/constants';
 import {
   PiFishDuotone,
   PiInfoDuotone,
-  PiHouseLineDuotone
+  PiHouseLineDuotone,
+  PiCurrencyDollarDuotone,
+  PiChartPieDuotone
 } from 'react-icons/pi';
 
 // Note: do not add href in the label object, it is rendering as label
@@ -11,28 +13,27 @@ export const menuItems = [
   // Home
   {
     name: 'Home',
-    href: '/',
+    href: routes.home,
     icon: <PiHouseLineDuotone />,
-  },
-  // Catch Composition
-  {
-    name: 'Catch Composition',
-    href: routes.catch_composition,
-    icon: <PiFishDuotone />,
   },
   // Catch
   {
     name: 'Catch',
-    href: routes.catch_composition,
+    href: routes.catch,
     icon: <PiFishDuotone />,
   },
   // Revenue
   {
     name: 'Revenue',
-    href: routes.catch_composition,
-    icon: <PiFishDuotone />,
+    href: routes.revenue,
+    icon: <PiCurrencyDollarDuotone />,
   },
-
+  // Catch Composition
+  {
+    name: 'Catch Composition',
+    href: routes.catch_composition,
+    icon: <PiChartPieDuotone />,
+  },
   // About page
   {
     name: 'About',

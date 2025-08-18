@@ -1,4 +1,5 @@
 export const routes = {
+  home: '/',
   about: '/about',
   catch_composition: '/catch_composition',
   catch: '/catch',

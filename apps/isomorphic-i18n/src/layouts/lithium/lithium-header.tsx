@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Badge, ActionIcon, Text } from "rizzui";
+import { Badge, ActionIcon, Text, Popover } from "rizzui";
 import cn from "@utils/class-names";
 import MessagesDropdown from "@/layouts/messages-dropdown";
 import NotificationDropdown from "@/layouts/notification-dropdown";
@@ -18,6 +18,7 @@ import {
   PiMoon,
   PiMapPinDuotone,
   PiCaretDownBold,
+  PiSlidersDuotone,
 } from "react-icons/pi";
 import { useTheme } from "next-themes";
 import HeaderMenuLeft from "@/layouts/lithium/lithium-menu";
@@ -130,15 +131,15 @@ function CompactLanguageSwitcher() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
+          "flex items-center gap-1.5 px-2 py-1.5 xs:px-3 xs:py-2 sm:px-4 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200",
           isOpen && "ring-2 ring-blue-200"
         )}
       >
-        <span className="w-4 h-3 overflow-hidden flex items-center justify-center">
+        <span className="w-4 h-3 overflow-hidden flex items-center justify-center flex-shrink-0">
           {currentLanguage.icon}
         </span>
-        <span className="hidden sm:inline">{currentLanguage.name}</span>
-        <PiCaretDownBold className={cn("h-3 w-3 transition-transform", isOpen && "rotate-180")} />
+        <span className="hidden xs:inline text-xs sm:text-sm">{currentLanguage.name}</span>
+        <PiCaretDownBold className={cn("h-3 w-3 flex-shrink-0 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
@@ -169,58 +170,118 @@ function CompactLanguageSwitcher() {
   );
 }
 
+// Mobile Filters Menu - provides access to filters hidden on mobile
+function MobileFiltersMenu({ lang }: { lang?: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const { t } = useTranslation(lang || 'en');
+  
+  // Detect homepage and special pages
+  const isHomepage = pathname === '/' || (pathname && /^\/[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(pathname));
+  const isCatchCompositionPage = pathname?.includes('/catch_composition');
+  
+  // Don't show the mobile filters menu on homepage
+  if (isHomepage) return null;
+
+  return (
+    <div className="flex items-center lg:hidden ml-2 xs:ml-3 sm:ml-4">
+      <Popover 
+        isOpen={isOpen} 
+        setIsOpen={setIsOpen} 
+        placement="bottom-end"
+      >
+        <Popover.Trigger>
+          <button
+            className="flex items-center gap-1.5 px-2 py-1.5 xs:px-3 xs:py-2 sm:px-4 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200"
+            aria-label="Additional filters"
+          >
+            <PiSlidersDuotone className="h-4 w-4" />
+            <span className="hidden xs:inline text-sm">{t('text-filters') || 'Filters'}</span>
+          </button>
+        </Popover.Trigger>
+        <Popover.Content className="w-72 p-4 bg-gray-0 dark:bg-gray-50 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600">
+          <div className="space-y-4">
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-3">
+              {t('text-additional-filters') || 'Additional Filters'}
+            </div>
+            
+            {/* Metric Selector for mobile */}
+            {!isCatchCompositionPage && (
+              <div className="sm:hidden">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('text-metric') || 'Metric'}
+                </label>
+                <MetricSelectorDropdown />
+              </div>
+            )}
+            
+            {/* District Filter for mobile */}
+            <div className="lg:hidden">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('text-districts') || 'Districts'}
+              </label>
+              <FilterSelector />
+            </div>
+          </div>
+        </Popover.Content>
+      </Popover>
+    </div>
+  );
+}
+
 function HeaderMenuRight({ lang }: { lang?: string }) {
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw || '';
   const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
   const { t } = useTranslation(lang || 'en');
   
-  const selectedMetricOption = METRIC_OPTIONS.find(
-    (m) => m.value === selectedMetric
-  );
-
   // Detect homepage (with or without language prefix)
   const isHomepage = pathname === '/' || /^\/[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(pathname);
-  
-  // Detect catch page
-  const isCatchPage = pathname?.includes('/catch');
   
   // Detect catch composition page
   const isCatchCompositionPage = pathname?.includes('/catch_composition');
 
   return (
-    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-2 sm:gap-2 md:gap-2 xl:gap-3">
-      {/* Time Range Selector: always show, but smaller on mobile */}
-      <div className="hidden xs:block">
+    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
+      {/* Mobile-first approach: Show essential controls first */}
+      
+      {/* Time Range - Always visible but compact on mobile */}
+      <div className="flex-shrink-0">
         <TimeRangeSelector />
       </div>
-      {/* Hide MetricSelectorDropdown on homepage and catch_composition page */}
+      
+      {/* Metric Selector - Hide on homepage and catch_composition, show from sm up */}
       {!isHomepage && !isCatchCompositionPage && (
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex flex-shrink-0">
           <MetricSelectorDropdown />
         </div>
       )}
+      
+      {/* District Filter - Show from md up for non-homepage */}
       {!isHomepage && (
-        <div className="hidden md:block">
+        <div className="hidden lg:flex flex-shrink-0">
           <FilterSelector />
         </div>
       )}
-      {/* Compact controls for mobile */}
-      <div className="flex items-center gap-1 xs:hidden">
-        <TimeRangeSelector />
-      </div>
-      <div className="hidden xs:block sm:hidden">
+      
+      {/* Language Switcher - Always visible but more compact on mobile */}
+      <div className="flex-shrink-0">
         <CompactLanguageSwitcher />
       </div>
-      <div className="hidden sm:block">
-        <CompactLanguageSwitcher />
+      
+      {/* Theme Toggle - Always visible */}
+      <div className="flex-shrink-0">
+        <ThemeToggle />
       </div>
-      <ThemeToggle />
-      <ProfileMenu
-        buttonClassName="w-auto sm:w-auto p-1 border border-gray-300 dark:border-gray-700"
-        avatarClassName="!w-6 !h-6 xs:!w-7 xs:!h-7 sm:!h-8 sm:!w-8"
-        lang={lang}
-      />
+      
+      {/* Profile Menu - Always visible */}
+      <div className="flex-shrink-0">
+        <ProfileMenu
+          buttonClassName="w-auto sm:w-auto p-1 border border-gray-300 dark:border-gray-700"
+          avatarClassName="!w-6 !h-6 xs:!w-7 xs:!h-7 sm:!h-8 sm:!w-8"
+          lang={lang}
+        />
+      </div>
     </div>
   );
 }
@@ -245,8 +306,8 @@ export default function Header({ lang }: { lang?: string }) {
         </LanguageLink>
         <HeaderMenuLeft lang={lang} />
       </div>
-      <div className="flex w-full items-center gap-1 xs:gap-2 sm:gap-3 md:gap-5 xl:w-auto 3xl:gap-6">
-        <div className="flex w-full max-w-2xl items-center xl:w-auto">
+      <div className="flex w-full items-center gap-1 xs:gap-2 sm:gap-3 md:gap-4 xl:w-auto 2xl:gap-5 3xl:gap-6">
+        <div className="flex w-full items-center xl:w-auto">
           <HamburgerButton
             view={<Sidebar className="static w-full 2xl:w-full" lang={lang} />}
             customSize="90%"
@@ -254,14 +315,13 @@ export default function Header({ lang }: { lang?: string }) {
           <LanguageLink
             aria-label="Site Logo"
             href="/"
-            className="me-1 w-8 xs:me-2 xs:w-10 sm:me-3 sm:w-12 md:w-14 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
+            className="me-2 w-7 xs:me-2 xs:w-9 sm:me-3 sm:w-11 md:w-12 lg:w-14 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 xl:hidden"
           >
-            <Logo iconOnly={true} className="h-6 xs:h-8 sm:h-10 w-auto" colorMode={colorMode} />
+            <Logo iconOnly={true} className="h-5 xs:h-7 sm:h-9 md:h-10 w-auto" colorMode={colorMode} />
           </LanguageLink>
-          {/* Mobile filter selector - only show on very small screens where other selectors are hidden */}
-          <div className="xs:hidden">
-            <FilterSelector />
-          </div>
+          
+          {/* Mobile-only additional filters */}
+          <MobileFiltersMenu lang={lang} />
         </div>
         <HeaderMenuRight lang={lang} />
       </div>
