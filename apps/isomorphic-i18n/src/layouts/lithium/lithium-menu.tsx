@@ -26,7 +26,8 @@ function MenuTriggerButton({
   showCaret?: boolean;
 }) {
   const { t } = useTranslation(lang!, "nav");
-  const isWorkInProgress = name === "catch_composition";
+  const isWorkInProgress = name === "catch_composition" || name === "about";
+  
   
   return (
     <>
@@ -103,7 +104,7 @@ function LinkMenu({
  */
 export default function HeaderMenuLeft({ lang }: { lang?: string }) {
   const { direction } = useDirection();
-  const menuKeys: LithiumMenuItemsKeys[] = ["catch", "revenue", "catch_composition", "ask_data", "about"]; 
+  const menuKeys: LithiumMenuItemsKeys[] = ["catch", "revenue", "catch_composition", "about"]; 
 
   return (
     <NavMenu

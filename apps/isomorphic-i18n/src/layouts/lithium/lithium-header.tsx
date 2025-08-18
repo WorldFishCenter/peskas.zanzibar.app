@@ -184,13 +184,16 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
   
   // Detect catch page
   const isCatchPage = pathname?.includes('/catch');
+  
+  // Detect catch composition page
+  const isCatchCompositionPage = pathname?.includes('/catch_composition');
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1 md:gap-2 xl:gap-3">
       {/* Time Range Selector: always show */}
       <TimeRangeSelector />
-      {/* Only hide MetricSelectorDropdown and FilterSelector on homepage */}
-      {!isHomepage && <MetricSelectorDropdown />}
+      {/* Hide MetricSelectorDropdown on homepage and catch_composition page */}
+      {!isHomepage && !isCatchCompositionPage && <MetricSelectorDropdown />}
       {!isHomepage && (
         <div className="hidden sm:block">
           <FilterSelector />
