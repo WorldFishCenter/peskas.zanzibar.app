@@ -32,15 +32,15 @@ export default function CatchPage() {
         breadcrumb={pageHeader.breadcrumb}
       />
       
-      <div className="space-y-6">
-        {/* Charts Section - 8:4 ratio layout */}
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-8">
+      <div className="space-y-4 md:space-y-6">
+        {/* Charts Section - responsive layout */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
+          <div className="lg:col-span-8">
             <CatchTimeSeries 
               selectedMetrics={[selectedMetric]}
             />
           </div>
-          <div className="col-span-4">
+          <div className="lg:col-span-4">
             <CatchRadar 
               selectedMetrics={[selectedMetric]}
             />
@@ -48,10 +48,8 @@ export default function CatchPage() {
         </div>
         
         {/* CPUE Treemap Section - Full width */}
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-12">
-            <CpueGearTreemap />
-          </div>
+        <div className="grid grid-cols-1">
+          <CpueGearTreemap />
         </div>
       </div>
     </>

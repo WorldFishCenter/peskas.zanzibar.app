@@ -29,9 +29,9 @@ export default function CatchCompositionPage() {
         breadcrumb={pageHeader.breadcrumb}
       />
       
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Charts Section - responsive 2-column layout */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
           <SpeciesCompositionStackedBar />
           <LengthDistributionBar />
         </div>

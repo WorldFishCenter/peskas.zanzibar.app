@@ -360,7 +360,7 @@ export default function CpueGearTreemap({
       </div>
       
       <SimpleBar>
-        <div className="w-full h-[600px] pt-4">
+        <div className="w-full h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
               data={transformedData.filter((item: CpueDataItem) => (visibilityState[item.gear]?.opacity || 1) > 0.2)}

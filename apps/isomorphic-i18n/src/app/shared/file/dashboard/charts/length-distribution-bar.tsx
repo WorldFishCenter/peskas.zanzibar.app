@@ -430,7 +430,7 @@ export default function LengthDistributionBar({
         title={t("text-length-distribution") || "Length Distribution"} 
         className={className}
       >
-        <div className="h-96 lg:h-[600px] flex items-center justify-center animate-pulse">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex items-center justify-center animate-pulse">
           <div className="space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
             <div className="h-64 bg-gray-200 rounded"></div>
@@ -446,7 +446,7 @@ export default function LengthDistributionBar({
         title={t("text-length-distribution") || "Length Distribution"} 
         className={className}
       >
-        <div className="h-96 lg:h-[600px] flex flex-col items-center justify-center">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
           <p className="text-gray-500">{t('text-no-data-available')}</p>
         </div>
       </WidgetCard>
@@ -459,7 +459,7 @@ export default function LengthDistributionBar({
         title={t("text-length-distribution") || "Length Distribution"} 
         className={className}
       >
-        <div className="h-96 lg:h-[600px] flex flex-col items-center justify-center">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
           <p className="text-gray-500">{t('text-no-length-data-available')}</p>
         </div>
       </WidgetCard>
@@ -472,7 +472,7 @@ export default function LengthDistributionBar({
         title={t("text-length-distribution") || "Length Distribution"} 
         className={className}
       >
-        <div className="h-96 lg:h-[600px] flex flex-col items-center justify-center">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
           <p className="text-gray-500">{t('text-select-species-to-view')}</p>
         </div>
       </WidgetCard>
@@ -728,7 +728,7 @@ export default function LengthDistributionBar({
       }
       className={`border border-muted bg-gray-0 p-5 dark:bg-gray-50 rounded-lg${className ? ` ${className}` : ''}`}
     >
-      <div className="h-96 lg:h-[600px] w-full">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full">
         {chartData.length > 0 ? (
           <Chart
             options={chartOptions}

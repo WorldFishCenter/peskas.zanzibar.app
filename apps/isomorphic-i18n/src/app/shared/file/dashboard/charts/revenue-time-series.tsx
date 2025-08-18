@@ -176,7 +176,7 @@ export default function RevenueTimeSeries({
       description={metricConfig?.unit ? `Unit: ${metricConfig.unit}` : undefined}
       className={className}
     >
-      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart 
             data={chartData} 

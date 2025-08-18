@@ -264,7 +264,7 @@ export default function SpeciesCompositionStackedBar({
       }
       className={`border border-muted bg-gray-0 p-5 dark:bg-gray-50 rounded-lg${className ? ` ${className}` : ''}`}
     >
-      <div className="h-96 lg:h-[600px] w-full">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart 
             data={chartData} 

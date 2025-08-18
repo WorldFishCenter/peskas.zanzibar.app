@@ -189,21 +189,36 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
   const isCatchCompositionPage = pathname?.includes('/catch_composition');
 
   return (
-    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1 md:gap-2 xl:gap-3">
-      {/* Time Range Selector: always show */}
-      <TimeRangeSelector />
+    <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-2 sm:gap-2 md:gap-2 xl:gap-3">
+      {/* Time Range Selector: always show, but smaller on mobile */}
+      <div className="hidden xs:block">
+        <TimeRangeSelector />
+      </div>
       {/* Hide MetricSelectorDropdown on homepage and catch_composition page */}
-      {!isHomepage && !isCatchCompositionPage && <MetricSelectorDropdown />}
-      {!isHomepage && (
+      {!isHomepage && !isCatchCompositionPage && (
         <div className="hidden sm:block">
+          <MetricSelectorDropdown />
+        </div>
+      )}
+      {!isHomepage && (
+        <div className="hidden md:block">
           <FilterSelector />
         </div>
       )}
-      <CompactLanguageSwitcher />
+      {/* Compact controls for mobile */}
+      <div className="flex items-center gap-1 xs:hidden">
+        <TimeRangeSelector />
+      </div>
+      <div className="hidden xs:block sm:hidden">
+        <CompactLanguageSwitcher />
+      </div>
+      <div className="hidden sm:block">
+        <CompactLanguageSwitcher />
+      </div>
       <ThemeToggle />
       <ProfileMenu
         buttonClassName="w-auto sm:w-auto p-1 border border-gray-300 dark:border-gray-700"
-        avatarClassName="!w-7 !h-7 sm:!h-8 sm:!w-8"
+        avatarClassName="!w-6 !h-6 xs:!w-7 xs:!h-7 sm:!h-8 sm:!w-8"
         lang={lang}
       />
     </div>
@@ -230,7 +245,7 @@ export default function Header({ lang }: { lang?: string }) {
         </LanguageLink>
         <HeaderMenuLeft lang={lang} />
       </div>
-      <div className="flex w-full items-center gap-2 sm:gap-3 md:gap-5 xl:w-auto 3xl:gap-6">
+      <div className="flex w-full items-center gap-1 xs:gap-2 sm:gap-3 md:gap-5 xl:w-auto 3xl:gap-6">
         <div className="flex w-full max-w-2xl items-center xl:w-auto">
           <HamburgerButton
             view={<Sidebar className="static w-full 2xl:w-full" lang={lang} />}
@@ -239,12 +254,12 @@ export default function Header({ lang }: { lang?: string }) {
           <LanguageLink
             aria-label="Site Logo"
             href="/"
-            className="me-2 w-12 sm:me-3 sm:w-14 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
+            className="me-1 w-8 xs:me-2 xs:w-10 sm:me-3 sm:w-12 md:w-14 shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:hidden"
           >
-            <Logo iconOnly={true} className="h-10 w-auto" colorMode={colorMode} />
+            <Logo iconOnly={true} className="h-6 xs:h-8 sm:h-10 w-auto" colorMode={colorMode} />
           </LanguageLink>
-          {/* Mobile filter selector */}
-          <div className="sm:hidden">
+          {/* Mobile filter selector - only show on very small screens where other selectors are hidden */}
+          <div className="xs:hidden">
             <FilterSelector />
           </div>
         </div>

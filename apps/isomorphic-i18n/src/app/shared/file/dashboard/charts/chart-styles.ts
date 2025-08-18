@@ -9,11 +9,12 @@ export const CHART_STYLES = {
     className: "dark:stroke-gray-700"
   },
 
-  // Axis styling
+  // Axis styling - responsive font sizes
   axis: {
     tick: {
-      fontSize: 12,
-      fill: "#64748b"
+      fontSize: 10, // Smaller for mobile
+      fill: "#64748b",
+      className: "sm:text-xs md:text-sm" // Responsive text sizing via CSS
     },
     axisLine: {
       stroke: '#cbd5e1',
@@ -58,12 +59,20 @@ export const CHART_STYLES = {
     animationEasing: "ease-out" as const
   },
 
-  // Chart margins
+  // Chart margins - responsive
   margins: {
-    top: 20,
-    right: 30,
-    left: 20,
-    bottom: 20
+    top: 15,
+    right: 20,
+    left: 15,
+    bottom: 15
+  },
+  
+  // Mobile-specific margins
+  mobileMargins: {
+    top: 10,
+    right: 10,
+    left: 10,
+    bottom: 10
   },
 
   // Area chart specific styles

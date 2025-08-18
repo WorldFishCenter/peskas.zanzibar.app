@@ -109,7 +109,7 @@ const CustomTooltip = ({ active, payload, metric, t }: any) => {
 const LoadingState = ({ t }: { t: any }) => {
   return (
     <WidgetCard title="" className="h-full">
-      <div className="h-96 w-full flex items-center justify-center">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
           <span className="text-sm text-gray-500">{t("text-loading-chart")}</span>
@@ -490,7 +490,7 @@ export default function CatchRadarChart({
   if (error) {
     return (
       <WidgetCard title={getMetricLabel(selectedMetric, t)} className={cn("h-full", className)}>
-        <div className="h-96 w-full flex items-center justify-center">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full flex items-center justify-center">
           <span className="text-sm text-gray-500">{t("text-error")}: {error}</span>
         </div>
       </WidgetCard>
@@ -500,7 +500,7 @@ export default function CatchRadarChart({
   if (!data || data.length === 0) {
     return (
       <WidgetCard title={getMetricLabel(selectedMetric, t)} className={cn("h-full", className)}>
-        <div className="h-96 w-full flex items-center justify-center">
+        <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full flex items-center justify-center">
           <span className="text-sm text-gray-500">{t("text-no-data-available")}</span>
         </div>
       </WidgetCard>
@@ -512,7 +512,7 @@ export default function CatchRadarChart({
       title={getMetricLabel(selectedMetric, t)}
       className={cn("h-full", className)}
     >
-      <div className="h-96 w-full flex items-center justify-center">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] w-full flex items-center justify-center">
         {/* Render chart if data is available */}
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart

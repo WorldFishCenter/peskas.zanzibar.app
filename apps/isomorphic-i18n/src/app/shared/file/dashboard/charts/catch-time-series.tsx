@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { api } from "@/trpc/react";
 import { useAtom } from "jotai";
 import { districtsAtom } from "@/app/components/filter-selector";
@@ -25,6 +25,7 @@ import {
   getDistrictColor, 
   formatChartTitle 
 } from "./chart-styles";
+import cn from "@utils/class-names";
 
 // Custom tooltip component for modern styling
 const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
@@ -95,6 +96,14 @@ export default function CatchTimeSeries({
   const [selectedDistricts] = useAtom(districtsAtom);
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Convert time range to months
   const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
@@ -175,11 +184,11 @@ export default function CatchTimeSeries({
       description={metricConfig?.unit ? `Unit: ${metricConfig.unit}` : undefined}
       className={className}
     >
-      <div className="h-96 sm:h-[18rem] md:h-[22rem] lg:h-[26rem] xl:h-[28rem]">
+      <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart 
             data={chartData} 
-            margin={CHART_STYLES.margins}
+            margin={isMobile ? CHART_STYLES.mobileMargins : CHART_STYLES.margins}
           >
             <CartesianGrid {...CHART_STYLES.grid} />
             <XAxis 

@@ -24,8 +24,8 @@ function SectionBlock({
   className?: string;
 }>) {
   return (
-    <section className={cn('mb-8 last:mb-0', className)}>
-      <Title as="h3" className="mb-4 text-xl font-semibold lg:text-2xl">
+    <section className={cn('mb-6 sm:mb-8 last:mb-0', className)}>
+      <Title as="h3" className="mb-3 text-lg sm:mb-4 sm:text-xl font-semibold lg:text-2xl">
         {title}
       </Title>
       {children}
@@ -41,10 +41,10 @@ export default function AboutPage({
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />
-      <div className="@container">
-        <div className="mx-auto max-w-[1200px] space-y-10 py-6">
-          <div className="prose mx-auto max-w-full dark:prose-invert lg:prose-lg">
-            <Text className="mb-8 text-lg leading-loose text-gray-600 lg:text-xl">
+      <div className="@container px-4 sm:px-6">
+        <div className="mx-auto max-w-[1200px] space-y-6 py-4 sm:space-y-8 md:space-y-10 md:py-6">
+          <div className="prose mx-auto max-w-full dark:prose-invert sm:prose-lg lg:prose-lg">
+            <Text className="mb-6 text-base sm:mb-8 sm:text-lg leading-loose text-gray-600 lg:text-xl">
               Peskas is an innovative digital monitoring system designed to transform data into actionable insights for Zanzibar&apos;s small-scale fisheries. Operating at the intersection of technology and community-driven resource management, Peskas serves as a bridge between traditional fishing practices and sustainable marine resource management.
             </Text>
 
