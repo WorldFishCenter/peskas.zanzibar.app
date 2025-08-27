@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-const GTAG_ID = 'G-8VBFKQ4E01';
+const GTAG_ID = 'G-R8LTN94QRZ';
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
