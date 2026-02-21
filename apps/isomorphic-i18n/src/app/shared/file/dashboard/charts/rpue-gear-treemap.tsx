@@ -249,11 +249,14 @@ export default function RpueGearTreemap({
   // Transform data for treemap (same pattern as other components)
   const transformedData = useMemo(() => {
     if (!rawData) return [];
-    
+
+    const safeGearLabel = (gear: string | null | undefined) =>
+      capitalizeGearType((gear ?? "").replace(/_/g, " "));
+
     return rawData.map((item: any, index: number) => ({
-      gear: capitalizeGearType(item.gear.replace(/_/g, " ")),
-      name: capitalizeGearType(item.gear.replace(/_/g, " ")), // Add name field for treemap
-      avg_rpue: Number(item.avg_rpue.toFixed(2)),
+      gear: safeGearLabel(item.gear),
+      name: safeGearLabel(item.gear), // Add name field for treemap
+      avg_rpue: Number((item.avg_rpue ?? 0).toFixed(2)),
       total_records: item.total_records,
       district_count: item.district_count,
       fill: GEAR_COLORS[index % GEAR_COLORS.length]

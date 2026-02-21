@@ -249,11 +249,14 @@ export default function CpueGearTreemap({
   // Transform data for treemap (same pattern as other components)
   const transformedData = useMemo(() => {
     if (!rawData) return [];
-    
+
+    const safeGearLabel = (gear: string | null | undefined) =>
+      capitalizeGearType((gear ?? "").replace(/_/g, " "));
+
     return rawData.map((item: any, index: number) => ({
-      gear: capitalizeGearType(item.gear.replace(/_/g, " ")),
-      name: capitalizeGearType(item.gear.replace(/_/g, " ")), // Add name field for treemap
-      avg_cpue: Number(item.avg_cpue.toFixed(2)),
+      gear: safeGearLabel(item.gear),
+      name: safeGearLabel(item.gear), // Add name field for treemap
+      avg_cpue: Number((item.avg_cpue ?? 0).toFixed(2)),
       total_records: item.total_records,
       district_count: item.district_count,
       fill: GEAR_COLORS[index % GEAR_COLORS.length]
