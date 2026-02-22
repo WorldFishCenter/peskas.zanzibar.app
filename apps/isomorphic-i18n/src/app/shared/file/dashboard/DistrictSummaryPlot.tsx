@@ -21,7 +21,7 @@ const METRICS = [
   { key: "mean_rpue", labelKey: "metric-mean_rpue-title", unitKey: "metric-mean_rpue-unit", descKey: "metric-mean_rpue-desc" },
   { key: "n_fishers", labelKey: "metric-n_fishers-title", unitKey: "metric-n_fishers-unit", descKey: "metric-n_fishers-desc" },
   { key: "n_submissions", labelKey: "metric-n_submissions-title", unitKey: "metric-n_submissions-unit", descKey: "metric-n_submissions-desc" },
-  { key: "trip_duration", labelKey: "metric-trip_duration-title", unitKey: "metric-trip_duration-unit", descKey: "metric-trip_duration-desc" },
+  { key: "trip_duration_hrs", labelKey: "metric-trip_duration_hrs-title", unitKey: "metric-trip_duration_hrs-unit", descKey: "metric-trip_duration_hrs-desc" },
   { key: "mean_price_kg", labelKey: "metric-mean_price_kg-title", unitKey: "metric-mean_price_kg-unit", descKey: "metric-mean_price_kg-desc" },
   { key: "estimated_revenue_TZS", labelKey: "metric-estimated_revenue_TZS-title", unitKey: "metric-estimated_revenue_TZS-unit", descKey: "metric-estimated_revenue_TZS-desc" },
   { key: "estimated_catch_tn", labelKey: "metric-estimated_catch_tn-title", unitKey: "metric-estimated_catch_tn-unit", descKey: "metric-estimated_catch_tn-desc" },
@@ -31,7 +31,7 @@ function DistrictTooltip({ active, payload, allData, selectedMetric, lang }: any
   const { t } = useTranslation("common");
   if (!active || !payload || !payload.length) return null;
   const { name } = payload[0].payload;
-  const districtData = allData.find((d: any) => d.district === name);
+  const districtData = allData.find((d: any) => d.gaul_2_name === name);
   if (!districtData) return null;
   return (
     <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
@@ -73,7 +73,7 @@ export default function DistrictSummaryPlot({ className, lang: propLang }: { cla
   const chartData = useMemo(() => {
     const mapped = data
       .map((row: any) => ({
-        name: row.district,
+        name: row.gaul_2_name,
         value: getAggregatedDistrictValue(row, selectedMetric),
         ...row,
       }));

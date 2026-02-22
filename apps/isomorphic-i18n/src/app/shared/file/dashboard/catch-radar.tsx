@@ -14,6 +14,7 @@ import {
   Tooltip,
 } from "recharts";
 import { districtsAtom, selectedMetricAtom } from "@/app/components/filter-selector";
+import { GAUL2_DISTRICT_NAMES } from "@repo/nosql/constants/gaul2-districts";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
@@ -173,15 +174,12 @@ export default function CatchRadarChart({
   const [districts] = useAtom(districtsAtom);
   const [selectedMetric] = useAtom(selectedMetricAtom);
   
-  // Default districts list if none selected
-  const defaultDistricts = useMemo(() => [
-    'Central', 'North A', 'North B', 'South', 'Urban', 'West',
-    'Chake Chake', 'Mkoani', 'Micheweni', 'Wete'
-  ], []);
-  
+  // Default to official GAUL2 list when no districts selected
+  const defaultDistricts = useMemo(() => [...GAUL2_DISTRICT_NAMES], []);
+
   // Use default districts if none are selected
-  const selectedDistricts = useMemo(() => 
-    district ? [district] : 
+  const selectedDistricts = useMemo(() =>
+    district ? [district] :
     (districts.length > 0 ? districts : defaultDistricts),
     [district, districts, defaultDistricts]
   );

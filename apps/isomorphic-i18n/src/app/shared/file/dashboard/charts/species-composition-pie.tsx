@@ -53,7 +53,7 @@ const CustomTooltip = ({ active, payload, metric }: any) => {
     return (
       <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
         <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">
-          {data.common_name}
+          {data.catch_taxon}
         </div>
         {data.scientific_name && (
           <div className="text-xs italic text-gray-500 dark:text-gray-400 mb-2">
@@ -155,7 +155,7 @@ export default function SpeciesCompositionPie({
     
     // Filter out hidden species and calculate total for percentage calculations
     const visibleData = data
-      .filter(item => !hiddenSpecies.includes(item.common_name))
+      .filter(item => !hiddenSpecies.includes(item.catch_taxon))
       .filter(item => item.total_value > 0);
     
     const totalSum = visibleData.reduce((sum, item) => sum + item.total_value, 0);
@@ -177,7 +177,7 @@ export default function SpeciesCompositionPie({
     
     if (othersSum > 0) {
       result.push({
-        common_name: "Others",
+        catch_taxon: "Others",
         scientific_name: "",
         total_value: othersSum,
         districts: [],
@@ -288,6 +288,7 @@ export default function SpeciesCompositionPie({
               outerRadius={80}
               fill="#8884d8"
               dataKey="total_value"
+              nameKey="catch_taxon"
               {...CHART_STYLES.animation}
             >
               {chartData.map((entry, index) => (

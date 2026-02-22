@@ -38,13 +38,13 @@ export const gearRouter = createTRPCRouter({
       try {
         await getDb();
         
-        // Prepare match stage with district and date filtering
+        // Prepare match stage with gaul_2_name and date filtering
         const matchStage: any = {
-          district: { $in: input.districts },
+          gaul_2_name: { $in: input.districts },
           indicator: "cpue",
           value: { $ne: null, $exists: true }
         };
-        
+
         if (input.startDate || input.endDate) {
           matchStage.date = {};
           if (input.startDate) {
@@ -54,7 +54,7 @@ export const gearRouter = createTRPCRouter({
             matchStage.date.$lte = new Date(input.endDate);
           }
         }
-        
+
         return await GearSummaryDistrictModel.aggregate([
           {
             $match: matchStage,
@@ -64,7 +64,7 @@ export const gearRouter = createTRPCRouter({
               _id: "$gear",
               avg_cpue: { $avg: "$value" },
               total_records: { $sum: 1 },
-              districts: { $addToSet: "$district" },
+              districts: { $addToSet: "$gaul_2_name" },
             },
           },
           {
@@ -100,13 +100,13 @@ export const gearRouter = createTRPCRouter({
       try {
         await getDb();
         
-        // Prepare match stage with district and date filtering
+        // Prepare match stage with gaul_2_name and date filtering
         const matchStage: any = {
-          district: { $in: input.districts },
+          gaul_2_name: { $in: input.districts },
           indicator: "rpue",
           value: { $ne: null, $exists: true }
         };
-        
+
         if (input.startDate || input.endDate) {
           matchStage.date = {};
           if (input.startDate) {
@@ -116,7 +116,7 @@ export const gearRouter = createTRPCRouter({
             matchStage.date.$lte = new Date(input.endDate);
           }
         }
-        
+
         return await GearSummaryDistrictModel.aggregate([
           {
             $match: matchStage,
@@ -126,7 +126,7 @@ export const gearRouter = createTRPCRouter({
               _id: "$gear",
               avg_rpue: { $avg: "$value" },
               total_records: { $sum: 1 },
-              districts: { $addToSet: "$district" },
+              districts: { $addToSet: "$gaul_2_name" },
             },
           },
           {

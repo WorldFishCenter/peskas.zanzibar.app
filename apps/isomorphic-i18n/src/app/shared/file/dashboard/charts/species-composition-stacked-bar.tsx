@@ -124,31 +124,31 @@ export default function SpeciesCompositionStackedBar({
     
     // Get top 10 species (not affected by hiddenSpecies for consistent "Others" calculation)
     const allSpecies = data.sort((a, b) => b.total_value - a.total_value);
-    const top10Species = allSpecies.slice(0, 10).map(item => item.common_name);
+    const top10Species = allSpecies.slice(0, 10).map(item => item.catch_taxon);
     const otherSpecies = allSpecies.slice(10);
-    
-    // Create chart data structure
-    const chartData = selectedDistricts.map(district => {
-      const districtData: any = { 
-        name: district,
+
+    // Create chart data structure (district = gaul_2_name)
+    const chartData = selectedDistricts.map(gaul2Name => {
+      const districtData: any = {
+        name: gaul2Name,
       };
-      
+
       // Add top 10 species values (convert kg to tonnes)
       top10Species.forEach(speciesName => {
-        const speciesInfo = allSpecies.find(s => s.common_name === speciesName);
+        const speciesInfo = allSpecies.find(s => s.catch_taxon === speciesName);
         if (speciesInfo && speciesInfo.districts) {
-          const districtInfo = speciesInfo.districts.find((d: any) => d.district === district);
+          const districtInfo = speciesInfo.districts.find((d: any) => d.gaul_2_name === gaul2Name);
           districtData[speciesName] = (districtInfo?.value || 0) / 1000; // Convert kg to tonnes
         } else {
           districtData[speciesName] = 0;
         }
       });
-      
+
       // Calculate "Others" category - sum of all remaining species (convert kg to tonnes)
       let othersValue = 0;
       otherSpecies.forEach(speciesInfo => {
         if (speciesInfo.districts) {
-          const districtInfo = speciesInfo.districts.find((d: any) => d.district === district);
+          const districtInfo = speciesInfo.districts.find((d: any) => d.gaul_2_name === gaul2Name);
           othersValue += districtInfo?.value || 0;
         }
       });

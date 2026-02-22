@@ -34,13 +34,13 @@ const METRIC_CONFIG = {
   //   color: '#F28F3B',
   //   currentColor: '#75ABBC',
   // },
-  // trip_duration: {
-  //   titleKey: 'metric-trip_duration-title',
-  //   unitKey: 'metric-trip_duration-unit',
-  //   descKey: 'metric-trip_duration-desc',
-  //   color: '#F28F3B',
-  //   currentColor: '#75ABBC',
-  // },
+  trip_duration_hrs: {
+    titleKey: 'metric-trip_duration_hrs-title',
+    unitKey: 'metric-trip_duration_hrs-unit',
+    descKey: 'metric-trip_duration_hrs-desc',
+    color: '#F28F3B',
+    currentColor: '#75ABBC',
+  },
   mean_cpue: {
     titleKey: 'metric-mean_cpue-title',
     unitKey: 'metric-mean_cpue-unit',
@@ -216,7 +216,6 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
       staleTime: 1000 * 60 * 5,
     }
   );
-  console.log('DEBUG monthlyData', JSON.stringify(monthlyData, null, 2));
 
   if (isLoading) {
     return (

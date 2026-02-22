@@ -1,22 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { DistrictSummaryModel } from "@repo/nosql/schema/district-summary";
+import { GAUL2_DISTRICT_NAMES, GAUL2_TO_REGION } from "@repo/nosql/constants/gaul2-districts";
 import getDb from "@repo/nosql";
 import { TRPCError } from "@trpc/server";
-
-// District to region mapping
-const DISTRICT_REGIONS: Record<string, 'Unguja' | 'Pemba'> = {
-  'Central': 'Unguja',
-  'North A': 'Unguja',
-  'North B': 'Unguja',
-  'South': 'Unguja',
-  'Urban': 'Unguja',
-  'West': 'Unguja',
-  'Chake chake': 'Pemba',
-  'Mkoani': 'Pemba',
-  'Micheweni': 'Pemba',
-  'Wete': 'Pemba',
-};
 
 export const districtSummaryRouter = createTRPCRouter({
   getDistrictsSummary: publicProcedure
@@ -37,13 +24,13 @@ export const districtSummaryRouter = createTRPCRouter({
         // Fetch district summaries and aggregate by district
         const summaries = await DistrictSummaryModel.aggregate([
           {
-            $match: { 
-              district: { $in: input.districts } 
+            $match: {
+              gaul_2_name: { $in: input.districts }
             }
           },
           {
             $group: {
-              _id: "$district",
+              _id: "$gaul_2_name",
               indicators: {
                 $push: {
                   indicator: "$indicator",
@@ -55,7 +42,7 @@ export const districtSummaryRouter = createTRPCRouter({
           {
             $project: {
               _id: 0,
-              district: "$_id",
+              gaul_2_name: "$_id",
               indicators: 1
             }
           }
@@ -64,7 +51,7 @@ export const districtSummaryRouter = createTRPCRouter({
         // Transform the data to have indicator properties
         return summaries.map(summary => {
           const result: any = {
-            district: summary.district,
+            gaul_2_name: summary.gaul_2_name,
           };
           
           // Convert indicators array to properties
@@ -93,7 +80,7 @@ export const districtSummaryRouter = createTRPCRouter({
         const summaries = await DistrictSummaryModel.aggregate([
           {
             $group: {
-              _id: "$district",
+              _id: "$gaul_2_name",
               indicators: {
                 $push: {
                   indicator: "$indicator",
@@ -105,7 +92,7 @@ export const districtSummaryRouter = createTRPCRouter({
           {
             $project: {
               _id: 0,
-              district: "$_id",
+              gaul_2_name: "$_id",
               indicators: 1
             }
           }
@@ -114,14 +101,14 @@ export const districtSummaryRouter = createTRPCRouter({
         // Transform the data to have indicator properties
         return summaries.map(summary => {
           const result: any = {
-            district: summary.district,
+            gaul_2_name: summary.gaul_2_name,
           };
-          
+
           // Convert indicators array to properties
           summary.indicators.forEach((ind: { indicator: string; value: number }) => {
             result[ind.indicator] = ind.value;
           });
-          
+
           return result;
         });
       } catch (error) {
@@ -144,16 +131,18 @@ export const districtSummaryRouter = createTRPCRouter({
       try {
         await getDb();
         
-        // Calculate the date range
-        // TEMP: Use fixed date range to match test data in 2025
-        const startDate = new Date('2025-02-01T00:00:00Z');
-        const endDate = new Date('2025-07-01T00:00:00Z');
+        // Calculate the date range: last N months from today (end of current month)
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(endDate.getMonth() - input.months);
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
 
         // Fetch all relevant district summaries in the date range for the required metrics
         const metrics = [
           'n_submissions',
           'n_fishers',
-          'trip_duration',
+          'trip_duration_hrs',
           'mean_cpue',
           'mean_rpue',
           'mean_price_kg',
@@ -165,10 +154,10 @@ export const districtSummaryRouter = createTRPCRouter({
           date: { $gte: startDate, $lte: endDate },
         }).lean();
 
-        // Group by metric, date, region
+        // Group by metric, date, region (Unguja/Pemba) using GAUL2_TO_REGION
         const grouped: Record<string, Record<string, Record<string, number[]>>> = {};
         for (const s of summaries) {
-          const region = DISTRICT_REGIONS[s.district];
+          const region = GAUL2_TO_REGION[s.gaul_2_name];
           if (!region) continue;
           const metric = s.indicator;
           const dateStr = s.date ? s.date.toISOString().slice(0, 10) : undefined;
@@ -235,24 +224,20 @@ export const districtSummaryRouter = createTRPCRouter({
         const summaries = await DistrictSummaryModel.find({
           date: { $gte: start, $lte: end },
         }).lean();
-        // Group by district and indicator
+        // Group by gaul_2_name and indicator
         const grouped: Record<string, Record<string, number[]>> = {};
         for (const s of summaries) {
-          if (!grouped[s.district]) grouped[s.district] = {};
-          if (!grouped[s.district][s.indicator]) grouped[s.district][s.indicator] = [];
-          grouped[s.district][s.indicator].push(s.value);
+          if (!grouped[s.gaul_2_name]) grouped[s.gaul_2_name] = {};
+          if (!grouped[s.gaul_2_name][s.indicator]) grouped[s.gaul_2_name][s.indicator] = [];
+          grouped[s.gaul_2_name][s.indicator].push(s.value);
         }
-        // List of all districts (update as needed)
-        const ALL_DISTRICTS = [
-          "Central", "Chake chake", "Micheweni", "Mkoani", "North a", "North b", "South", "Urban", "West a", "West b", "Wete"
-        ];
         const ALL_METRICS = [
-          "mean_cpue", "mean_rpue", "n_fishers", "n_submissions", "trip_duration", "mean_price_kg", "estimated_revenue_TZS", "estimated_catch_tn"
+          "mean_cpue", "mean_rpue", "n_fishers", "n_submissions", "trip_duration_hrs", "mean_price_kg", "estimated_revenue_TZS", "estimated_catch_tn"
         ];
-        // Prepare result: array of { district, indicator1: avg, ... }
-        const result = ALL_DISTRICTS.map((district) => {
-          const indicatorsObj = grouped[district] || {};
-          const row: any = { district };
+        // Prepare result: array of { gaul_2_name, indicator1: avg, ... } for official GAUL2 districts
+        const result = GAUL2_DISTRICT_NAMES.map((gaul_2_name) => {
+          const indicatorsObj = grouped[gaul_2_name] || {};
+          const row: any = { gaul_2_name };
           for (const indicator of ALL_METRICS) {
             // Filter out null/undefined/NaN values before aggregating
             const values = (indicatorsObj[indicator] || []).filter(v => v !== null && v !== undefined && !isNaN(v));

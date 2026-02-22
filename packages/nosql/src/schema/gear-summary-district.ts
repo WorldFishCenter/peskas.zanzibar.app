@@ -28,7 +28,8 @@ export type TGearIndicator = (typeof GEAR_INDICATORS)[number] | string;
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TGearSummaryDistrict = {
   _id: Types.ObjectId;
-  district: string;
+  gaul_2_name: string;
+  date?: Date;
   gear: TGearType;
   indicator: TGearIndicator;
   value: number;
@@ -40,7 +41,8 @@ export type TGearSummaryDistrict = {
  */
 const gearSummaryDistrictSchema = new Schema<TGearSummaryDistrict>(
   {
-    district: { type: String, required: true },
+    gaul_2_name: { type: String, required: true },
+    date: { type: Date, required: false },
     gear: { type: String, required: true },
     indicator: { type: String, required: true },
     value: { type: Number, required: true },
@@ -52,7 +54,7 @@ const gearSummaryDistrictSchema = new Schema<TGearSummaryDistrict>(
 );
 
 // Create compound index for efficient querying
-gearSummaryDistrictSchema.index({ district: 1, gear: 1, indicator: 1 });
+gearSummaryDistrictSchema.index({ gaul_2_name: 1, gear: 1, indicator: 1 });
 gearSummaryDistrictSchema.index({ timestamp: -1 });
 
 /**

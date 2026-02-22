@@ -20,6 +20,7 @@ import useUserPermissions from "../shared/file/dashboard/hooks/useUserPermission
 import { useTranslation } from "@/app/i18n/client";
 import cn from "@utils/class-names";
 import { api } from "@/trpc/react";
+import { GAUL2_DISTRICT_NAMES } from "@repo/nosql/constants/gaul2-districts";
 
 type DropdownTypes = {
   sectionName: string;
@@ -65,8 +66,8 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
 }
 
 export const dropdownAtom = atomWithStorage<DropdownTypes[]>('dropdown', [], undefined, { getOnInit: true });
-// By default, select one district from Pemba (e.g., 'Wete') and one from Unguja (e.g., 'Central')
-export const districtsAtom = atomWithStorage<string[]>('districts', ['Wete', 'Central'], undefined, { getOnInit: true });
+// By default, select one district from Pemba (Wete) and one from Unguja (Kati) - official GAUL2 names
+export const districtsAtom = atomWithStorage<string[]>('districts', ['Wete', 'Kati'], undefined, { getOnInit: true });
 export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', 'district', undefined, { getOnInit: true });
 
 // Global metric selector atom
@@ -83,17 +84,11 @@ export const FilterSelector = () => {
   const [filteredList, setFilteredList] = useState<string[]>([]);
   const [fuse, setFuse] = useState<Fuse<string>>();
   const [isOpen, setIsOpen] = useState(false);
-  const { data: districts = [] } = api.monthlySummary.districts.useQuery();
   const [selectedDistricts, setSelectedDistricts] = useAtom(districtsAtom);
   const prevValidDistrictsRef = useRef<string[]>([]);
 
-  // Filter out null/undefined values and ensure districts are strings - memoized to prevent infinite loops
-  const validDistricts = useMemo(() => {
-    if (!districts || !Array.isArray(districts)) return [];
-    return districts.filter((district): district is string => 
-      district !== null && district !== undefined && typeof district === 'string'
-    );
-  }, [districts]);
+  // Use official GAUL2 district list (single source of truth)
+  const validDistricts = useMemo(() => [...GAUL2_DISTRICT_NAMES].sort((a, b) => a.localeCompare(b)), []);
 
   useEffect(() => {
     // Only update if the validDistricts array has actually changed

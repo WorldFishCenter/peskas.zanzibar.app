@@ -4,7 +4,8 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./schema/*": "./src/schema/*.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./constants/gaul2-districts": "./src/constants/gaul2-districts.ts"
   },
   "scripts": {
     "format": "prettier . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",

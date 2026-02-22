@@ -135,22 +135,22 @@ export default function LengthDistributionBar({
       // Now the API returns objects with properties for each metric
       const typedItem = item as any;
       if (typedItem.mean_length && typedItem.mean_length > 0) {
-        speciesMap.set(typedItem.common_name, {
-          common_name: typedItem.common_name,
+        speciesMap.set(typedItem.catch_taxon, {
+          catch_taxon: typedItem.catch_taxon,
           scientific_name: typedItem.scientific_name,
         });
       }
     });
-    
-    return Array.from(speciesMap.values()).sort((a, b) => 
-      a.common_name.localeCompare(b.common_name)
+
+    return Array.from(speciesMap.values()).sort((a, b) =>
+      a.catch_taxon.localeCompare(b.catch_taxon)
     );
   }, [speciesData]);
 
   // Set default selected species (top 10) when data loads
   useMemo(() => {
     if (availableSpecies.length > 0 && selectedSpecies.length === 0 && !isCustomSelection) {
-      const top10Species = availableSpecies.slice(0, 10).map(s => s.common_name);
+      const top10Species = availableSpecies.slice(0, 10).map(s => s.catch_taxon);
       setSelectedSpecies(top10Species);
     }
   }, [availableSpecies, selectedSpecies.length, isCustomSelection]);
@@ -162,10 +162,10 @@ export default function LengthDistributionBar({
     setIsSpeciesSelectorOpen(false);
     
     if (count === 'all') {
-      const allSpecies = availableSpecies.map(s => s.common_name);
+      const allSpecies = availableSpecies.map(s => s.catch_taxon);
       setSelectedSpecies(allSpecies);
     } else {
-      const topSpecies = availableSpecies.slice(0, count).map(s => s.common_name);
+      const topSpecies = availableSpecies.slice(0, count).map(s => s.catch_taxon);
       setSelectedSpecies(topSpecies);
     }
   };
@@ -189,8 +189,8 @@ export default function LengthDistributionBar({
   // Filter species based on search query
   const filteredSpecies = useMemo(() => {
     if (!searchQuery) return availableSpecies;
-    return availableSpecies.filter(species => 
-      species.common_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return availableSpecies.filter(species =>
+      species.catch_taxon.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (species.scientific_name && species.scientific_name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [availableSpecies, searchQuery]);
@@ -213,18 +213,18 @@ export default function LengthDistributionBar({
     
     speciesData.forEach(item => {
       const typedItem = item as any;
-      if (selectedSpecies.includes(typedItem.common_name) && typedItem.mean_length && typedItem.mean_length > 0) {
-        if (!speciesMap.has(typedItem.common_name)) {
-          speciesMap.set(typedItem.common_name, {
-            name: typedItem.common_name,
+      if (selectedSpecies.includes(typedItem.catch_taxon) && typedItem.mean_length && typedItem.mean_length > 0) {
+        if (!speciesMap.has(typedItem.catch_taxon)) {
+          speciesMap.set(typedItem.catch_taxon, {
+            name: typedItem.catch_taxon,
             scientific_name: typedItem.scientific_name,
             lengths: [],
             total_catch: 0,
             total_individuals: 0,
           });
         }
-        
-        const species = speciesMap.get(typedItem.common_name);
+
+        const species = speciesMap.get(typedItem.catch_taxon);
         species.lengths.push(typedItem.mean_length);
         if (typedItem.catch_kg) species.total_catch += typedItem.catch_kg;
         if (typedItem.n_individuals) species.total_individuals += typedItem.n_individuals;
@@ -659,7 +659,7 @@ export default function LengthDistributionBar({
                     {/* Quick Actions */}
                     <div className="flex gap-2 mt-2">
                       <button
-                        onClick={() => setSelectedSpecies(filteredSpecies.slice(0, 5).map(s => s.common_name))}
+                        onClick={() => setSelectedSpecies(filteredSpecies.slice(0, 5).map(s => s.catch_taxon))}
                         className="text-xs text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 rounded transition-colors"
                       >
                         {t('text-select-top-5')}
@@ -690,19 +690,19 @@ export default function LengthDistributionBar({
                       <div className="p-2 space-y-0.5">
                         {filteredSpecies.map((species) => (
                           <label
-                            key={species.common_name}
+                            key={species.catch_taxon}
                             className="flex items-center space-x-2 px-2 py-1.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer group"
                           >
                             <input
                               type="checkbox"
-                              checked={selectedSpecies.includes(species.common_name)}
-                              onChange={() => handleSpeciesToggle(species.common_name)}
-                              disabled={!selectedSpecies.includes(species.common_name) && selectedSpecies.length >= 15}
+                              checked={selectedSpecies.includes(species.catch_taxon)}
+                              onChange={() => handleSpeciesToggle(species.catch_taxon)}
+                              disabled={!selectedSpecies.includes(species.catch_taxon) && selectedSpecies.length >= 15}
                               className="h-4 w-4 text-blue-600 bg-gray-0 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-500 dark:text-blue-400 dark:focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
-                                {species.common_name}
+                                {species.catch_taxon}
                               </div>
                               {species.scientific_name && (
                                 <div className="text-xs text-gray-500 dark:text-gray-400 italic truncate">

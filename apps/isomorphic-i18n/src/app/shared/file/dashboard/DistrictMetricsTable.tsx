@@ -9,7 +9,7 @@ import { getPaletteColor, getTextColor, formatNumber, formatDashboardNumber } fr
 
 function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
   const [range] = useAtom(selectedTimeRangeAtom);
-  const [sorter, setSorter] = useState<{ columnKey: string; order: 'ascend' | 'descend' | null }>({ columnKey: 'district', order: null });
+  const [sorter, setSorter] = useState<{ columnKey: string; order: 'ascend' | 'descend' | null }>({ columnKey: 'gaul_2_name', order: null });
   const { start, end } = useMemo(() => {
     if (range === "all") return { start: "1900-01-01", end: new Date().toISOString() };
     const end = new Date();
@@ -21,7 +21,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
   const metricKeys = [
     "n_submissions",
     "n_fishers",
-    "trip_duration",
+    "trip_duration_hrs",
     "mean_cpue",
     "mean_rpue",
     "mean_price_kg",
@@ -59,7 +59,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
   const metricUnits: Record<string, string> = {
     n_submissions: t('text-unit-submissions'),
     n_fishers: t('text-unit-fishers'),
-    trip_duration: t('text-unit-hours'),
+    trip_duration_hrs: t('text-unit-hours'),
     mean_cpue: t('text-unit-kg-fisher-hour'),
     mean_rpue: t('text-unit-tzs-fisher-hour'),
     mean_price_kg: t('text-unit-tzs-kg')
@@ -72,18 +72,18 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
           title={t('text-district')}
           align="center"
           sortable
-          ascending={sorter.columnKey === 'district' ? sorter.order === 'ascend' : undefined}
+          ascending={sorter.columnKey === 'gaul_2_name' ? sorter.order === 'ascend' : undefined}
         />
       ),
-      dataIndex: "district",
-      key: "district",
+      dataIndex: "gaul_2_name",
+      key: "gaul_2_name",
       align: "center" as AlignType,
       sorter: true,
-      sortOrder: sorter.columnKey === 'district' ? sorter.order : null,
+      sortOrder: sorter.columnKey === 'gaul_2_name' ? sorter.order : null,
       onHeaderCell: () => ({
         onClick: () => setSorter(s => ({
-          columnKey: 'district',
-          order: s.columnKey === 'district' && s.order === 'ascend' ? 'descend' : 'ascend',
+          columnKey: 'gaul_2_name',
+          order: s.columnKey === 'gaul_2_name' && s.order === 'ascend' ? 'descend' : 'ascend',
         }))
       }),
       render: (val: string) => <div className="text-center font-bold text-gray-900">{val}</div>
@@ -142,7 +142,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
           data={sortedData}
           variant="elegant"
           className="min-w-[600px]"
-          rowKey="district"
+          rowKey="gaul_2_name"
         />
       </div>
     </div>

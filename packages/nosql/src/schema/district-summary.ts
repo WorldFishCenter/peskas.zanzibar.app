@@ -6,6 +6,7 @@ export const DISTRICT_INDICATORS = [
   "n_submissions",
   "n_fishers",
   "trip_duration",
+  "trip_duration_hrs",
   "mean_cpue",
   "mean_rpue",
   "mean_price_kg",
@@ -18,7 +19,7 @@ export type TDistrictIndicator = (typeof DISTRICT_INDICATORS)[number];
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TDistrictSummary = {
   _id: Types.ObjectId;
-  district: string;
+  gaul_2_name: string;
   indicator: TDistrictIndicator | string; // Allow string for flexibility with new indicators
   value: number;
   date: Date;
@@ -35,7 +36,7 @@ export type TDistrictSummary = {
  */
 const districtSummarySchema = new Schema<TDistrictSummary>(
   {
-    district: { type: String, required: true },
+    gaul_2_name: { type: String, required: true },
     indicator: { type: String, required: true },
     value: { type: Number, required: true },
     date: { type: Date, required: true },
@@ -52,7 +53,7 @@ const districtSummarySchema = new Schema<TDistrictSummary>(
 );
 
 // Create compound index for efficient querying
-districtSummarySchema.index({ district: 1, indicator: 1 });
+districtSummarySchema.index({ gaul_2_name: 1, indicator: 1 });
 districtSummarySchema.index({ timestamp: -1 });
 
 /**

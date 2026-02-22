@@ -15,8 +15,8 @@ export type TTaxaMetric = (typeof TAXA_METRICS)[number] | string;
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 export type TTaxaSummaryDistrict = {
   _id: Types.ObjectId;
-  district: string;
-  common_name: string;
+  gaul_2_name: string;
+  catch_taxon: string;
   metric: TTaxaMetric;
   value?: number; // Optional as some values might be null
   scientific_name?: string; // Optional field for scientific names
@@ -28,8 +28,8 @@ export type TTaxaSummaryDistrict = {
  */
 const taxaSummaryDistrictSchema = new Schema<TTaxaSummaryDistrict>(
   {
-    district: { type: String, required: true },
-    common_name: { type: String, required: true },
+    gaul_2_name: { type: String, required: true },
+    catch_taxon: { type: String, required: true },
     metric: { type: String, required: true },
     value: { type: Number, required: false }, // Not required as it can be null
     scientific_name: String,
@@ -41,8 +41,8 @@ const taxaSummaryDistrictSchema = new Schema<TTaxaSummaryDistrict>(
 );
 
 // Create compound index for efficient querying
-taxaSummaryDistrictSchema.index({ district: 1, common_name: 1, metric: 1 });
-taxaSummaryDistrictSchema.index({ common_name: 1 });
+taxaSummaryDistrictSchema.index({ gaul_2_name: 1, catch_taxon: 1, metric: 1 });
+taxaSummaryDistrictSchema.index({ catch_taxon: 1 });
 taxaSummaryDistrictSchema.index({ timestamp: -1 });
 
 /**

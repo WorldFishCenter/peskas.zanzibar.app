@@ -26,7 +26,7 @@ export default function DistrictSpeciesHeatmap({
   const { t } = useTranslation("common");
   const [selectedDistricts] = useAtom(districtsAtom);
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
-  const [sorter, setSorter] = useState<{ columnKey: string; order: 'ascend' | 'descend' | null }>({ columnKey: 'common_name', order: null });
+  const [sorter, setSorter] = useState<{ columnKey: string; order: 'ascend' | 'descend' | null }>({ columnKey: 'catch_taxon', order: null });
   
   // Convert time range to months
   const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
@@ -56,24 +56,24 @@ export default function DistrictSpeciesHeatmap({
       const typedItem = item as any;
       const value = typedItem["catch_kg"];
       if (value === undefined || value === null || value <= 0) return;
-      
-      if (!speciesData[typedItem.common_name]) {
-        speciesData[typedItem.common_name] = {};
+
+      if (!speciesData[typedItem.catch_taxon]) {
+        speciesData[typedItem.catch_taxon] = {};
       }
-      
-      speciesData[typedItem.common_name][typedItem.district] = (speciesData[typedItem.common_name][typedItem.district] || 0) + value;
-      speciesValueSums[typedItem.common_name] = (speciesValueSums[typedItem.common_name] || 0) + value;
+
+      speciesData[typedItem.catch_taxon][typedItem.gaul_2_name] = (speciesData[typedItem.catch_taxon][typedItem.gaul_2_name] || 0) + value;
+      speciesValueSums[typedItem.catch_taxon] = (speciesValueSums[typedItem.catch_taxon] || 0) + value;
     });
-    
+
     // Get top 15 species and create table rows
     const topSpecies = Object.entries(speciesValueSums)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 15)
       .map(([species]) => species);
-    
+
     const tableData = topSpecies.map(species => {
       const row: any = {
-        common_name: species,
+        catch_taxon: species,
         total: speciesValueSums[species] || 0,
       };
       
@@ -153,18 +153,18 @@ export default function DistrictSpeciesHeatmap({
           title={t('text-species') || 'Species'}
           align="left"
           sortable
-          ascending={sorter.columnKey === 'common_name' ? sorter.order === 'ascend' : undefined}
+          ascending={sorter.columnKey === 'catch_taxon' ? sorter.order === 'ascend' : undefined}
         />
       ),
-      dataIndex: "common_name",
-      key: "common_name",
+      dataIndex: "catch_taxon",
+      key: "catch_taxon",
       align: "left" as AlignType,
       sorter: true,
-      sortOrder: sorter.columnKey === 'common_name' ? sorter.order : null,
+      sortOrder: sorter.columnKey === 'catch_taxon' ? sorter.order : null,
       onHeaderCell: () => ({
         onClick: () => setSorter(s => ({
-          columnKey: 'common_name',
-          order: s.columnKey === 'common_name' && s.order === 'ascend' ? 'descend' : 'ascend',
+          columnKey: 'catch_taxon',
+          order: s.columnKey === 'catch_taxon' && s.order === 'ascend' ? 'descend' : 'ascend',
         }))
       }),
       render: (val: string) => (
@@ -270,7 +270,7 @@ export default function DistrictSpeciesHeatmap({
           data={sortedData}
           variant="elegant"
           className="min-w-[600px]"
-          rowKey="common_name"
+          rowKey="catch_taxon"
         />
       </div>
     </WidgetCard>

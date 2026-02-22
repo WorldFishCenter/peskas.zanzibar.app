@@ -4,20 +4,20 @@ import { CustomYAxisTick } from "./components";
 // Global array to keep track of all BMU names for consistent color assignment
 let globalBmuNames: string[] = [];
 
-// District-specific color mapping for consistent visualization
+// District-specific color mapping for official GAUL2 adm2 names (consistent visualization)
 // Based on the ColorsWall palette (https://colorswall.com/palette/178887) + Blue-grey lighten-2
 export const DISTRICT_COLORS: Record<string, string> = {
-  "Chake chake": "#167288",   // Semi dark teal
-  "North b": "#8cdaec",      // Light sky blue
-  "Wete": "#b45248",         // Semi dark red
-  "Central": "#d48c84",      // Light rosy brown
-  "Urban": "#a89a49",        // Semi dark khaki
-  "West b": "#d6cfa2",       // Light pale goldenrod
-  "North a": "#3cb464",      // Semi dark green
-  "South": "#9bddb1",        // Light medium aquamarine
-  "Mkoani": "#643c6a",       // Semi dark purple
-  "West a": "#836394",       // Light medium purple
-  "Micheweni": "#90a4ae",    // Blue-grey lighten-2
+  "Chake Chake": "#167288",     // Semi dark teal
+  "Kaskazini A": "#8cdaec",     // Light sky blue
+  "Kaskazini B": "#b45248",     // Semi dark red
+  "Kati": "#d48c84",           // Light rosy brown
+  "Kusini": "#a89a49",         // Semi dark khaki
+  "Magharibi A": "#d6cfa2",    // Light pale goldenrod
+  "Magharibi B": "#3cb464",    // Semi dark green
+  "Micheweni": "#9bddb1",      // Light medium aquamarine
+  "Mjini": "#643c6a",          // Semi dark purple
+  "Mkoani": "#836394",         // Light medium purple
+  "Wete": "#90a4ae",           // Blue-grey lighten-2
 };
 
 // Function to update the global BMU list and ensure consistent color assignment

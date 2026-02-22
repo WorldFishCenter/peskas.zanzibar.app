@@ -32,10 +32,10 @@ export const taxaSummariesRouter = createTRPCRouter({
         };
         
         if (input.districts && input.districts.length > 0) {
-          matchQuery.district = { $in: input.districts };
+          matchQuery.gaul_2_name = { $in: input.districts };
         }
         if (input.species && input.species.length > 0) {
-          matchQuery.common_name = { $in: input.species };
+          matchQuery.catch_taxon = { $in: input.species };
         }
         if (input.metrics && input.metrics.length > 0) {
           matchQuery.metric = { $in: input.metrics };
@@ -50,27 +50,27 @@ export const taxaSummariesRouter = createTRPCRouter({
 
         // Get raw records first
         const records = await TaxaSummaryDistrictModel.find(matchQuery)
-          .select('district common_name scientific_name metric value')
-          .sort({ district: 1, common_name: 1, metric: 1 })
+          .select('gaul_2_name catch_taxon scientific_name metric value')
+          .sort({ gaul_2_name: 1, catch_taxon: 1, metric: 1 })
           .exec();
 
-        // Group by district and species to create pivot table structure
+        // Group by gaul_2_name and species to create pivot table structure
         const grouped = records.reduce((acc: any, record: any) => {
-          const key = `${record.district}|${record.common_name}`;
-          
+          const key = `${record.gaul_2_name}|${record.catch_taxon}`;
+
           if (!acc[key]) {
             acc[key] = {
-              district: record.district,
-              common_name: record.common_name,
+              gaul_2_name: record.gaul_2_name,
+              catch_taxon: record.catch_taxon,
               scientific_name: record.scientific_name,
             };
           }
-          
+
           // Add metric as property, but only if value exists and is not null
           if (record.value !== null && record.value !== undefined) {
             acc[key][record.metric] = record.value;
           }
-          
+
           return acc;
         }, {});
 
@@ -104,9 +104,9 @@ export const taxaSummariesRouter = createTRPCRouter({
         };
         
         if (input.districts && input.districts.length > 0) {
-          matchQuery.district = { $in: input.districts };
+          matchQuery.gaul_2_name = { $in: input.districts };
         }
-        
+
         // Note: Time filtering not yet implemented for taxa summaries due to data structure limitations
         // The months parameter is accepted for API compatibility but not currently applied
         if (input.months && typeof input.months === 'number') {
@@ -121,12 +121,12 @@ export const taxaSummariesRouter = createTRPCRouter({
           },
           {
             $group: {
-              _id: "$common_name",
+              _id: "$catch_taxon",
               total_value: { $sum: "$value" },
               scientific_name: { $first: "$scientific_name" },
               districts: {
                 $addToSet: {
-                  district: "$district",
+                  gaul_2_name: "$gaul_2_name",
                   value: "$value"
                 }
               }
@@ -140,7 +140,7 @@ export const taxaSummariesRouter = createTRPCRouter({
           {
             $project: {
               _id: 0,
-              common_name: "$_id",
+              catch_taxon: "$_id",
               scientific_name: 1,
               total_value: 1,
               districts: 1
@@ -165,26 +165,26 @@ export const taxaSummariesRouter = createTRPCRouter({
   getDistrictSpeciesBreakdown: publicProcedure
     .input(
       z.object({
-        district: z.string(),
+        district: z.string(), // gaul_2_name value
         metric: taxaMetricSchema.default("catch_kg"),
       })
     )
     .query(async ({ input }) => {
       try {
         await getDb();
-        
-        // Get all species for a specific district
+
+        // Get all species for a specific district (gaul_2_name)
         const breakdown = await TaxaSummaryDistrictModel.aggregate([
           {
             $match: {
-              district: input.district,
+              gaul_2_name: input.district,
               metric: input.metric
             }
           },
           {
             $project: {
               _id: 0,
-              common_name: 1,
+              catch_taxon: 1,
               scientific_name: 1,
               value: 1
             }
@@ -214,19 +214,19 @@ export const taxaSummariesRouter = createTRPCRouter({
         const species = await TaxaSummaryDistrictModel.aggregate([
           {
             $group: {
-              _id: "$common_name",
+              _id: "$catch_taxon",
               scientific_name: { $first: "$scientific_name" }
             }
           },
           {
             $project: {
               _id: 0,
-              common_name: "$_id",
+              catch_taxon: "$_id",
               scientific_name: 1
             }
           },
           {
-            $sort: { common_name: 1 }
+            $sort: { catch_taxon: 1 }
           }
         ]).exec();
 
