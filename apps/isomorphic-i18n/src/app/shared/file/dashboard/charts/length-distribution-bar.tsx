@@ -129,12 +129,17 @@ export default function LengthDistributionBar({
   const availableSpecies = useMemo(() => {
     if (!speciesData) return [];
     
-    // Filter species that have mean_length data
+    // Filter species that have mean_length data and a valid taxon code
     const speciesMap = new Map();
     speciesData.forEach(item => {
       // Now the API returns objects with properties for each metric
       const typedItem = item as any;
-      if (typedItem.mean_length && typedItem.mean_length > 0) {
+      if (
+        typedItem.mean_length &&
+        typedItem.mean_length > 0 &&
+        typeof typedItem.catch_taxon === "string" &&
+        typedItem.catch_taxon.trim().length > 0
+      ) {
         speciesMap.set(typedItem.catch_taxon, {
           catch_taxon: typedItem.catch_taxon,
           scientific_name: typedItem.scientific_name,
@@ -143,7 +148,7 @@ export default function LengthDistributionBar({
     });
 
     return Array.from(speciesMap.values()).sort((a, b) =>
-      a.catch_taxon.localeCompare(b.catch_taxon)
+      (a.catch_taxon || "").localeCompare(b.catch_taxon || "")
     );
   }, [speciesData]);
 
