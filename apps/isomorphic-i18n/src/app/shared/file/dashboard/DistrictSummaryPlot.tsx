@@ -23,7 +23,7 @@ const METRICS = [
   { key: "n_submissions", labelKey: "metric-n_submissions-title", unitKey: "metric-n_submissions-unit", descKey: "metric-n_submissions-desc" },
   { key: "trip_duration_hrs", labelKey: "metric-trip_duration_hrs-title", unitKey: "metric-trip_duration_hrs-unit", descKey: "metric-trip_duration_hrs-desc" },
   { key: "mean_price_kg", labelKey: "metric-mean_price_kg-title", unitKey: "metric-mean_price_kg-unit", descKey: "metric-mean_price_kg-desc" },
-  { key: "estimated_revenue_TZS", labelKey: "metric-estimated_revenue_TZS-title", unitKey: "metric-estimated_revenue_TZS-unit", descKey: "metric-estimated_revenue_TZS-desc" },
+  { key: "estimated_revenue", labelKey: "metric-estimated_revenue-title", unitKey: "metric-estimated_revenue-unit", descKey: "metric-estimated_revenue-desc" },
   { key: "estimated_catch_tn", labelKey: "metric-estimated_catch_tn-title", unitKey: "metric-estimated_catch_tn-unit", descKey: "metric-estimated_catch_tn-desc" },
 ];
 
@@ -148,7 +148,7 @@ export default function DistrictSummaryPlot({ className, lang: propLang }: { cla
               tick={{ fontSize: 12, fill: "#64748b" }}
               tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, lang)}
               label={{
-                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''} ${['n_submissions', 'estimated_catch_tn', 'estimated_revenue_TZS'].includes(selectedMetric) ? '(Aggregated)' : '(Average)'}`,
+                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''} ${['n_submissions', 'estimated_catch_tn', 'estimated_revenue'].includes(selectedMetric) ? '(Aggregated)' : '(Average)'}`,
                 position: 'insideBottom',
                 offset: -5,
                 style: { fontSize: 13, fill: '#64748b', fontWeight: 500, textAnchor: 'middle' }

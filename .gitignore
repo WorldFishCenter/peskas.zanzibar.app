@@ -39,6 +39,11 @@ dist/
 .vercel
 .vscode
 
+# Claude Code & Cursor setup (local/IDE-only)
+.claude/
+.cursor/
+CLAUDE.md
+
 # local env files
 .env*
 !.env.example

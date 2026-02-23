@@ -146,7 +146,7 @@ export const districtSummaryRouter = createTRPCRouter({
           'mean_cpue',
           'mean_rpue',
           'mean_price_kg',
-          'estimated_revenue_TZS',
+          'estimated_revenue',
           'estimated_catch_tn'
         ];
         const summaries = await DistrictSummaryModel.find({
@@ -232,7 +232,7 @@ export const districtSummaryRouter = createTRPCRouter({
           grouped[s.gaul_2_name][s.indicator].push(s.value);
         }
         const ALL_METRICS = [
-          "mean_cpue", "mean_rpue", "n_fishers", "n_submissions", "trip_duration_hrs", "mean_price_kg", "estimated_revenue_TZS", "estimated_catch_tn"
+          "mean_cpue", "mean_rpue", "n_fishers", "n_submissions", "trip_duration_hrs", "mean_price_kg", "estimated_revenue", "estimated_catch_tn"
         ];
         // Prepare result: array of { gaul_2_name, indicator1: avg, ... } for official GAUL2 districts
         const result = GAUL2_DISTRICT_NAMES.map((gaul_2_name) => {
@@ -241,7 +241,7 @@ export const districtSummaryRouter = createTRPCRouter({
           for (const indicator of ALL_METRICS) {
             // Filter out null/undefined/NaN values before aggregating
             const values = (indicatorsObj[indicator] || []).filter(v => v !== null && v !== undefined && !isNaN(v));
-            if (["n_submissions", "estimated_catch_tn", "estimated_revenue_TZS"].includes(indicator)) {
+            if (["n_submissions", "estimated_catch_tn", "estimated_revenue"].includes(indicator)) {
               row[indicator] = values.length ? values.reduce((a, b) => a + b, 0) : null;
             } else {
               row[indicator] = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
