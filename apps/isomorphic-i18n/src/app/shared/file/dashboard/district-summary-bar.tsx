@@ -53,7 +53,7 @@ function DistrictTooltip({ active, payload, allData, selectedMetric, lang }: any
   );
 }
 
-export default function DistrictSummaryPlot({ className, lang: propLang }: { className?: string, lang?: string }) {
+export default function DistrictSummaryBar({ className, lang: propLang }: { className?: string, lang?: string }) {
   const lang = propLang || 'en';
   const { t } = useTranslation("common");
   const [range] = useAtom(selectedTimeRangeAtom);

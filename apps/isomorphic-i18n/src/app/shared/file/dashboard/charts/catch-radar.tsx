@@ -95,22 +95,14 @@ export default function CatchRadar({
   const [selectedDistricts] = useAtom(districtsAtom);
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
-  
-  // Memoized month names with translations
-  const MONTHS = useMemo(() => [
-    t("text-jan") || "Jan", t("text-feb") || "Feb", t("text-mar") || "Mar", t("text-apr") || "Apr", t("text-may") || "May", t("text-jun") || "Jun",
-    t("text-jul") || "Jul", t("text-aug") || "Aug", t("text-sep") || "Sep", t("text-oct") || "Oct", t("text-nov") || "Nov", t("text-dec") || "Dec"
-  ], [t]);
-  
-  // Calculate year based on time range
-  const currentYear = new Date().getFullYear();
-  const year = currentYear;
-  
+
+  const months = typeof selectedTimeRange === "number" ? selectedTimeRange : 12;
+
   const { data, isLoading, error } = api.monthlySummary.radarData.useQuery(
     {
       districts: selectedDistricts,
       metrics: selectedMetrics,
-      year
+      months,
     },
     {
       enabled: selectedDistricts.length > 0 && selectedMetrics.length > 0,
@@ -120,27 +112,9 @@ export default function CatchRadar({
   );
 
   const chartData = useMemo(() => {
-    if (!data) return [];
-
-    return MONTHS.map((month, index) => {
-      const point: any = { month };
-      
-      // For each district, get the district-specific value
-      selectedDistricts.forEach(district => {
-        if (data[index] && district in data[index]) {
-          const value = data[index][district];
-          // Only include if it's a non-zero value
-          if (value > 0) {
-            point[district] = Math.round(value * 100) / 100;
-          }
-          // If value is 0 or undefined, don't set it at all (leave it undefined)
-        }
-        // If district not in data, leave it undefined
-      });
-      
-      return point;
-    });
-  }, [data, selectedDistricts, MONTHS]);
+    if (!data || !Array.isArray(data)) return [];
+    return data;
+  }, [data]);
 
   const handleLegendClick = (entry: any) => {
     const district = entry.dataKey;
@@ -187,10 +161,18 @@ export default function CatchRadar({
   const selectedMetric = selectedMetrics[0];
   const metricConfig = SHARED_METRIC_CONFIG[selectedMetric as keyof typeof SHARED_METRIC_CONFIG];
 
+  const timeRangeLabels: { value: string | number; label: string }[] = [
+    { value: 3, label: t("text-last-3-months") || "Last 3 months" },
+    { value: 6, label: t("text-last-6-months") || "Last 6 months" },
+    { value: 12, label: t("text-last-year") || "Last year" },
+    { value: "all", label: t("text-all-time") || "All time" },
+  ];
+  const timeRangeLabel = timeRangeLabels.find((r) => r.value === selectedTimeRange)?.label ?? timeRangeLabels[1].label;
+
   return (
     <WidgetCard 
       title={formatChartTitle(selectedMetric, t("text-seasonality") || "Seasonality", t)}
-      description={`Year: ${year}`}
+      description={timeRangeLabel}
       className={className}
     >
       <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">

@@ -48,13 +48,14 @@ export const monthlySummaryRouter = createTRPCRouter({
     .input(z.object({
       districts: z.array(z.string().nullable()).transform(arr => arr.filter((d): d is string => d !== null)),
       metrics: z.array(z.string()),
-      year: z.number().default(new Date().getFullYear())
+      months: z.number().min(1).max(72).default(12)
     }))
     .query(async ({ input }) => {
-      const { districts, metrics, year } = input;
+      const { districts, metrics, months } = input;
 
-      const startDate = new Date(year, 0, 1);
-      const endDate = new Date(year, 11, 31);
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(endDate.getMonth() - months);
 
       const data = await MonthlySummaryDistrictModel.find({
         gaul_2_name: { $in: districts },
@@ -62,23 +63,36 @@ export const monthlySummaryRouter = createTRPCRouter({
         date: { $gte: startDate, $lte: endDate }
       }).sort({ date: 1 }).lean();
 
-      // Group by month and gaul_2_name for the selected metric
-      const monthlyDistrictData: Record<number, Record<string, number>> = {};
-      for (let month = 0; month < 12; month++) {
-        const monthData = data.filter(item =>
-          item.date.getMonth() === month && item.metric === metrics[0]
-        );
+      // Build chronological list of (year, month) for the range
+      const points: { year: number; month: number }[] = [];
+      const d = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+      for (let i = 0; i < months; i++) {
+        points.push({ year: d.getFullYear(), month: d.getMonth() });
+        d.setMonth(d.getMonth() - 1);
+      }
+      points.reverse();
 
-        monthlyDistrictData[month] = {};
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const yearsInRange = new Set(points.map(p => p.year));
+      const spanYears = yearsInRange.size > 1;
+
+      return points.map(({ year, month }) => {
+        const monthData = data.filter(
+          item =>
+            item.date.getFullYear() === year &&
+            item.date.getMonth() === month &&
+            item.metric === metrics[0]
+        );
+        const districtValues: Record<string, number> = {};
         districts.forEach((name) => {
           const nameData = monthData.filter(item => item.gaul_2_name === name);
           if (nameData.length > 0) {
             const avg = nameData.reduce((sum, item) => sum + (item.value || 0), 0) / nameData.length;
-            monthlyDistrictData[month][name] = avg;
+            districtValues[name] = Math.round(avg * 100) / 100;
           }
         });
-      }
-
-      return monthlyDistrictData;
+        const monthLabel = spanYears ? `${monthNames[month]} ${year}` : monthNames[month];
+        return { month: monthLabel, ...districtValues };
+      });
     }),
 }); 

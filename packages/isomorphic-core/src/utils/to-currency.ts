@@ -1,11 +1,13 @@
 export function toCurrency(
   number: number | string,
   disableDecimal = false,
-  decimalPlaces = 2
+  decimalPlaces = 2,
+  locale = 'en-US',
+  currency = 'USD'
 ) {
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD',
+    currency,
     minimumFractionDigits: disableDecimal ? 0 : decimalPlaces,
     maximumFractionDigits: disableDecimal ? 0 : decimalPlaces,
   });

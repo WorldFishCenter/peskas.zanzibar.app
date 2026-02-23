@@ -1,31 +1,37 @@
 import { Metadata } from "next";
 import PageHeader from "@/app/shared/page-header";
+import { routes } from "@/config/routes";
 
-// SEO metadata
 export const metadata: Metadata = {
-  title: "New Page | Isomorphic",
+  title: "Ask Data | Peskas Zanzibar",
 };
 
 const pageHeader = {
-  title: "Page Under Development...",
+  title: "nav-ask-data",
   breadcrumb: [
     {
-      href: "/",
-      name: "Home",
+      href: routes.home,
+      name: "text-home",
     },
     {
-      name: "Ask Data",
+      name: "nav-ask-data",
     },
   ],
 };
 
-export default function NewPage() {
+export default function AskDataPage() {
   return (
     <>
       <PageHeader
         title={pageHeader.title}
         breadcrumb={pageHeader.breadcrumb}
       />
+      <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800/30">
+        <div className="text-center">
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Coming Soon</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This feature is under development.</p>
+        </div>
+      </div>
     </>
   );
 }

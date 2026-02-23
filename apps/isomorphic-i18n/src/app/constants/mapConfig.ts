@@ -18,14 +18,9 @@ export const COLOR_RANGE = [
   [29, 145, 192]    // >5h
 ];
 
-// Initial map view state
-export const INITIAL_VIEW_STATE = {
-  longitude: 39.19,  // Zanzibar City longitude
-  latitude: -6.16,   // Zanzibar City latitude
-  zoom: 8,          // Reduced zoom level for better overview
-  pitch: 45,        // Add tilt to see 3D
-  bearing: 10       // Slight rotation for better perspective
-};
+// Initial map view state — driven by countryConfig.gridMapViewState
+import { activeCountry } from '@/config/countryConfig';
+export const INITIAL_VIEW_STATE = activeCountry.gridMapViewState;
 
 // Grid layer settings
 export const GRID_LAYER_SETTINGS = {

@@ -4,6 +4,7 @@ import { LAYOUT_OPTIONS } from '@/config/enums';
 import logoIconImg from '@public/logo-short.svg';
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types';
 import sailboatIcon from '@public/sailboat-icon.svg';
+import { activeCountry } from '@/config/countryConfig';
 
 enum MODE {
   LIGHT = 'light',
@@ -11,8 +12,8 @@ enum MODE {
 }
 
 export const siteConfig = {
-  title: 'PESKAS | Zanzibar FISHERIES',
-  description: 'Peskas | Zanzibar Fisheries Dashboard',
+  title: activeCountry.siteTitle,
+  description: activeCountry.siteDescription,
   logo: logoImg,
   icon: logoIconImg,
   mode: MODE.DARK,

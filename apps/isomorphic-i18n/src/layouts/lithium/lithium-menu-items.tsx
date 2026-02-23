@@ -1,5 +1,4 @@
 import { routes } from '@/config/routes';
-import { DUMMY_ID } from '@/config/constants';
 
 export type SubMenuItemType = {
   name: string;
@@ -39,7 +38,7 @@ export const lithiumMenuItems: LithiumMenuItem = {
     type: 'link',
     dropdownItems: [
       {
-        name: 'nav-aggregated',
+        name: 'nav-catch-overview',
         href: routes.catch,
         icon: 'FishIcon',
       },
@@ -73,7 +72,7 @@ export const lithiumMenuItems: LithiumMenuItem = {
     dropdownItems: [
       {
         name: 'nav-ask-data',
-        href: '/ask-data',
+        href: routes.askData,
         icon: 'ZoomQuestion',
       },
     ],
@@ -89,29 +88,8 @@ export const lithiumMenuItems: LithiumMenuItem = {
       },
     ],
   },
-  widgets: {
-    name: 'nav-widgets',
-    type: 'link',
-    dropdownItems: [
-      {
-        name: 'nav-cards',
-        href: routes.widgets.cards,
-        icon: 'DicesIcon',
-      },
-      {
-        name: 'nav-charts',
-        href: routes.widgets.charts,
-        icon: 'PieChartCurrencyIcon',
-      },
-      {
-        name: 'nav-charts',
-        href: routes.forms.personalInformation,
-        icon: 'PieChartCurrencyIcon',
-      },
-    ],
-  },
-  forms: {
-    name: 'nav-forms',
+  settings: {
+    name: 'nav-settings',
     type: 'link',
     dropdownItems: [
       {
@@ -129,44 +107,8 @@ export const lithiumMenuItems: LithiumMenuItem = {
         href: routes.forms.personalInformation,
         icon: 'UserInfoIcon',
       },
-      {
-        name: 'nav-newsletter',
-        href: routes.forms.newsletter,
-        icon: 'NewsletterAnnouncement',
-      },
     ],
   },
-  groups: {
-    name: 'nav-groups',
-    type: 'link',
-    dropdownItems: [
-      {
-        name: 'nav-control',
-        href: routes.groups.control,
-        icon: 'PageBlankIcon',
-      },
-      {
-        name: 'nav-iia',
-        href: routes.groups.iia,
-        icon: 'PageBlankIcon',
-      },
-      {
-        name: 'nav-cia',
-        href: routes.groups.cia,
-        icon: 'PageBlankIcon',
-      },
-      {
-        name: 'nav-wbcia',
-        href: routes.groups.wbcia,
-        icon: 'PageBlankIcon',
-      },
-      {
-        name: 'nav-aia',
-        href: routes.groups.aia,
-        icon: 'PageBlankIcon',
-      },      
-    ],
-  },  
 };
 
 export type LithiumMenuItemsKeys = keyof typeof lithiumMenuItems;

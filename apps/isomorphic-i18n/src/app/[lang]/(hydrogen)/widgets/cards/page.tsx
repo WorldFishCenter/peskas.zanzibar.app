@@ -6,7 +6,7 @@ import cn from '@utils/class-names';
 import PageHeader from '@/app/shared/page-header';
 import MetricCardsWithIcon from '@/app/shared/support/dashboard/stat-cards';
 import MetricCardWithBarChart from '@/app/shared/analytics-dashboard/stat-cards';
-import { FileStatGrid } from '@/app/shared/file/dashboard/file-stats';
+import { FileStatGrid } from '@/app/shared/file/dashboard/metric-cards';
 import ParticipantsList from './participants-list';
 import TransactionsList from './transactions-list';
 import TopProductList from './top-product-list';
@@ -21,7 +21,7 @@ const pageHeader = {
   title: 'text-cards',
   breadcrumb: [
     {
-      href: routes.eCommerce.dashboard,
+      href: routes.home,
       name: 'text-home',
     },
     {

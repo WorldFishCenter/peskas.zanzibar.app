@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Cookies from "js-cookie";
 
 export type BmuType = {
@@ -9,27 +9,6 @@ export type BmuType = {
     value: string;
   }[];
 };
-
-const bmuMockData = [
-  {
-    sectionName: "Zanzibar",
-    units: [
-      { value: "Coastal Conservation Zone" },
-      { value: "Sandy Shores Management Area" },
-      { value: "Oceanfront Ecological Unit" },
-      { value: "Beach Access and Preservation Unit" },
-    ],
-  },
-  {
-    sectionName: "Timor",
-    units: [
-      { value: "Seaside Recreation Zone" },
-      { value: "Marine Wildlife Sanctuary" },
-      { value: "Shoreline Monitoring Unit" },
-      { value: "Beach Visitor Services Area" },
-    ],
-  },
-];
 
 const initialData = {
   bmuFilter: [] as string[],
@@ -48,24 +27,9 @@ export const GlobalFilterProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [bmuOriginalData, setBmuOriginalData] = useState<BmuType[]>([]);
+  // bmuOriginalData will be populated via a real API call when wired in.
+  const [bmuOriginalData] = useState<BmuType[]>([]);
   const [bmuFilter, setBmuFilter] = useState([] as string[]);
-
-  useEffect(() => {
-    // API call to DB query here.bmuMockData will be replaced with the actual data
-    setBmuOriginalData(bmuMockData);
-    setBmuFilter(
-      bmuMockData.flatMap((bmu) => bmu.units.map((unit) => unit.value))
-    );
-
-    Cookies.set(
-      "bmuFilter",
-      JSON.stringify(
-        bmuMockData.flatMap((bmu) => bmu.units.map((unit) => unit.value))
-      )
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bmuMockData]);
 
   const setFilter = (data: string[]) => {
     const filterData = data.filter(function (item, pos) {
