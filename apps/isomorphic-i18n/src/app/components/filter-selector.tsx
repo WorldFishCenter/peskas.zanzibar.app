@@ -74,7 +74,7 @@ export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', '
 export const selectedMetricAtom = atom<MetricKey>("mean_cpue");
 
 // Revenue-specific metric selector atom
-export const selectedRevenueMetricAtom = atom<MetricKey>("estimated_revenue_TZS");
+export const selectedRevenueMetricAtom = atom<MetricKey>("estimated_revenue");
 
 
 

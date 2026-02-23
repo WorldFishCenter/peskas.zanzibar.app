@@ -150,8 +150,8 @@ export const SHARED_METRIC_CONFIG = {
     color: "#8E44AD",
     unit: "tonnes"
   },
-  estimated_revenue_TZS: {
-    labelKey: "metric-estimated_revenue_TZS-title",
+  estimated_revenue: {
+    labelKey: "metric-estimated_revenue-title",
     color: "#27AE60",
     unit: "TZS"
   }

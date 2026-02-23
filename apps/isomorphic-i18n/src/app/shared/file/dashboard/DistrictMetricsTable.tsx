@@ -25,7 +25,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
     "mean_cpue",
     "mean_rpue",
     "mean_price_kg",
-    "estimated_revenue_TZS",
+    "estimated_revenue",
     "estimated_catch_tn"
   ];
   // Compute min/max for each metric for palette

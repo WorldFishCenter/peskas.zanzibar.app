@@ -10,7 +10,7 @@ export const MONTHLY_METRICS = [
   "mean_catch_price",
   "estimated_fishing_trips",
   "estimated_catch_tn",
-  "estimated_revenue_TZS",
+  "estimated_revenue",
 ] as const;
 
 

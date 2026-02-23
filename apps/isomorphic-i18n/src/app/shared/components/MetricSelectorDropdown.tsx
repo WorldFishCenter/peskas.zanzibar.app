@@ -43,7 +43,7 @@ export default function MetricSelectorDropdown() {
       category: "revenue",
     },
     {
-      value: "estimated_revenue_TZS",
+      value: "estimated_revenue",
       label: "Estimated Revenue",
       unit: "TZS",
       category: "revenue",
@@ -96,10 +96,10 @@ export default function MetricSelectorDropdown() {
     }
   }, [isCatchPage, selectedMetric, availableMetrics, setSelectedMetric]);
 
-  // If on revenue page and selected metric is not available, default to estimated_revenue_TZS
+  // If on revenue page and selected metric is not available, default to estimated_revenue
   useEffect(() => {
     if (isRevenuePage && selectedRevenueMetric && !availableMetrics.find(m => m.value === selectedRevenueMetric)) {
-      setSelectedRevenueMetric('estimated_revenue_TZS' as MetricKey);
+      setSelectedRevenueMetric('estimated_revenue' as MetricKey);
     }
   }, [isRevenuePage, selectedRevenueMetric, availableMetrics, setSelectedRevenueMetric]);
 

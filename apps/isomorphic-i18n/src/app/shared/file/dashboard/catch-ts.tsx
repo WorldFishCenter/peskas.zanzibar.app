@@ -36,7 +36,7 @@ const formatNumber = (num: number, precision = 0): string => {
   });
 };
 
-type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua" | "estimated_revenue_TZS";
+type MetricKey = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua" | "estimated_revenue";
 
 interface ChartDataPoint {
   date: number;
@@ -52,7 +52,7 @@ interface ApiDataPoint {
   mean_cpua: number;
   mean_rpue: number;
   mean_rpua: number;
-  estimated_revenue_TZS: number;
+  estimated_revenue: number;
 }
 
 interface MetricOption {

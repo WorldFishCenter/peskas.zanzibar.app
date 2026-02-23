@@ -48,7 +48,7 @@ const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   mean_cpua: { translationKey: "text-metrics-catch-per-area", unit: "kg/km²/day" },
   mean_rpua: { translationKey: "text-metrics-revenue-per-area", unit: "KSH/km²/day" },
   estimated_catch_tn: { translationKey: "text-metrics-estimated-catch", unit: "tons" },
-  estimated_revenue_TZS: { translationKey: "text-metrics-estimated-revenue", unit: "TZS" },
+  estimated_revenue: { translationKey: "text-metrics-estimated-revenue", unit: "" },
 };
 
 const getMetricLabel = (metric: string, t: any): string => {
@@ -214,7 +214,7 @@ export default function CatchRadarChart({
   // Force refetch when districts or metric changes - optimized with memoized dependency string
   const districtsDependencyString = useMemo(() => JSON.stringify(selectedDistricts), [selectedDistricts]);
   
-  // Filter out estimated_revenue_TZS if it's not supported by the radar API
+  // Filter out estimated_revenue if it's not supported by the radar API
   type SupportedRadarMetric = "mean_effort" | "mean_cpue" | "mean_cpua" | "mean_rpue" | "mean_rpua";
   const supportedRadarMetrics: SupportedRadarMetric[] = ["mean_effort", "mean_cpue", "mean_cpua", "mean_rpue", "mean_rpua"];
   const radarMetric: SupportedRadarMetric = supportedRadarMetrics.includes(selectedMetric as any) 

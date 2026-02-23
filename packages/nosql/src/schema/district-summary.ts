@@ -10,7 +10,7 @@ export const DISTRICT_INDICATORS = [
   "mean_cpue",
   "mean_rpue",
   "mean_price_kg",
-  "estimated_revenue_TZS",
+  "estimated_revenue",
   "estimated_catch_tn",
 ] as const;
 

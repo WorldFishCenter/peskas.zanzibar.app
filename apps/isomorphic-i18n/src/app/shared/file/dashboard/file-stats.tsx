@@ -69,10 +69,10 @@ const METRIC_CONFIG = {
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
-  estimated_revenue_TZS: {
-    titleKey: 'metric-estimated_revenue_TZS-title',
-    unitKey: 'metric-estimated_revenue_TZS-unit',
-    descKey: 'metric-estimated_revenue_TZS-desc',
+  estimated_revenue: {
+    titleKey: 'metric-estimated_revenue-title',
+    unitKey: 'metric-estimated_revenue-unit',
+    descKey: 'metric-estimated_revenue-desc',
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
@@ -130,7 +130,7 @@ function MetricBarCard({
   const formatValue = (value: any) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
     // Special case: Estimated Revenue (TZS) always in millions
-    if (metric === 'estimated_revenue_TZS') {
+    if (metric === 'estimated_revenue') {
       const millions = value / 1_000_000;
       return millions.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 }) + 'M';
     }
