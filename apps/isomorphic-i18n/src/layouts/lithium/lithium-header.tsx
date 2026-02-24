@@ -39,6 +39,7 @@ import { USFlag } from "@components/icons/language/USFlag";
 import { SWFlag } from "@components/icons/language/SWFlag";
 import { useTranslation } from "@/app/i18n/client";
 import Image from "next/image";
+import { activeCountry } from "@/config/countryConfig";
 import MetricSelectorDropdown from '@/app/shared/components/MetricSelectorDropdown';
 
 type SerializedBmu = {
@@ -301,7 +302,13 @@ export default function Header({ lang }: { lang?: string }) {
         >
           <div className="flex items-center gap-3">
             <Logo className="max-w-[200px] h-12" colorMode={colorMode} />
-            <Image src="/zanzibar-flag.svg" alt="Zanzibar flag" width={32} height={32} className="h-8 w-auto" />
+            <Image
+              src={activeCountry.flagIconSrc ?? "/zanzibar-flag.svg"}
+              alt={`${activeCountry.countryName} flag`}
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+            />
           </div>
         </LanguageLink>
         <HeaderMenuLeft lang={lang} />

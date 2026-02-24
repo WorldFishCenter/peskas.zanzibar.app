@@ -37,6 +37,8 @@ export interface CountryConfig {
   siteTitle: string;
   /** Meta description */
   siteDescription: string;
+  /** Optional country flag asset path (e.g. for header/branding) */
+  flagIconSrc?: string;
   /** ISO 4217 currency code, e.g. 'TZS' */
   currencyCode: string;
   /** BCP 47 locale for number/date formatting, e.g. 'sw-TZ' */
@@ -81,6 +83,7 @@ const zanzibarConfig: CountryConfig = {
   countryName: 'Zanzibar',
   siteTitle: 'PESKAS | Zanzibar Fisheries',
   siteDescription: 'Peskas | Zanzibar Fisheries Dashboard',
+  flagIconSrc: '/zanzibar-flag.svg',
   currencyCode: 'TZS',
   locale: 'sw-TZ',
   languages: ['en', 'sw'],
