@@ -201,7 +201,10 @@ export default function CatchTimeSeries({
               interval="preserveStartEnd"
               minTickGap={30}
             />
-            <YAxis {...CHART_STYLES.axis} />
+            <YAxis
+              {...CHART_STYLES.axis}
+              domain={[0, (dataMax: number) => parseFloat((dataMax * 1.1).toFixed(2))]}
+            />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}

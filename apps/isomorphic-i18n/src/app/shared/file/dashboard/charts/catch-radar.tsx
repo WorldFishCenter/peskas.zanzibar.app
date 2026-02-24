@@ -116,6 +116,18 @@ export default function CatchRadar({
     return data;
   }, [data]);
 
+  const radarDomainMax = useMemo<number>(() => {
+    if (!chartData.length) return 1;
+    const allValues = chartData.flatMap(point =>
+      Object.entries(point)
+        .filter(([key]) => key !== 'month')
+        .map(([, val]) => Number(val))
+        .filter(v => !isNaN(v))
+    );
+    const max = Math.max(...allValues);
+    return max > 0 ? parseFloat((max * 1.1).toFixed(2)) : 1;
+  }, [chartData]);
+
   const handleLegendClick = (entry: any) => {
     const district = entry.dataKey;
     setHiddenDistricts(prev => 
@@ -180,7 +192,7 @@ export default function CatchRadar({
           <RadarChart data={chartData} margin={CHART_STYLES.margins}>
             <PolarGrid />
             <PolarAngleAxis dataKey="month" />
-            <PolarRadiusAxis />
+            <PolarRadiusAxis domain={[0, radarDomainMax]} />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}
               wrapperStyle={CHART_STYLES.tooltip.wrapperStyle}

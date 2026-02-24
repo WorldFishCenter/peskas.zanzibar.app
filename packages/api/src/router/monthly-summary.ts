@@ -63,36 +63,36 @@ export const monthlySummaryRouter = createTRPCRouter({
         date: { $gte: startDate, $lte: endDate }
       }).sort({ date: 1 }).lean();
 
-      // Build chronological list of (year, month) for the range
-      const points: { year: number; month: number }[] = [];
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      // Collect the unique calendar months present in the selected range (in calendar order)
+      const monthsInRange = new Set<number>();
       const d = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
       for (let i = 0; i < months; i++) {
-        points.push({ year: d.getFullYear(), month: d.getMonth() });
+        monthsInRange.add(d.getMonth());
         d.setMonth(d.getMonth() - 1);
       }
-      points.reverse();
+      const sortedMonthIndices = Array.from(monthsInRange).sort((a, b) => a - b);
 
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const yearsInRange = new Set(points.map(p => p.year));
-      const spanYears = yearsInRange.size > 1;
+      // Group values by calendar month, accumulating across all years
+      const byMonth: Record<number, Record<string, number[]>> = {};
+      for (const item of data) {
+        if (item.metric !== metrics[0]) continue;
+        const m = item.date.getMonth();
+        if (!byMonth[m]) byMonth[m] = {};
+        (byMonth[m][item.gaul_2_name] ??= []).push(item.value ?? 0);
+      }
 
-      return points.map(({ year, month }) => {
-        const monthData = data.filter(
-          item =>
-            item.date.getFullYear() === year &&
-            item.date.getMonth() === month &&
-            item.metric === metrics[0]
-        );
+      // Return one point per calendar month with cross-year averages
+      return sortedMonthIndices.map(monthIdx => {
         const districtValues: Record<string, number> = {};
-        districts.forEach((name) => {
-          const nameData = monthData.filter(item => item.gaul_2_name === name);
-          if (nameData.length > 0) {
-            const avg = nameData.reduce((sum, item) => sum + (item.value || 0), 0) / nameData.length;
-            districtValues[name] = Math.round(avg * 100) / 100;
+        districts.forEach(name => {
+          const vals = byMonth[monthIdx]?.[name];
+          if (vals && vals.length > 0) {
+            districtValues[name] = Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 100) / 100;
           }
         });
-        const monthLabel = spanYears ? `${monthNames[month]} ${year}` : monthNames[month];
-        return { month: monthLabel, ...districtValues };
+        return { month: monthNames[monthIdx], ...districtValues };
       });
     }),
 }); 

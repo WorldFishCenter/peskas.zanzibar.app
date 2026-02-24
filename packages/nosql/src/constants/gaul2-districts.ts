@@ -18,8 +18,10 @@ export const GAUL2_DISTRICT_NAMES = [
 
 export type GAUL2DistrictName = (typeof GAUL2_DISTRICT_NAMES)[number];
 
-/** Map GAUL2 adm2 name to island region (Unguja vs Pemba). */
-export const GAUL2_TO_REGION: Record<string, "Unguja" | "Pemba"> = {
+/** Map GAUL2 adm2 district name to its parent region.
+ *  Replace this mapping when deploying for a new country.
+ *  Must be kept in sync with countryConfig.districtToRegion in apps/isomorphic-i18n. */
+export const GAUL2_TO_REGION: Record<string, string> = {
   "Chake Chake": "Pemba",
   "Kaskazini A": "Unguja",
   "Kaskazini B": "Unguja",

@@ -1,131 +1,147 @@
-# Adding a New Country to the Peskas Dashboard
+# Adding a Country to the Peskas Dashboard
 
-This guide explains how to deploy the dashboard for a new country.
-
-## How the multi-country system works
-
-The dashboard reads a `COUNTRY_CODE` env var at build time. Each country deployment
-sets its own `COUNTRY_CODE` and `MONGODB_URI`, pointing to its own database.
-No code forks are needed — only a new config entry per country.
-
-```
-COUNTRY_CODE=TZ   MONGODB_URI=<zanzibar-db>   → Zanzibar deployment
-COUNTRY_CODE=TL   MONGODB_URI=<timor-db>      → Timor-Leste deployment
-```
+Each country runs as a **separate deployment** pointing to its own MongoDB database.
+Adding a new country requires updating 2 config files and setting 2 env vars — no core code changes.
 
 ---
 
-## Step 1 — Add a config entry
+## How region data flows (read this before editing anything)
 
-Open `src/config/countryConfig.ts` and add a new entry to `COUNTRY_REGISTRY`.
+```
+MongoDB (country DB)
+  └─ district_summaries collection
+       (rows have gaul_2_name = district name, indicator = metric name, value = number)
+       │
+       ▼
+packages/nosql/src/constants/gaul2-districts.ts
+       GAUL2_TO_REGION maps district → region name
+       │
+       ▼
+packages/api/src/router/district-summary.ts  (getMonthlyRegionSummary)
+       Groups rows by region, returns { month, RegionA: avg, RegionB: avg, ... }
+       │
+       ▼
+apps/isomorphic-i18n/src/app/shared/file/dashboard/file-stats.tsx
+       Reads countryConfig.features.regionBreakdown.regions to know which keys to render as bars
+```
 
-Copy the `zanzibarConfig` object as a starting point and fill in the correct values:
+**The region names must be identical** across `gaul2-districts.ts` (API grouping) and
+`countryConfig.districtToRegion` / `regionBreakdown.regions` (UI rendering).
+A mismatch means the UI reads undefined values and shows `-` for every bar.
+
+---
+
+## Step 1 — `countryConfig.ts`
+
+**File**: `apps/isomorphic-i18n/src/config/countryConfig.ts`
+
+Add an entry to `COUNTRY_REGISTRY`. Use the Zanzibar config as a template:
 
 ```ts
-const timorConfig: CountryConfig = {
-  countryCode: 'TL',
-  countryName: 'Timor-Leste',
-  siteTitle: 'PESKAS | Timor-Leste Fisheries',
-  siteDescription: 'Peskas | Timor-Leste Fisheries Dashboard',
-  currencyCode: 'USD',
-  locale: 'en-US',
-  languages: ['en', 'pt'],            // must match locale folder names below
-  districts: [ /* adm2 district names from your MongoDB data */ ],
-  districtToRegion: { /* district → region mapping */ },
-  districtColors: { /* per-district hex colors for charts */ },
-  mapViewState: { longitude: 125.7, latitude: -8.9, zoom: 8, pitch: 40.5 },
-  gridMapViewState: { longitude: 125.6, latitude: -8.8, zoom: 8, pitch: 45, bearing: 10 },
-  defaultSelectedDistricts: [ /* 1-2 districts to pre-select */ ],
+const kenyaConfig: CountryConfig = {
+  countryCode: 'KE',                           // matches COUNTRY_CODE env var
+  countryName: 'Kenya',                         // used in page titles and map heading
+  siteTitle: 'PESKAS | Kenya Fisheries',
+  siteDescription: 'Peskas | Kenya Fisheries Dashboard',
+  currencyCode: 'KES',                          // ISO 4217
+  locale: 'sw-KE',                              // BCP 47 — used for number/date formatting
+  languages: ['en', 'sw'],                      // must match locale folder names (Step 3)
+  districts: ['Kwale', 'Kilifi', 'Mombasa'],   // exact gaul_2_name values from your MongoDB
+  districtToRegion: {
+    'Kwale':    'Coast South',                  // values must match regionBreakdown.regions
+    'Kilifi':   'Coast North',
+    'Mombasa':  'Coast North',
+  },
+  districtColors: {
+    'Kwale':   '#167288',
+    'Kilifi':  '#8cdaec',
+    'Mombasa': '#b45248',
+  },
+  mapViewState:     { longitude: 40.1, latitude: -1.3, zoom: 7, pitch: 40.5 },
+  gridMapViewState: { longitude: 39.7, latitude: -2.0, zoom: 7, pitch: 45, bearing: 10 },
+  defaultSelectedDistricts: ['Kilifi', 'Kwale'],
   features: {
-    regionBreakdown: undefined,   // set if you want sub-region bars in metric cards
-    homepageExtras: undefined,    // optional: a React component for country-specific UI
+    regionBreakdown: {
+      regions: ['Coast North', 'Coast South'],  // must match districtToRegion values above
+      colors: { 'Coast North': '#F28F3B', 'Coast South': '#75ABBC' },
+    },
+    // homepageExtras: undefined,               // optional React component for country-specific UI
   },
 };
 
 const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   TZ: zanzibarConfig,
-  TL: timorConfig,   // ← add this
+  KE: kenyaConfig,   // ← add this line
 };
 ```
 
-### CountryConfig field reference
-
-| Field | Description |
-|---|---|
-| `countryCode` | Must match the `COUNTRY_CODE` env var |
-| `countryName` | Used in page headings and map titles |
-| `siteTitle` / `siteDescription` | Browser tab and meta description |
-| `currencyCode` | ISO 4217, e.g. `'TZS'`, `'USD'` |
-| `locale` | BCP 47 for number/date formatting, e.g. `'sw-TZ'`, `'en-US'` |
-| `languages` | First element is the i18n fallback; must match locale folder names |
-| `districts` | Official adm2 names exactly as stored in MongoDB `gaul_2_name` field |
-| `districtToRegion` | Maps each district to its parent region (used in charts and filters) |
-| `districtColors` | One hex color per district for consistent chart visualization |
-| `mapViewState` | Initial view for the DeckGL hexbin map |
-| `gridMapViewState` | Initial view for the H3 grid map |
-| `defaultSelectedDistricts` | Pre-selected in the district filter on first visit |
-| `features.regionBreakdown` | Enables sub-region bars in homepage metric cards |
-| `features.homepageExtras` | Optional React component rendered in the homepage for country-specific content |
+**Rules:**
+- `districts` must contain the exact string values stored in `gaul_2_name` in your MongoDB.
+- `districtToRegion` values and `regionBreakdown.regions` must be identical strings.
+- `regionBreakdown` can have any number of regions (2, 3, or more).
+- Set `regionBreakdown: undefined` if the country has no meaningful sub-regions.
 
 ---
 
-## Step 2 — Update the API district constants (if adding a new country)
+## Step 2 — `gaul2-districts.ts`
 
-> **This step is required for a new country** because the API router groups
-> district data by region using the same mapping.
+**File**: `packages/nosql/src/constants/gaul2-districts.ts`
 
-Open `packages/nosql/src/constants/gaul2-districts.ts` and add or replace:
+Update with the **same district and region data** as Step 1. This file is what the API
+router (`getMonthlyRegionSummary`) uses to group database rows by region.
 
 ```ts
 export const GAUL2_DISTRICT_NAMES = [
-  'District A', 'District B', /* ... */
+  'Kwale', 'Kilifi', 'Mombasa',    // same list as countryConfig.districts
 ] as const;
 
+export type GAUL2DistrictName = (typeof GAUL2_DISTRICT_NAMES)[number];
+
 export const GAUL2_TO_REGION: Record<string, string> = {
-  'District A': 'Region North',
-  'District B': 'Region South',
-  /* ... */
+  'Kwale':   'Coast South',        // same mapping as countryConfig.districtToRegion
+  'Kilifi':  'Coast North',
+  'Mombasa': 'Coast North',
 };
 ```
 
-**Keep this in sync with `countryConfig.districts` and `countryConfig.districtToRegion`.**
-The API returns data keyed by region name; those keys are used as chart `dataKey` values.
+> **Why is this separate from `countryConfig.ts`?**
+> `packages/api` (the tRPC router) cannot import from `apps/isomorphic-i18n` (the Next.js app)
+> due to package boundaries. Both files carry the same data but serve different consumers:
+> `gaul2-districts.ts` → API, `countryConfig` → UI.
 
 ---
 
-## Step 3 — Add locale files
+## Step 3 — Locale files
 
-For each language in `languages`, add a translation file:
-
+For each language in your `languages` array, add:
 ```
-src/app/i18n/locales/<lang>/common.json
+apps/isomorphic-i18n/src/app/i18n/locales/<lang>/common.json
 ```
 
-Start from `src/app/i18n/locales/en/common.json` and translate or adjust values.
-Country-specific currency unit strings (e.g. `"TZS/kg"`) should be set in the
-relevant locale file for that country.
+Copy from `locales/en/common.json` and update country-specific strings.
+Strings to check: `metric-mean_rpue-unit`, `metric-mean_price_kg-unit` (currency label).
 
 ---
 
-## Step 4 — Configure the deployment
-
-Set these env vars in the deployment environment (Vercel, Docker, etc.):
+## Step 4 — Deployment env vars
 
 ```
-COUNTRY_CODE=TL
-MONGODB_URI=<connection-string-for-timor-db>
-NEXTAUTH_SECRET=<secret>
-NEXTAUTH_URL=<url>
+COUNTRY_CODE=KE
+MONGODB_URI=<your-kenya-cluster-connection-string>
 ```
 
-No other code changes are needed. The dashboard reads `COUNTRY_CODE` once at
-build time and selects the matching config.
+`COUNTRY_CODE` is read **once at build time** to select the config entry. A redeploy is required
+when changing it.
 
 ---
 
-## Database schema
+## Checklist before deploying
 
-All country databases use the **same MongoDB collection names and schemas**
-(defined in `packages/nosql/src/schema/`). The district and region names stored
-in `gaul_2_name` fields must match the names in `countryConfig.districts` and
-`gaul2-districts.ts`.
+- [ ] New entry in `COUNTRY_REGISTRY` in `countryConfig.ts`
+- [ ] `GAUL2_DISTRICT_NAMES` and `GAUL2_TO_REGION` updated in `gaul2-districts.ts`
+- [ ] District names identical in both files and in the MongoDB `gaul_2_name` field
+- [ ] Region names identical in `districtToRegion` (countryConfig) and `GAUL2_TO_REGION` (nosql)
+- [ ] `regionBreakdown.regions` values match the region names used in `districtToRegion`
+- [ ] Locale files added for each language
+- [ ] `COUNTRY_CODE` and `MONGODB_URI` set in the deployment environment
+- [ ] `npx tsc --noEmit` passes in both `apps/isomorphic-i18n/` and `packages/api/`

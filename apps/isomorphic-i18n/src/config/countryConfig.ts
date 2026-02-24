@@ -63,7 +63,7 @@ export interface CountryConfig {
      *  districtSummary.getMonthlyRegionSummary tRPC procedure.
      *  Set to undefined for countries with no meaningful sub-regions. */
     regionBreakdown?: {
-      regions: [string, string];
+      regions: [string, ...string[]];
       colors: Record<string, string>;
     };
     /** Optional slot component for country-specific homepage sections.
@@ -139,7 +139,7 @@ const zanzibarConfig: CountryConfig = {
     pitch: 45,
     bearing: 10,
   },
-  defaultSelectedDistricts: ['Wete', 'Kati'],
+  defaultSelectedDistricts: ['Wete', 'Kati', 'Kaskazini A', 'Kaskazini B', 'Kusini', 'Magharibi A', 'Magharibi B', 'Micheweni', 'Mjini', 'Mkoani', 'Chake Chake'],
   features: {
     regionBreakdown: {
       regions: ['Unguja', 'Pemba'],
