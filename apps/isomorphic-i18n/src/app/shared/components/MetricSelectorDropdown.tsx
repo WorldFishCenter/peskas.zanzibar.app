@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { PiCaretDownBold } from 'react-icons/pi';
 import cn from '@utils/class-names';
 import { METRIC_OPTIONS, MetricOption, MetricKey } from '@/app/shared/file/dashboard/charts/types';
+import { CURRENCY_CODE } from '@/config/constants';
 import { selectedMetricAtom, selectedRevenueMetricAtom } from '@/app/components/filter-selector';
 import { useTranslation } from '@/app/i18n/client';
 import { usePathname } from 'next/navigation';
@@ -39,13 +40,13 @@ export default function MetricSelectorDropdown() {
     {
       value: "mean_rpue",
       label: "Fisher Revenue",
-      unit: "TZS/fisher/day",
+      unit: `${CURRENCY_CODE}/fisher/day`,
       category: "revenue",
     },
     {
       value: "estimated_revenue",
       label: "Estimated Revenue",
-      unit: "TZS",
+      unit: CURRENCY_CODE,
       category: "revenue",
     },
   ];

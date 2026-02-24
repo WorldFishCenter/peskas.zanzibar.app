@@ -1,4 +1,5 @@
 // Shared chart styling configuration for consistency across the dashboard
+import { CURRENCY_CODE } from '@/config/constants';
 
 export const CHART_STYLES = {
   // Grid styling
@@ -118,12 +119,12 @@ export const SHARED_METRIC_CONFIG = {
   mean_rpue: {
     labelKey: "text-metrics-fisher-revenue", 
     color: "#4A90E2",
-    unit: "TZS/fisher/day"
+    unit: `${CURRENCY_CODE}/fisher/day`
   },
   mean_price_kg: {
     labelKey: "metric-mean_price_kg-title",
     color: "#9B59B6", 
-    unit: "TZS/kg"
+    unit: `${CURRENCY_CODE}/kg`
   },
   total_catch_kg: {
     labelKey: "text-total-catch",
@@ -133,7 +134,7 @@ export const SHARED_METRIC_CONFIG = {
   total_value: {
     labelKey: "text-total-value",
     color: "#27AE60",
-    unit: "TZS"
+    unit: CURRENCY_CODE
   },
   n_trips: {
     labelKey: "text-number-of-trips",
@@ -153,7 +154,7 @@ export const SHARED_METRIC_CONFIG = {
   estimated_revenue: {
     labelKey: "metric-estimated_revenue-title",
     color: "#27AE60",
-    unit: "TZS"
+    unit: CURRENCY_CODE
   }
 };
 

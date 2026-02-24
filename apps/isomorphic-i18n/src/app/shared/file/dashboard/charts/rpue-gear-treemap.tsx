@@ -4,6 +4,7 @@ import { ActionIcon, Popover } from "rizzui";
 import WidgetCard from "@components/cards/widget-card";
 import SimpleBar from "@ui/simplebar";
 import { useTranslation } from "@/app/i18n/client";
+import { CURRENCY_CODE } from '@/config/constants';
 import { api } from "@/trpc/react";
 import { districtsAtom } from "@/app/components/filter-selector";
 import { selectedTimeRangeAtom, TIME_RANGES } from "@/app/components/time-range-selector";
@@ -106,7 +107,7 @@ const TreemapTooltip = ({ active, payload, selectedTimeRange }: any) => {
               <span className="text-gray-500 dark:text-gray-400">{t("text-average-rpue") || "Average RPUE"}:</span>
               <span className="font-medium text-gray-900 dark:text-gray-700">
                 {isValidValue ? formatNumber(data.avg_rpue) : t("text-na")}
-                {isValidValue && ` TZS/fisher/day`}
+                {isValidValue && ` ${CURRENCY_CODE}/fisher/day`}
               </span>
             </div>
           </div>

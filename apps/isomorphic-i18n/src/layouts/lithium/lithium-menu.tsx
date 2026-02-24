@@ -25,7 +25,8 @@ function MenuTriggerButton({
   lang?: string;
   showCaret?: boolean;
 }) {
-  const { t } = useTranslation(lang!, "nav");
+  const resolvedLang = lang ?? 'en';
+  const { t } = useTranslation(resolvedLang, "nav");
   const isWorkInProgress = name === "catch_composition" || name === "about";
   const isComingSoon = name === "ask_data";
   
@@ -71,7 +72,8 @@ function LinkMenu({
   lang?: string;
 }) {
   const pathname = usePathname();
-  const { t } = useTranslation(lang!, "nav");
+  const resolvedLang = lang ?? 'en';
+  const { t } = useTranslation(resolvedLang, "nav");
 
   return (
     <ul className="w-full bg-white dark:bg-gray-100">
@@ -91,13 +93,22 @@ function LinkMenu({
               {IconComponent && <IconComponent className="h-5 w-5 text-gray-600" />}
               <div className="flex items-center gap-2">
                 <span>{t(item.name)}</span>
-                {item.name === 'nav-catch-composition' && (
-                  <Badge 
+                {item.badge === 'beta' && (
+                  <Badge
                     size="sm"
                     variant="outline"
                     className="text-xs px-1.5 py-0.5 bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
                   >
                     Beta
+                  </Badge>
+                )}
+                {item.badge === 'soon' && (
+                  <Badge
+                    size="sm"
+                    variant="outline"
+                    className="text-xs px-1.5 py-0.5 bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300"
+                  >
+                    Soon
                   </Badge>
                 )}
               </div>

@@ -1,7 +1,8 @@
-/**
- * Official FAO GAUL2 adm2 district names for Zanzibar (single source of truth).
- * Used for summary collections (monthly_summaries, districts_summaries, taxa_summaries, gear_summaries).
- */
+// ---------------------------------------------------------------------------
+// Zanzibar (Tanzania)
+// ---------------------------------------------------------------------------
+
+
 export const GAUL2_DISTRICT_NAMES = [
   "Chake Chake",
   "Kaskazini A",
@@ -18,9 +19,6 @@ export const GAUL2_DISTRICT_NAMES = [
 
 export type GAUL2DistrictName = (typeof GAUL2_DISTRICT_NAMES)[number];
 
-/** Map GAUL2 adm2 district name to its parent region.
- *  Replace this mapping when deploying for a new country.
- *  Must be kept in sync with countryConfig.districtToRegion in apps/isomorphic-i18n. */
 export const GAUL2_TO_REGION: Record<string, string> = {
   "Chake Chake": "Pemba",
   "Kaskazini A": "Unguja",
@@ -34,3 +32,101 @@ export const GAUL2_TO_REGION: Record<string, string> = {
   "Mkoani": "Pemba",
   "Wete": "Pemba",
 };
+
+
+// ---------------------------------------------------------------------------
+// Kenya
+// ---------------------------------------------------------------------------
+
+
+// export const GAUL2_DISTRICT_NAMES = [
+//   "Changamwe",
+//   "Jomvu",
+//   "Kilifi North",
+//   "Kilifi South",
+//   "Kinango",
+//   "Kisauni",
+//   "Lamu",
+//   "Lamu East",
+//   "Lamu West",
+//   "Likoni",
+//   "Lunga Lunga",
+//   "Magarini",
+//   "Malindi",
+//   "Matuga",
+//   "Msambweni",
+//   "Mvita",
+//   "Nyali",
+//   "Garsen",
+// ] as const;
+
+// export type GAUL2DistrictName = (typeof GAUL2_DISTRICT_NAMES)[number];
+
+// export const GAUL2_TO_REGION: Record<string, string> = {
+//   'Changamwe': 'Central',
+//   'Jomvu': 'Central',
+//   'Kisauni': 'Central',
+//   'Likoni': 'Central',
+//   'Mvita': 'Central',
+//   'Nyali': 'Central',
+//   'Kilifi North': 'North',
+//   'Kilifi South': 'North',
+//   'Magarini': 'North',
+//   'Malindi': 'North',
+//   'Garsen': 'North',
+//   'Lamu': 'North',
+//   'Lamu East': 'North',
+//   'Lamu West': 'North',
+//   'Kinango': 'South',
+//   'Lunga Lunga': 'South',
+//   'Matuga': 'South',
+//   'Msambweni': 'South',
+// };
+
+
+// ---------------------------------------------------------------------------
+// Mozambique
+// ---------------------------------------------------------------------------
+
+// export const GAUL2_DISTRICT_NAMES = [
+//   "Angoche",
+//   "Beira",
+//   "Bilene",
+//   "Cidade De Maputo",
+//   "Ibo",
+//   "Ilha De Moçambique",
+//   "Inhassoro",
+//   "Larde",
+//   "Maxixe",
+//   "Mecúfi",
+//   "Moma",
+//   "Nacala",
+//   "Namacurra",
+//   "Pebane",
+//   "Pemba",
+//   "Quelimane",
+//   "Xai-Xai"
+// ] as const;
+
+// export type GAUL2DistrictName = (typeof GAUL2_DISTRICT_NAMES)[number];
+
+// export const GAUL2_TO_REGION: Record<string, string> = {
+//   Angoche: "North",
+//   Ibo: "North",
+//   "Ilha De Moçambique": "North",
+//   Larde: "North",
+//   Mecúfi: "North",
+//   Moma: "North",
+//   Nacala: "North",
+//   Pemba: "North",
+//   Beira: "Central",
+//   Inhassoro: "Central",
+//   Namacurra: "Central",
+//   Pebane: "Central",
+//   Quelimane: "Central",
+//   Bilene: "South",
+//   "Cidade De Maputo": "South",
+//   Maxixe: "South",
+//   "Xai-Xai": "South",
+// };
+

@@ -11,6 +11,7 @@ export type DropdownItemType = {
   description?: string;
   href?: string;
   subMenuItems?: SubMenuItemType[];
+  badge?: 'beta' | 'soon';
 };
 
 export type LithiumMenuItem = {
@@ -63,6 +64,7 @@ export const lithiumMenuItems: LithiumMenuItem = {
         name: 'nav-catch-composition',
         href: routes.catch_composition,
         icon: 'ChartPie',
+        badge: 'beta' as const,
       },
     ],
   },

@@ -1,3 +1,5 @@
+"use client";
+
 import { useAtom } from "jotai";
 import { useTranslation } from "@/app/i18n/client";
 import Table, { HeaderCell } from "@/app/shared/table";

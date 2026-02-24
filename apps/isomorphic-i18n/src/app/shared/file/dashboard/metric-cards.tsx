@@ -28,7 +28,8 @@ const METRIC_CONFIG = {
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
-  // n_fishers: {
+  // n_fishers: disabled — not available in current data pipeline
+  // {
   //   titleKey: 'metric-n_fishers-title',
   //   unitKey: 'metric-n_fishers-unit',
   //   descKey: 'metric-n_fishers-desc',
@@ -56,7 +57,8 @@ const METRIC_CONFIG = {
     color: '#F28F3B',
     currentColor: '#75ABBC',
   },
-  // mean_price_kg: {
+  // mean_price_kg: disabled — not available in current data pipeline
+  // {
   //   titleKey: 'metric-mean_price_kg-title',
   //   unitKey: 'metric-mean_price_kg-unit',
   //   descKey: 'metric-mean_price_kg-desc',
@@ -79,18 +81,23 @@ const METRIC_CONFIG = {
   },
 };
 
-function MetricBarCard({ 
+type MetricConfigEntry = (typeof METRIC_CONFIG)[keyof typeof METRIC_CONFIG];
+type MetricDataPoint = { month: string } & Record<string, number | null>;
+type MonthlyRegionData = { data: MetricDataPoint[]; months?: string[] };
+
+function MetricBarCard({
   metric,
-  config, 
+  config,
   data,
-  lang 
-}: { 
+  lang
+}: {
   metric: string;
-  config: any;
-  data: any;
+  config: MetricConfigEntry;
+  data: MonthlyRegionData;
   lang?: string;
 }) {
-  const { t } = useTranslation(lang!, 'common');
+  const resolvedLang = lang ?? 'en';
+  const { t } = useTranslation(resolvedLang, 'common');
   const regionBreakdown = activeCountry.features.regionBreakdown;
 
   if (!data || !data.data || data.data.length === 0) {
@@ -101,11 +108,11 @@ function MetricBarCard({
   const last3Months = data.data.slice(-3);
 
   // Use the months from the API if available, otherwise fallback to last3Months
-  const allMonths = (data.months && data.months.slice(-3)) || last3Months.map((item: any) => item.month);
+  const allMonths = (data.months && data.months.slice(-3)) || last3Months.map((item) => item.month);
 
   // Build chartData for all months, filling missing region/total values with null
   const chartData = allMonths.map((month: string) => {
-    const item = last3Months.find((d: any) => d.month === month) || {};
+    const item: Partial<MetricDataPoint> = last3Months.find((d) => d.month === month) ?? {};
     const entry: Record<string, string | number | null> = { month };
     if (regionBreakdown) {
       regionBreakdown.regions.forEach((region) => {
@@ -118,7 +125,7 @@ function MetricBarCard({
   });
 
   // Helper to format values with commas or compact notation for large numbers
-  const formatValue = (value: any) => {
+  const formatValue = (value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
     // Special case: Estimated Revenue always in millions
     if (metric === 'estimated_revenue') {
@@ -191,7 +198,8 @@ function MetricBarCard({
 }
 
 export function FileStatGrid({ className, lang }: { className?: string; lang?: string }) {
-  const { t } = useTranslation(lang!, 'common');
+  const resolvedLang = lang ?? 'en';
+  const { t } = useTranslation(resolvedLang, 'common');
   
   // Fetch monthly region summary data for last 3 months
   const { data: monthlyData, isLoading, error } = api.districtSummary.getMonthlyRegionSummary.useQuery(

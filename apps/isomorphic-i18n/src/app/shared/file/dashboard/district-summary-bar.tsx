@@ -110,7 +110,7 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
     return (
       <WidgetCard title={t("text-district-summary") || "District Summary"} className={`h-full flex flex-col${className ? ` ${className}` : ''}` }>
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-gray-500">No data available for districts</p>
+          <p className="text-gray-500">{t('text-no-data-available-for-districts')}</p>
         </div>
       </WidgetCard>
     );

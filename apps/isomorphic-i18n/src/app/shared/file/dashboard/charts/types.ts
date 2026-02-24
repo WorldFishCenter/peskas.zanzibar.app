@@ -1,4 +1,5 @@
 import { Session } from "next-auth";
+import { CURRENCY_CODE } from '@/config/constants';
 
 export type MetricKey = "mean_cpue" | "mean_price_kg" | "mean_rpue" | "mean_effort" | "mean_cpua" | "mean_rpua" | "estimated_catch_tn" | "estimated_revenue";
 
@@ -72,13 +73,13 @@ export const METRIC_OPTIONS: MetricOption[] = [
   {
     value: "mean_price_kg",
     label: "Price per KG",
-    unit: "KES/kg",
+    unit: `${CURRENCY_CODE}/kg`,
     category: "revenue",
   },
   {
     value: "mean_rpue",
     label: "Fisher Revenue",
-    unit: "KES/fisher/day",
+    unit: `${CURRENCY_CODE}/fisher/day`,
     category: "revenue",
   },
   {
@@ -90,7 +91,7 @@ export const METRIC_OPTIONS: MetricOption[] = [
   {
     value: "estimated_revenue",
     label: "Estimated Revenue",
-    unit: "TZS",
+    unit: CURRENCY_CODE,
     category: "revenue",
   },
 ];

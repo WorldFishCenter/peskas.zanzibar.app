@@ -14,7 +14,6 @@ import RecentAppList from './recent-app-list';
 import CircleProgressBars from './circle-progressbars';
 import AreaChartList from './area-chart-list';
 import BarChartList from './bar-chart-list';
-import { metaObject } from '@/config/site.config';
 import { useTranslation } from '@/app/i18n/client';
 
 const pageHeader = {
@@ -46,7 +45,8 @@ function SectionBlock({
   className?: string;
   lang?: string;
 }>) {
-  const { t } = useTranslation(lang!, 'common');
+  const resolvedLang = lang ?? 'en';
+  const { t } = useTranslation(resolvedLang, 'common');
 
   return (
     <section className={className}>
@@ -58,7 +58,7 @@ function SectionBlock({
             titleClassName
           )}
         >
-          {t(title!)}
+          {title ? t(title) : null}
         </Title>
       </header>
 
