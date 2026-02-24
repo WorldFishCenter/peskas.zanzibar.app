@@ -7,13 +7,11 @@ import { routes } from '@/config/routes';
 type NavigationKey = keyof typeof navigations;
 
 const navigations = {
-  '1': '/',
-  '2': routes.executive.dashboard,
-  '3': routes.financial.dashboard,
-  '4': routes.logistics.dashboard,
-  '5': routes.eCommerce.dashboard,
-  '6': routes.analytics,
-  '7': routes.support.dashboard,
+  '1': routes.home,
+  '2': routes.catch,
+  '3': routes.revenue,
+  '4': routes.catch_composition,
+  '5': routes.about,
 };
 
 const allowedNumKeys = Object.keys(navigations);

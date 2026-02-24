@@ -132,7 +132,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
   return (
     <div className="mt-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-        <span className="font-semibold text-gray-700">District Metrics</span>
+        <span className="font-semibold text-gray-700">{t('text-district-metrics')}</span>
         {/* Time range selector moved to header */}
       </div>
       <div className="overflow-x-auto">

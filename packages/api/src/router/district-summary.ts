@@ -154,7 +154,7 @@ export const districtSummaryRouter = createTRPCRouter({
           date: { $gte: startDate, $lte: endDate },
         }).lean();
 
-        // Group by metric, date, region (Unguja/Pemba) using GAUL2_TO_REGION
+        // Group by metric, date, region using GAUL2_TO_REGION (region names are deployment-specific)
         const grouped: Record<string, Record<string, Record<string, number[]>>> = {};
         for (const s of summaries) {
           const region = GAUL2_TO_REGION[s.gaul_2_name];
@@ -163,11 +163,11 @@ export const districtSummaryRouter = createTRPCRouter({
           const dateStr = s.date ? s.date.toISOString().slice(0, 10) : undefined;
           if (!dateStr) continue;
           if (!grouped[metric]) grouped[metric] = {};
-          if (!grouped[metric][dateStr]) grouped[metric][dateStr] = { Unguja: [], Pemba: [] };
-          grouped[metric][dateStr][region].push(s.value);
+          if (!grouped[metric][dateStr]) grouped[metric][dateStr] = {};
+          (grouped[metric][dateStr][region] ??= []).push(s.value);
         }
 
-        // Prepare result in the same format as before
+        // Prepare result — region keys are derived dynamically from GAUL2_TO_REGION values
         const result: Record<string, any> = {};
         for (const metric of metrics) {
           const dateEntries = grouped[metric] ? Object.entries(grouped[metric]) : [];
@@ -177,19 +177,16 @@ export const districtSummaryRouter = createTRPCRouter({
           const last3 = dateEntries.slice(-3);
           result[metric] = {
             data: last3.map(([dateStr, regions]) => {
-            const date = new Date(dateStr);
-            const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
-              return {
-              month: monthLabel,
-              Unguja: (() => {
-                const vals = (regions.Unguja || []).filter(v => v !== null && v !== undefined && !isNaN(v));
-                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-              })(),
-              Pemba: (() => {
-                const vals = (regions.Pemba || []).filter(v => v !== null && v !== undefined && !isNaN(v));
-                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-              })(),
-            };
+              const date = new Date(dateStr);
+              const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+              const regionValues: Record<string, number | null> = {};
+              for (const [regionName, vals] of Object.entries(regions)) {
+                const valid = vals.filter((v): v is number => v !== null && v !== undefined && !isNaN(v as number));
+                regionValues[regionName] = valid.length
+                  ? valid.reduce((a, b) => a + b, 0) / valid.length
+                  : null;
+              }
+              return { month: monthLabel, ...regionValues };
             }),
             months: last3.map(([dateStr]) => {
               const date = new Date(dateStr);

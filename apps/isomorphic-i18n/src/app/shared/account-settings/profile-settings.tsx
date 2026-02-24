@@ -60,7 +60,7 @@ export default function ProfileSettingsView({ lang }: { lang?: string }) {
                 description={t('form-profile-description')}
               >
                 <div className="w-full sm:w-auto md:ms-auto">
-                  <Link href={routes.profile}>
+                  <Link href={routes.forms.personalInformation}>
                     <Button as="span">{t("form-view-profile")}</Button>
                   </Link>
                 </div>

@@ -1,5 +1,7 @@
-export const fallbackLng = 'en';
-export const languages = [fallbackLng, 'sw'];
+import { activeCountry } from '@/config/countryConfig';
+
+export const fallbackLng = activeCountry.languages[0];
+export const languages = [...activeCountry.languages];
 export const defaultNS = 'common';
 
 export function getOptions(lang = fallbackLng, ns = defaultNS) {

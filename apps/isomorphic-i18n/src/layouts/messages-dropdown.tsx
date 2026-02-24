@@ -31,7 +31,7 @@ function MessagesList({
           {t('text-message')}
         </Title>
         <Link
-          href={routes.support.inbox}
+          href={routes.home}
           onClick={() => setIsOpen(false)}
           className="hover:underline"
         >

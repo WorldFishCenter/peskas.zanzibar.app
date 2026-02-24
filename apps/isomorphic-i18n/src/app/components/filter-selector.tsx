@@ -20,7 +20,7 @@ import useUserPermissions from "../shared/file/dashboard/hooks/useUserPermission
 import { useTranslation } from "@/app/i18n/client";
 import cn from "@utils/class-names";
 import { api } from "@/trpc/react";
-import { GAUL2_DISTRICT_NAMES } from "@repo/nosql/constants/gaul2-districts";
+import { activeCountry } from "@/config/countryConfig";
 
 type DropdownTypes = {
   sectionName: string;
@@ -66,8 +66,8 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
 }
 
 export const dropdownAtom = atomWithStorage<DropdownTypes[]>('dropdown', [], undefined, { getOnInit: true });
-// By default, select one district from Pemba (Wete) and one from Unguja (Kati) - official GAUL2 names
-export const districtsAtom = atomWithStorage<string[]>('districts', ['Wete', 'Kati'], undefined, { getOnInit: true });
+// Default district selection comes from countryConfig.defaultSelectedDistricts
+export const districtsAtom = atomWithStorage<string[]>('districts', activeCountry.defaultSelectedDistricts, undefined, { getOnInit: true });
 export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', 'district', undefined, { getOnInit: true });
 
 // Global metric selector atom
@@ -87,8 +87,8 @@ export const FilterSelector = () => {
   const [selectedDistricts, setSelectedDistricts] = useAtom(districtsAtom);
   const prevValidDistrictsRef = useRef<string[]>([]);
 
-  // Use official GAUL2 district list (single source of truth)
-  const validDistricts = useMemo(() => [...GAUL2_DISTRICT_NAMES].sort((a, b) => a.localeCompare(b)), []);
+  // Use official district list from countryConfig (single source of truth for UI)
+  const validDistricts = useMemo(() => [...activeCountry.districts].sort((a, b) => a.localeCompare(b)), []);
 
   useEffect(() => {
     // Only update if the validDistricts array has actually changed

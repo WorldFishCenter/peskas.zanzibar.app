@@ -18,6 +18,7 @@ import DeckGL from "@deck.gl/react";
 import { api } from "@/trpc/react";
 import cn from "@utils/class-names";
 import { districtsAtom } from "@/app/components/filter-selector";
+import { activeCountry } from "@/config/countryConfig";
 
 interface DataPoint {
   longitude: number;
@@ -47,14 +48,7 @@ const lightingEffect = new LightingEffect({
   pointLight2,
 });
 
-const INITIAL_VIEW_STATE: MapViewState = {
-  longitude: 39.8,
-  latitude: -4.3,
-  zoom: 8,
-  minZoom: 5,
-  maxZoom: 15,
-  pitch: 40.5,
-};
+const INITIAL_VIEW_STATE: MapViewState = activeCountry.mapViewState as MapViewState;
 
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json";
@@ -162,7 +156,7 @@ export default function DeckMap() {
             )}
           />
           <h2 className="text-xl font-bold mb-2 mt-3">
-            Timor-Leste Fishing Tracks
+            {activeCountry.countryName} Fishing Tracks
           </h2>
         </div>
         <h2 className="text-xl font-bold mb-2">Surveys Distribution</h2>

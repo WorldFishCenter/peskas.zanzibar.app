@@ -10,7 +10,8 @@
         "NEXTAUTH_URL",
         "MONGODB_URI",
         "VERCEL_URL",
-        "VERCEL"
+        "VERCEL",
+        "COUNTRY_CODE"
       ]
     },
     "lint": {},
@@ -31,6 +32,7 @@
     "NEXTAUTH_URL",
     "MONGODB_URI",
     "VERCEL_URL",
-    "VERCEL"
+    "VERCEL",
+    "COUNTRY_CODE"
   ]
 }

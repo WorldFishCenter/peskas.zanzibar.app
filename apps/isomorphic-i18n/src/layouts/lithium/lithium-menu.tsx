@@ -27,6 +27,7 @@ function MenuTriggerButton({
 }) {
   const { t } = useTranslation(lang!, "nav");
   const isWorkInProgress = name === "catch_composition" || name === "about";
+  const isComingSoon = name === "ask_data";
   
   
   return (
@@ -36,12 +37,21 @@ function MenuTriggerButton({
           {t(lithiumMenuItems[name].name)}
         </span>
         {isWorkInProgress && (
-          <Badge 
+          <Badge
             size="sm"
             variant="outline"
             className="text-xs px-1.5 py-0.5 bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300"
           >
             Beta
+          </Badge>
+        )}
+        {isComingSoon && (
+          <Badge
+            size="sm"
+            variant="outline"
+            className="text-xs px-1.5 py-0.5 bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300"
+          >
+            Soon
           </Badge>
         )}
       </div>
@@ -104,7 +114,7 @@ function LinkMenu({
  */
 export default function HeaderMenuLeft({ lang }: { lang?: string }) {
   const { direction } = useDirection();
-  const menuKeys: LithiumMenuItemsKeys[] = ["catch", "revenue", "catch_composition", "about"]; 
+  const menuKeys: LithiumMenuItemsKeys[] = ["catch", "revenue", "catch_composition", "about"];
 
   return (
     <NavMenu

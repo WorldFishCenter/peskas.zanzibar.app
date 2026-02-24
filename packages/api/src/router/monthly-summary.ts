@@ -48,13 +48,14 @@ export const monthlySummaryRouter = createTRPCRouter({
     .input(z.object({
       districts: z.array(z.string().nullable()).transform(arr => arr.filter((d): d is string => d !== null)),
       metrics: z.array(z.string()),
-      year: z.number().default(new Date().getFullYear())
+      months: z.number().min(1).max(72).default(12)
     }))
     .query(async ({ input }) => {
-      const { districts, metrics, year } = input;
+      const { districts, metrics, months } = input;
 
-      const startDate = new Date(year, 0, 1);
-      const endDate = new Date(year, 11, 31);
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(endDate.getMonth() - months);
 
       const data = await MonthlySummaryDistrictModel.find({
         gaul_2_name: { $in: districts },
@@ -62,23 +63,36 @@ export const monthlySummaryRouter = createTRPCRouter({
         date: { $gte: startDate, $lte: endDate }
       }).sort({ date: 1 }).lean();
 
-      // Group by month and gaul_2_name for the selected metric
-      const monthlyDistrictData: Record<number, Record<string, number>> = {};
-      for (let month = 0; month < 12; month++) {
-        const monthData = data.filter(item =>
-          item.date.getMonth() === month && item.metric === metrics[0]
-        );
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-        monthlyDistrictData[month] = {};
-        districts.forEach((name) => {
-          const nameData = monthData.filter(item => item.gaul_2_name === name);
-          if (nameData.length > 0) {
-            const avg = nameData.reduce((sum, item) => sum + (item.value || 0), 0) / nameData.length;
-            monthlyDistrictData[month][name] = avg;
-          }
-        });
+      // Collect the unique calendar months present in the selected range (in calendar order)
+      const monthsInRange = new Set<number>();
+      const d = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+      for (let i = 0; i < months; i++) {
+        monthsInRange.add(d.getMonth());
+        d.setMonth(d.getMonth() - 1);
+      }
+      const sortedMonthIndices = Array.from(monthsInRange).sort((a, b) => a - b);
+
+      // Group values by calendar month, accumulating across all years
+      const byMonth: Record<number, Record<string, number[]>> = {};
+      for (const item of data) {
+        if (item.metric !== metrics[0]) continue;
+        const m = item.date.getMonth();
+        if (!byMonth[m]) byMonth[m] = {};
+        (byMonth[m][item.gaul_2_name] ??= []).push(item.value ?? 0);
       }
 
-      return monthlyDistrictData;
+      // Return one point per calendar month with cross-year averages
+      return sortedMonthIndices.map(monthIdx => {
+        const districtValues: Record<string, number> = {};
+        districts.forEach(name => {
+          const vals = byMonth[monthIdx]?.[name];
+          if (vals && vals.length > 0) {
+            districtValues[name] = Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 100) / 100;
+          }
+        });
+        return { month: monthNames[monthIdx], ...districtValues };
+      });
     }),
 }); 

@@ -1,9 +1,6 @@
 import {
   PiSquaresFourDuotone,
   PiChartLineUpDuotone,
-  PiUserGearDuotone,
-  PiBellSimpleRingingDuotone,
-  PiUserDuotone,
   PiEnvelopeSimpleOpenDuotone,
   PiFolders,
 } from 'react-icons/pi';
@@ -46,21 +43,6 @@ export const menuItems = [
     name: 'sidebar-menu-forms',
   },
   // label end
-  {
-    name: 'sidebar-menu-account-settings',
-    href: routes.forms.profileSettings,
-    icon: PiUserGearDuotone,
-  },
-  {
-    name: 'sidebar-menu-notification-preference',
-    href: routes.forms.notificationPreference,
-    icon: PiBellSimpleRingingDuotone,
-  },
-  {
-    name: 'sidebar-menu-personal-information',
-    href: routes.forms.personalInformation,
-    icon: PiUserDuotone,
-  },
   {
     name: 'sidebar-menu-newsletter',
     href: routes.forms.newsletter,

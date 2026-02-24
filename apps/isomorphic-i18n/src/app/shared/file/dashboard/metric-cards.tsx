@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   LabelList,
 } from 'recharts';
+import { activeCountry } from "@/config/countryConfig";
 
 type FileStatsType = {
   className?: string;
@@ -90,7 +91,8 @@ function MetricBarCard({
   lang?: string;
 }) {
   const { t } = useTranslation(lang!, 'common');
-  
+  const regionBreakdown = activeCountry.features.regionBreakdown;
+
   if (!data || !data.data || data.data.length === 0) {
     return null;
   }
@@ -101,53 +103,36 @@ function MetricBarCard({
   // Use the months from the API if available, otherwise fallback to last3Months
   const allMonths = (data.months && data.months.slice(-3)) || last3Months.map((item: any) => item.month);
 
-  // Build chartData for all months, filling missing values with null
+  // Build chartData for all months, filling missing region/total values with null
   const chartData = allMonths.map((month: string) => {
     const item = last3Months.find((d: any) => d.month === month) || {};
-    return {
-      month,
-      Unguja: item.Unguja ?? null,
-      Pemba: item.Pemba ?? null,
-    };
+    const entry: Record<string, string | number | null> = { month };
+    if (regionBreakdown) {
+      regionBreakdown.regions.forEach((region) => {
+        entry[region] = item[region] ?? null;
+      });
+    } else {
+      entry['total'] = item.total ?? null;
+    }
+    return entry;
   });
-
-  // Robust custom label component
-  const BarValueLabel = (region: 'Unguja' | 'Pemba') => {
-    const Label = (props: any) => {
-      const { index, x, y, width, fill } = props;
-      const value = chartData[index]?.[region];
-      const display = (value === null || value === undefined || isNaN(value)) ? '-' : Math.round(value).toLocaleString();
-      const centerX = x + (width ? width / 2 : 0);
-      return (
-        <text x={centerX} y={y - 4} fill={fill} textAnchor="middle" fontSize={11} fontWeight={600}>{display}</text>
-      );
-    };
-    Label.displayName = `BarValueLabel_${region}`;
-    return Label;
-  };
 
   // Helper to format values with commas or compact notation for large numbers
   const formatValue = (value: any) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
-    // Special case: Estimated Revenue (TZS) always in millions
+    // Special case: Estimated Revenue always in millions
     if (metric === 'estimated_revenue') {
       const millions = value / 1_000_000;
       return millions.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 }) + 'M';
     }
     if (Math.abs(value) >= 1_000_000) {
-      // Use compact notation for millions and above, max 1 decimal
       return new Intl.NumberFormat(lang || 'en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(value);
     }
-    // For regular numbers, show at most 1 decimal
     return Number(value).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
   };
 
-  // Get individual region values for current month
   const lastDataPoint = last3Months[last3Months.length - 1];
-  const ungujaValue = lastDataPoint?.Unguja;
-  const pembaValue = lastDataPoint?.Pemba;
 
-  // Use built-in LabelList with formatter and theme-consistent color
   return (
     <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
       <div className="mb-2" style={{ minHeight: 48 }}>
@@ -158,45 +143,45 @@ function MetricBarCard({
         {/* 2nd row: Metric description */}
         <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t(config.descKey)}</Text>
       </div>
-      <div className="flex items-baseline gap-3 mb-2">
-        <div className="flex gap-2 text-sm sm:text-base">
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#F28F3B'}}></span><span className="text-gray-700 dark:text-gray-700">Unguja: {formatValue(ungujaValue)}</span></span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full" style={{background:'#75ABBC'}}></span><span className="text-gray-700 dark:text-gray-700">Pemba: {formatValue(pembaValue)}</span></span>
+      {regionBreakdown && (
+        <div className="flex items-baseline gap-3 mb-2">
+          <div className="flex gap-2 text-sm sm:text-base">
+            {regionBreakdown.regions.map((region) => (
+              <span key={region} className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-full" style={{ background: regionBreakdown.colors[region] }} />
+                <span className="text-gray-700 dark:text-gray-700">{region}: {formatValue(lastDataPoint?.[region])}</span>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div className="flex-1 flex items-end">
-        <div className="w-full h-32 sm:h-30"> {/* Increased height */}
+        <div className="w-full h-32 sm:h-30">
           <ResponsiveContainer width="99%" height="100%">
-            <BarChart 
+            <BarChart
               data={chartData}
               margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
               barCategoryGap={0}
             >
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
                 axisLine={false}
                 tickLine={false}
                 className="dark:fill-gray-300"
               />
-              <Bar dataKey="Unguja" fill="#F28F3B" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}> {/* minPointSize added */}
-                <LabelList
-                  dataKey="Unguja"
-                  position="top"
-                  formatter={formatValue}
-                  fill="#F28F3B"
-                  style={{ fontSize: 11, fontWeight: 600 }}
-                />
-              </Bar>
-              <Bar dataKey="Pemba" fill="#75ABBC" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}> {/* minPointSize added */}
-                <LabelList
-                  dataKey="Pemba"
-                  position="top"
-                  formatter={formatValue}
-                  fill="#75ABBC"
-                  style={{ fontSize: 11, fontWeight: 600 }}
-                />
-              </Bar>
+              {regionBreakdown
+                ? regionBreakdown.regions.map((region) => (
+                    <Bar key={region} dataKey={region} fill={regionBreakdown.colors[region]} radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}>
+                      <LabelList dataKey={region} position="top" formatter={formatValue} fill={regionBreakdown.colors[region]} style={{ fontSize: 11, fontWeight: 600 }} />
+                    </Bar>
+                  ))
+                : (
+                    <Bar dataKey="total" fill="#64748b" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}>
+                      <LabelList dataKey="total" position="top" formatter={formatValue} fill="#64748b" style={{ fontSize: 11, fontWeight: 600 }} />
+                    </Bar>
+                  )
+              }
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -259,7 +244,7 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
   );
 }
 
-export default function FileStats({ className, lang }: FileStatsType) {
+export default function MetricCards({ className, lang }: FileStatsType) {
   const {
     sliderEl,
     sliderPrevBtn,
