@@ -1,3 +1,28 @@
+# peskas.zanzibar.v2 1.1.0
+
+## Improvements
+
+- **Navigation**: Removed template artifacts (Groups, Widgets menus; ~130 dead route definitions).
+  Routes trimmed to fisheries-only (`catch`, `revenue`, `catch_composition`, `map`, `ask_data`,
+  `about`, `settings`, `forms.*`). Duplicate `nav-charts` bug fixed.
+
+- **Dashboard components**: Deleted 23 dead component files (0 imports each). Renamed remaining
+  components to kebab-case with descriptive names: `metric-cards`, `district-summary-bar`,
+  `district-metrics-table`. `index.tsx` cleaned of dead imports and commented-out code.
+
+- **Type safety**: `MetricBarCard` props fully typed (`MetricConfigEntry`, `MetricDataPoint`,
+  `MonthlyRegionData`); removed `any` annotations. Badge configuration moved to `DropdownItemType`
+  (`badge?: 'beta' | 'soon'`) instead of fragile string-key checks.
+
+- **i18n**: Added `text-district-metrics`, `text-coming-soon`, `text-feature-under-development`
+  keys in both English and Swahili. Nav keys (`nav-settings`, `nav-catch-overview`) aligned.
+  New `ComingSoonPlaceholder` client component for placeholder pages.
+
+- **Code quality**: `'use client'` directives made explicit; `lang!` assertions replaced with
+  `lang ?? 'en'` throughout; unused imports removed.
+
+---
+
 # peskas.zanzibar.v2 1.0.0
 
 ## Major Changes
