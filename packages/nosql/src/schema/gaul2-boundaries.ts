@@ -1,4 +1,4 @@
-import { type Connection, Schema } from "mongoose";
+import { type Connection, type Model, Schema } from "mongoose";
 
 export type TGaul2BoundaryGeometry = {
   type: string;
@@ -62,7 +62,6 @@ gaul2BoundarySchema.index({ "properties.iso3_code": 1 });
  * connecting to a secondary database (portal).
  */
 export function getGaul2BoundariesModel(connection: Connection) {
-  return (connection.models["Gaul2Boundary"] as ReturnType<
-    typeof connection.model<TGaul2Boundary>
-  >) ?? connection.model<TGaul2Boundary>("Gaul2Boundary", gaul2BoundarySchema);
+  return (connection.models["Gaul2Boundary"] as Model<TGaul2Boundary>) ??
+    connection.model<TGaul2Boundary>("Gaul2Boundary", gaul2BoundarySchema);
 }
