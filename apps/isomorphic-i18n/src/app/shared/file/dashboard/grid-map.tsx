@@ -463,7 +463,7 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
   }, [districtMetrics, selectedMetric]);
 
   const [minVal, maxVal] = useMemo(() => {
-    const vals = [...metricByDistrict.values()];
+    const vals = Array.from(metricByDistrict.values());
     if (!vals.length) return [0, 1];
     return [Math.min(...vals), Math.max(...vals)];
   }, [metricByDistrict]);

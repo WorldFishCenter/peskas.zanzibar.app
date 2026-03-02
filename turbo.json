@@ -12,7 +12,8 @@
         "MONGODB_URI_COASTS",
         "VERCEL_URL",
         "VERCEL",
-        "COUNTRY_CODE"
+        "COUNTRY_CODE",
+        "VITE_MAPBOX_TOKEN"
       ]
     },
     "lint": {},
@@ -35,6 +36,7 @@
     "MONGODB_URI_COASTS",
     "VERCEL_URL",
     "VERCEL",
-    "COUNTRY_CODE"
+    "COUNTRY_CODE",
+    "VITE_MAPBOX_TOKEN"
   ]
 }
