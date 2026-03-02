@@ -3,12 +3,14 @@ import WidgetCard from "@components/cards/widget-card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useAtom } from 'jotai';
 import { selectedTimeRangeAtom } from '@/app/components/time-range-selector';
+import { selectedMetricAtom } from '@/app/components/filter-selector';
+import type { MetricKey } from '@/app/shared/file/dashboard/charts/types';
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
 import { DISTRICT_COLORS } from "./charts/utils";
-import { formatDashboardNumber, getAggregatedDistrictValue } from "./utils";
+import { formatDashboardNumber, getAggregatedDistrictValue, computeDateRange } from "./utils";
 
 // Fallback colors for any districts not in the predefined mapping
 const FALLBACK_COLORS = [
@@ -57,14 +59,8 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
   const lang = propLang || 'en';
   const { t } = useTranslation("common");
   const [range] = useAtom(selectedTimeRangeAtom);
-  const { start, end } = useMemo(() => {
-    if (range === "all") return { start: "1900-01-01", end: new Date().toISOString() };
-    const end = new Date();
-    const start = new Date();
-    start.setMonth(end.getMonth() - Number(range));
-    return { start: start.toISOString(), end: end.toISOString() };
-  }, [range]);
-  const [selectedMetric, setSelectedMetric] = useState("mean_cpue");
+  const { start, end } = useMemo(() => computeDateRange(range), [range]);
+  const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
   const metricConfig = METRICS.find(m => m.key === selectedMetric) || METRICS[0];
   // Fetch summary for all districts (using the same API as DistrictMetricsTable)
   const { data = [], isLoading, error } = api.districtSummary.getDistrictsSummaryByDateRange.useQuery({ startDate: start, endDate: end });
@@ -124,7 +120,7 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
             {t("text-district-summary")}
           </span>
           <div className="min-w-fit">
-            <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+            <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricKey)}>
               <SelectTrigger className="w-full max-w-[180px] sm:max-w-[240px] md:max-w-[300px]">
                 <SelectValue>{t(METRICS.find(m => m.key === selectedMetric)?.labelKey || "")}</SelectValue>
               </SelectTrigger>
