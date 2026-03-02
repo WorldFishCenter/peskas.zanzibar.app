@@ -231,20 +231,23 @@ const kenyaConfig: CountryConfig = {
     'Nyali':        '#A1C181',  // Palette supplement/Moss green
     'Garsen':       '#FDBCB4',  // Palette supplement/Pink peach
   },
+  // Kenya Map viewport tuned for coast region (centered on Mombasa/Malindi axis)
   mapViewState: {
-    longitude: 40.20,
-    latitude: -3.01,
-    zoom: 8,
-    minZoom: 5,
-    maxZoom: 15,
-    pitch: 40.5,
+    longitude: 40.12,
+    latitude: -3.60,
+    zoom: 7.1,
+    minZoom: 5.5,
+    maxZoom: 14.5,
+    pitch: 39,
+    bearing: 1,
   },
+  // Grid map view focused on southern coast (centered for Nyali/Diani zone)
   gridMapViewState: {
-    longitude: 39.19,
-    latitude: -6.16,
-    zoom: 8,
-    pitch: 45,
-    bearing: 10,
+    longitude: 39.68,
+    latitude: -4.32,
+    zoom: 7,
+    pitch: 42,
+    bearing: 7,
   },
   defaultSelectedDistricts: ['Malindi', 'Kinango', 'Lamu'],
   features: {
@@ -370,4 +373,4 @@ const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
  * Defaults to 'TZ' (Zanzibar) when COUNTRY_CODE is unset or unknown.
  */
 export const activeCountry: CountryConfig =
-  COUNTRY_REGISTRY[process.env.COUNTRY_CODE ?? 'TZ'] ?? zanzibarConfig;
+  COUNTRY_REGISTRY[process.env.COUNTRY_CODE ?? 'KE'] ?? kenyaConfig;
