@@ -11,7 +11,7 @@ export const gearRouter = createTRPCRouter({
     .input(z.object({ bmus: z.string().array() }))
     .query(({ input }) => {
       return GearSummaryModel
-        .find({ 
+        .find({
           BMU: { $in: input.bmus }
         })
         .select({
@@ -22,47 +22,42 @@ export const gearRouter = createTRPCRouter({
           mean_effort: 1,
           mean_cpue: 1,
           mean_cpua: 1,
-          mean_rpue: 1, 
-          mean_rpua: 1   
+          mean_rpue: 1,
+          mean_rpua: 1
         })
         .exec();
     }),
 
-  cpueByGear: publicProcedure
-    .input(z.object({ 
+  byGear: publicProcedure
+    .input(z.object({
       districts: z.string().array(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
+      indicator: z.enum(["cpue", "rpue"]),
+      months: z.number().optional(),
     }))
     .query(async ({ input }) => {
       try {
         await getDb();
-        
-        // Prepare match stage with gaul_2_name and date filtering
+
+        const valueField = `avg_${input.indicator}`;
         const matchStage: any = {
           gaul_2_name: { $in: input.districts },
-          indicator: "cpue",
-          value: { $ne: null, $exists: true }
+          indicator: input.indicator,
+          value: { $ne: null, $exists: true },
         };
 
-        if (input.startDate || input.endDate) {
-          matchStage.date = {};
-          if (input.startDate) {
-            matchStage.date.$gte = new Date(input.startDate);
-          }
-          if (input.endDate) {
-            matchStage.date.$lte = new Date(input.endDate);
-          }
+        if (input.months) {
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setMonth(endDate.getMonth() - input.months);
+          matchStage.date = { $gte: startDate, $lte: endDate };
         }
 
         return await GearSummaryDistrictModel.aggregate([
-          {
-            $match: matchStage,
-          },
+          { $match: matchStage },
           {
             $group: {
               _id: "$gear",
-              avg_cpue: { $avg: "$value" },
+              [valueField]: { $avg: "$value" },
               total_records: { $sum: 1 },
               districts: { $addToSet: "$gaul_2_name" },
             },
@@ -71,82 +66,18 @@ export const gearRouter = createTRPCRouter({
             $project: {
               _id: 0,
               gear: "$_id",
-              avg_cpue: { $round: ["$avg_cpue", 2] },
+              [valueField]: { $round: [`$${valueField}`, 2] },
               total_records: 1,
               district_count: { $size: "$districts" },
             },
           },
-          {
-            $sort: { avg_cpue: -1 },
-          },
+          { $sort: { [valueField]: -1 } },
         ]).exec();
       } catch (error) {
-        console.error('Error in CPUE by gear query:', error);
+        console.error('Error in gear by indicator query:', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch CPUE by gear data',
-          cause: error,
-        });
-      }
-    }),
-
-  rpueByGear: publicProcedure
-    .input(z.object({ 
-      districts: z.string().array(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-    }))
-    .query(async ({ input }) => {
-      try {
-        await getDb();
-        
-        // Prepare match stage with gaul_2_name and date filtering
-        const matchStage: any = {
-          gaul_2_name: { $in: input.districts },
-          indicator: "rpue",
-          value: { $ne: null, $exists: true }
-        };
-
-        if (input.startDate || input.endDate) {
-          matchStage.date = {};
-          if (input.startDate) {
-            matchStage.date.$gte = new Date(input.startDate);
-          }
-          if (input.endDate) {
-            matchStage.date.$lte = new Date(input.endDate);
-          }
-        }
-
-        return await GearSummaryDistrictModel.aggregate([
-          {
-            $match: matchStage,
-          },
-          {
-            $group: {
-              _id: "$gear",
-              avg_rpue: { $avg: "$value" },
-              total_records: { $sum: 1 },
-              districts: { $addToSet: "$gaul_2_name" },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              gear: "$_id",
-              avg_rpue: { $round: ["$avg_rpue", 2] },
-              total_records: 1,
-              district_count: { $size: "$districts" },
-            },
-          },
-          {
-            $sort: { avg_rpue: -1 },
-          },
-        ]).exec();
-      } catch (error) {
-        console.error('Error in RPUE by gear query:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch RPUE by gear data',
+          message: `Failed to fetch ${input.indicator.toUpperCase()} by gear data`,
           cause: error,
         });
       }

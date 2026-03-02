@@ -211,7 +211,7 @@ export default function RevenueTimeSeries({
               return (
                 <Line
                   key={district}
-                  type="monotone"
+                  type="linear"
                   dataKey={district}
                   stroke={color}
                   strokeWidth={3}

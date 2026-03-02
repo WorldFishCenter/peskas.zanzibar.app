@@ -95,7 +95,7 @@ export const FilterSelector = () => {
   // Build region-grouped structure from districtToRegion
   const groupedDistricts = useMemo((): DropdownTypes[] => {
     const regions = activeCountry.features.regionBreakdown?.regions
-      ?? ([...new Set(Object.values(activeCountry.districtToRegion))].sort() as [string, ...string[]]);
+      ?? (Array.from(new Set(Object.values(activeCountry.districtToRegion))).sort() as [string, ...string[]]);
     return regions
       .map(region => ({
         sectionName: region,
