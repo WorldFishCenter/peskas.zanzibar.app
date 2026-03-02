@@ -265,6 +265,9 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
         </div>
       )}
       
+      {/* Separator between filter controls and utility controls */}
+      <div className="h-5 w-px bg-gray-200 dark:bg-gray-700 flex-shrink-0 mx-0.5" />
+
       {/* Language Switcher - Always visible but more compact on mobile */}
       <div className="flex-shrink-0">
         <CompactLanguageSwitcher />
