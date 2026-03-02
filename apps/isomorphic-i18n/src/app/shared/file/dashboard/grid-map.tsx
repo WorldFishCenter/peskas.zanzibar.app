@@ -670,7 +670,7 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
                 ? MAP_STYLES.dark
                 : MAP_STYLES.light
           }
-          mapboxAccessToken={import.meta.env?.VITE_MAPBOX_TOKEN ?? ''}
+          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
           reuseMaps
           attributionControl={false}
           renderWorldCopies={false}
