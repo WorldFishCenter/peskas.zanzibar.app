@@ -31,6 +31,8 @@ export interface MapViewState {
 export interface CountryConfig {
   /** Internal identifier matching COUNTRY_CODE env var, e.g. 'TZ' */
   countryCode: string;
+  /** ISO 3166-1 alpha-3 code used to filter wio_gaul2 boundaries, e.g. 'TZA' */
+  iso3Code: string;
   /** Human-readable country/region name used in page titles, e.g. 'Zanzibar' */
   countryName: string;
   /** Browser tab title */
@@ -80,6 +82,7 @@ export interface CountryConfig {
 
 const zanzibarConfig: CountryConfig = {
   countryCode: 'TZ',
+  iso3Code: 'TZA',
   countryName: 'Zanzibar',
   siteTitle: 'PESKAS | Zanzibar Fisheries',
   siteDescription: 'Peskas | Zanzibar Fisheries Dashboard',
@@ -158,6 +161,7 @@ const zanzibarConfig: CountryConfig = {
 
 const kenyaConfig: CountryConfig = {
   countryCode: 'KE',
+  iso3Code: 'KEN',
   countryName: 'Kenya',
   siteTitle: 'PESKAS | Kenya Fisheries',
   siteDescription: 'Peskas | Kenya Fisheries Dashboard',
@@ -258,6 +262,7 @@ const kenyaConfig: CountryConfig = {
 
 const mozambiqueConfig: CountryConfig = {
   countryCode: 'MZ',
+  iso3Code: 'MOZ',
   countryName: 'Mozambique',
   siteTitle: 'PESKAS | Mozambique Fisheries',
   siteDescription: 'Peskas | Mozambique Fisheries Dashboard',

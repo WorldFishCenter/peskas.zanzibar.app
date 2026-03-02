@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, memo, ReactNode } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { Map as MapGL } from 'react-map-gl';
 import { GridLayer } from '@deck.gl/aggregation-layers';
+import { GeoJsonLayer } from '@deck.gl/layers';
 import {
   TIME_BREAKS,
   COLOR_RANGE,
@@ -13,6 +14,11 @@ import { api } from '@/trpc/react';
 import { IconSatellite, IconMap } from '@tabler/icons-react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from '@/app/i18n/client';
+import { useAtom } from 'jotai';
+import { selectedMetricAtom } from '@/app/components/filter-selector';
+import { selectedTimeRangeAtom } from '@/app/components/time-range-selector';
+import { activeCountry } from '@/config/countryConfig';
+import { formatDashboardNumber, computeDateRange } from './utils';
 
 // Types
 export type Theme = 'light' | 'dark';
@@ -29,6 +35,10 @@ export interface DataPoint {
   originalCells: number;
 }
 
+interface GridMapProps {
+  lang?: string;
+}
+
 interface TimeRangeButtonProps {
   range: TimeBreak;
   index: number;
@@ -38,15 +48,60 @@ interface TimeRangeButtonProps {
   onToggle: (range: TimeBreak) => void;
 }
 
+interface ChoroplethLegend {
+  colors: [number, number, number][];
+  metricLabel: string;
+  minLabel: string;
+  maxLabel: string;
+}
+
 interface InfoPanelProps {
   theme: Theme;
   data: DataPoint[];
   colorRange: number[][];
   selectedRanges: TimeBreak[];
   onRangeToggle: (range: TimeBreak) => void;
+  choroplethLegend?: ChoroplethLegend;
 }
 
-// No props needed
+// Choropleth color scale — sequential Blues (light → dark)
+const CHOROPLETH_COLORS: [number, number, number][] = [
+  [247, 251, 255],
+  [198, 219, 239],
+  [107, 174, 214],
+  [33, 113, 181],
+  [8, 69, 148],
+  [8, 37, 82],
+];
+
+function interpolateChoroplethColor(
+  value: number,
+  min: number,
+  max: number
+): [number, number, number, number] {
+  if (min === max) return [...CHOROPLETH_COLORS[2], 180] as [number, number, number, number];
+  const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  const scaled = t * (CHOROPLETH_COLORS.length - 1);
+  const lo = Math.floor(scaled);
+  const hi = Math.min(lo + 1, CHOROPLETH_COLORS.length - 1);
+  const frac = scaled - lo;
+  const r = Math.round(CHOROPLETH_COLORS[lo][0] * (1 - frac) + CHOROPLETH_COLORS[hi][0] * frac);
+  const g = Math.round(CHOROPLETH_COLORS[lo][1] * (1 - frac) + CHOROPLETH_COLORS[hi][1] * frac);
+  const b = Math.round(CHOROPLETH_COLORS[lo][2] * (1 - frac) + CHOROPLETH_COLORS[hi][2] * frac);
+  return [r, g, b, 180];
+}
+
+// Metric translation-key lookup (mirrors METRICS in district-summary-bar.tsx)
+const METRIC_LABEL_KEYS: Record<string, string> = {
+  mean_cpue: 'metric-mean_cpue-title',
+  mean_rpue: 'metric-mean_rpue-title',
+  n_fishers: 'metric-n_fishers-title',
+  n_submissions: 'metric-n_submissions-title',
+  trip_duration_hrs: 'metric-trip_duration_hrs-title',
+  mean_price_kg: 'metric-mean_price_kg-title',
+  estimated_revenue: 'metric-estimated_revenue-title',
+  estimated_catch_tn: 'metric-estimated_catch_tn-title',
+};
 
 // Utility functions
 type Stats = {
@@ -133,6 +188,7 @@ const InfoPanel = memo(function InfoPanel({
   colorRange,
   selectedRanges,
   onRangeToggle,
+  choroplethLegend,
 }: InfoPanelProps) {
   const { t } = useTranslation('common');
   const stats = useMemo(() => calculateStats(data), [data]);
@@ -221,6 +277,47 @@ const InfoPanel = memo(function InfoPanel({
           <span>{t('info-more-hours')}</span>
         </div>
       </div>
+      {choroplethLegend && (
+        <div style={{ marginBottom: '20px' }}>
+          <div
+            style={{
+              marginBottom: '8px',
+              ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
+            }}
+          >
+            {choroplethLegend.metricLabel}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '4px',
+            }}
+          >
+            <div
+              style={{
+                height: '8px',
+                flex: 1,
+                background: `linear-gradient(to right, ${choroplethLegend.colors
+                  .map((c) => `rgb(${c.join(',')})`)
+                  .join(', ')})`,
+                borderRadius: '4px',
+              }}
+            />
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              ...(SHARED_STYLES.text.label(theme) as React.CSSProperties),
+            }}
+          >
+            <span>{choroplethLegend.minLabel}</span>
+            <span>{choroplethLegend.maxLabel}</span>
+          </div>
+        </div>
+      )}
       <div style={{ marginBottom: '20px' }}>
         <div
           style={{
@@ -319,9 +416,12 @@ const MAP_STYLES = {
   satellite: 'mapbox://styles/mapbox/satellite-v9',
 };
 
-const GridMap = memo(function GridMap() {
+const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
   const { theme: rawTheme = 'light' } = useTheme();
   const theme = (rawTheme === 'dark' ? 'dark' : 'light') as Theme;
+  const { t } = useTranslation('common');
+
+  // Grid track data
   const { data = [] } = api.gridSummary.all.useQuery();
   const FILTERED_DATA: DataPoint[] = useMemo(
     () =>
@@ -336,6 +436,50 @@ const GridMap = memo(function GridMap() {
         })),
     [data]
   );
+
+  // Choropleth: shared metric + time range atoms
+  const [selectedMetric] = useAtom(selectedMetricAtom);
+  const [range] = useAtom(selectedTimeRangeAtom);
+  const { start, end } = useMemo(() => computeDateRange(range), [range]);
+
+  const { data: boundariesData } = api.gaul2Boundaries.getByCountry.useQuery({
+    iso3Code: activeCountry.iso3Code,
+  });
+
+  const { data: districtMetrics = [] } =
+    api.districtSummary.getDistrictsSummaryByDateRange.useQuery({
+      startDate: start,
+      endDate: end,
+    });
+
+  // Map district name → metric value
+  const metricByDistrict = useMemo(() => {
+    const map = new Map<string, number>();
+    (districtMetrics as any[]).forEach((row) => {
+      const v = row[selectedMetric];
+      if (v != null && !isNaN(Number(v))) map.set(row.gaul_2_name, Number(v));
+    });
+    return map;
+  }, [districtMetrics, selectedMetric]);
+
+  const [minVal, maxVal] = useMemo(() => {
+    const vals = [...metricByDistrict.values()];
+    if (!vals.length) return [0, 1];
+    return [Math.min(...vals), Math.max(...vals)];
+  }, [metricByDistrict]);
+
+  // Choropleth legend props
+  const choroplethLegend = useMemo((): ChoroplethLegend | undefined => {
+    if (!boundariesData || metricByDistrict.size === 0) return undefined;
+    const labelKey = METRIC_LABEL_KEYS[selectedMetric] ?? selectedMetric;
+    return {
+      colors: CHOROPLETH_COLORS,
+      metricLabel: t(labelKey),
+      minLabel: formatDashboardNumber(minVal, selectedMetric, lang),
+      maxLabel: formatDashboardNumber(maxVal, selectedMetric, lang),
+    };
+  }, [boundariesData, metricByDistrict, selectedMetric, minVal, maxVal, lang, t]);
+
   const [viewState, setViewState] = useState<typeof INITIAL_VIEW_STATE>(INITIAL_VIEW_STATE);
   const [selectedRanges, setSelectedRanges] = useState<TimeBreak[]>(TIME_BREAKS);
   const transformedData: DataPoint[] = useMemo(
@@ -362,19 +506,43 @@ const GridMap = memo(function GridMap() {
       return [...current, range];
     });
   }, []);
-  const handleViewStateChange = useCallback((args: { viewState: typeof INITIAL_VIEW_STATE }) => {
-    setViewState(args.viewState);
-  }, []);
+
   const getTooltip = useCallback(
     (info: {
-      object?: {
-        points: { source: DataPoint }[];
-      };
+      object?: any;
+      layer?: { id: string };
     }) => {
       const object = info.object;
       if (!object) return null;
+
+      // GeoJSON polygon feature (choropleth layer)
+      if (info.layer?.id === 'gaul2-choropleth' && object.properties?.gaul2_name) {
+        const name = object.properties.gaul2_name as string;
+        const val = metricByDistrict.get(name);
+        const labelKey = METRIC_LABEL_KEYS[selectedMetric] ?? selectedMetric;
+        return {
+          html: `
+            <div style="padding: 8px">
+              <div><strong>${name}</strong></div>
+              ${val != null
+                ? `<div>${t(labelKey)}: ${formatDashboardNumber(val, selectedMetric, lang)}</div>`
+                : '<div>No data</div>'}
+            </div>
+          `,
+          style: {
+            backgroundColor: 'rgba(20,20,20,0.9)',
+            color: '#ffffff',
+            fontSize: '12px',
+            borderRadius: '4px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+          },
+        };
+      }
+
+      // Grid cell (existing logic)
+      if (!object.points) return null;
       const avgTime =
-        object.points.reduce((sum, p) => sum + p.source.avgTimeHours, 0) /
+        object.points.reduce((sum: number, p: { source: DataPoint }) => sum + p.source.avgTimeHours, 0) /
         object.points.length;
       const breakIndex = TIME_BREAKS.findIndex(
         (range) =>
@@ -382,7 +550,7 @@ const GridMap = memo(function GridMap() {
       );
       const cellColor = COLOR_RANGE[breakIndex >= 0 ? breakIndex : 0];
       const totalVisits = object.points.reduce(
-        (sum, p) => sum + p.source.totalVisits,
+        (sum: number, p: { source: DataPoint }) => sum + p.source.totalVisits,
         0
       );
       return {
@@ -403,28 +571,57 @@ const GridMap = memo(function GridMap() {
         },
       };
     },
-    []
+    [metricByDistrict, selectedMetric, lang, t]
   );
+
+  // Choropleth layer (rendered on top of the grid layer via depthTest: false)
+  const choroplethLayer = useMemo(() => {
+    if (!boundariesData) return null;
+    return new GeoJsonLayer({
+      id: 'gaul2-choropleth',
+      data: boundariesData as any,
+      pickable: true,
+      stroked: true,
+      filled: true,
+      getFillColor: (f: any) => {
+        const name = f.properties?.gaul2_name as string | undefined;
+        const val = name != null ? metricByDistrict.get(name) : undefined;
+        if (val == null) return [200, 200, 200, 120] as [number, number, number, number];
+        return interpolateChoroplethColor(val, minVal, maxVal);
+      },
+      getLineColor: [255, 255, 255, 200] as [number, number, number, number],
+      getLineWidth: 1,
+      lineWidthUnits: 'pixels' as const,
+      parameters: { depthTest: false },
+      updateTriggers: {
+        getFillColor: [metricByDistrict, minVal, maxVal],
+      },
+    });
+  }, [boundariesData, metricByDistrict, minVal, maxVal]);
+
   const layers = useMemo(
-    () => [
-      new GridLayer({
-        ...GRID_LAYER_SETTINGS,
-        id: 'grid-layer',
-        data: transformedData,
-        pickable: true,
-        extruded: true,
-        getPosition: (d: DataPoint) => d.position,
-        getElevationWeight: (d: DataPoint) => d.avgTimeHours,
-        colorRange: COLOR_RANGE as any,
-        colorScaleType: 'ordinal',
-        getColorWeight: (d: DataPoint) => (d ? getColorForValue(d.avgTimeHours) : 0),
-        updateTriggers: {
-          getColorWeight: [selectedRanges],
-        },
-      }),
-    ],
-    [transformedData, selectedRanges]
+    () =>
+      [
+        new GridLayer({
+          ...GRID_LAYER_SETTINGS,
+          id: 'grid-layer',
+          data: transformedData,
+          pickable: true,
+          extruded: true,
+          getPosition: (d: DataPoint) => d.position,
+          getElevationWeight: (d: DataPoint) => d.avgTimeHours,
+          colorRange: COLOR_RANGE as any,
+          colorScaleType: 'ordinal',
+          getColorWeight: (d: DataPoint) => (d ? getColorForValue(d.avgTimeHours) : 0),
+          updateTriggers: {
+            getColorWeight: [selectedRanges],
+          },
+        }),
+        choroplethLayer,
+      ].filter(Boolean),
+    [transformedData, selectedRanges, choroplethLayer]
   );
+
   // Only two states: 'satellite' and 'map'
   const [viewMode, setViewMode] = useState<'satellite' | 'map'>('satellite');
   const iconColor = theme === 'dark' ? '#fff' : '#222';
@@ -473,7 +670,7 @@ const GridMap = memo(function GridMap() {
                 ? MAP_STYLES.dark
                 : MAP_STYLES.light
           }
-          mapboxAccessToken={import.meta.env?.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibGFuZ2JhcnQiLCJhIjoiY2xkcGN0b3lhMDhmODNvbzQzNGlqbXI0OSJ9.JhvnRPg7hwJ5rPc5M5NChQ'}
+          mapboxAccessToken={import.meta.env?.VITE_MAPBOX_TOKEN ?? ''}
           reuseMaps
           attributionControl={false}
           renderWorldCopies={false}
@@ -487,9 +684,10 @@ const GridMap = memo(function GridMap() {
         colorRange={COLOR_RANGE}
         selectedRanges={selectedRanges}
         onRangeToggle={handleRangeToggle}
+        choroplethLegend={choroplethLegend}
       />
     </div>
   );
 });
 
-export default GridMap; 
+export default GridMap;

@@ -10,7 +10,8 @@ import {
   districtSummaryRouter,
   gridSummaryRouter,
   monthlySummaryRouter,
-  taxaSummariesRouter
+  taxaSummariesRouter,
+  gaul2BoundariesRouter,
 } from "./router";
 import { createTRPCRouter } from "./trpc";
 
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   gridSummary: gridSummaryRouter,
   monthlySummary: monthlySummaryRouter,
   taxaSummaries: taxaSummariesRouter,
+  gaul2Boundaries: gaul2BoundariesRouter,
 });
 
 // export type definition of API

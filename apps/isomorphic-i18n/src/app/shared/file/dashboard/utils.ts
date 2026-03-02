@@ -42,6 +42,14 @@ export function formatDashboardNumber(value: any, metric?: string, lang: string 
   return Number(value).toLocaleString(lang, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 }
 
+export function computeDateRange(range: string | number): { start: string; end: string } {
+  if (range === 'all') return { start: '1900-01-01', end: new Date().toISOString() };
+  const end = new Date();
+  const start = new Date();
+  start.setMonth(end.getMonth() - Number(range));
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
 export function getAggregatedDistrictValue(row: any, metricKey: string) {
   // If the row has an array of values for the metric, aggregate accordingly
   const values = Array.isArray(row[metricKey]) ? row[metricKey] : [row[metricKey]];

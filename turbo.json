@@ -9,6 +9,7 @@
         "NEXTAUTH_SECRET",
         "NEXTAUTH_URL",
         "MONGODB_URI",
+        "MONGODB_URI_COASTS",
         "VERCEL_URL",
         "VERCEL",
         "COUNTRY_CODE"
@@ -31,6 +32,7 @@
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "MONGODB_URI",
+    "MONGODB_URI_COASTS",
     "VERCEL_URL",
     "VERCEL",
     "COUNTRY_CODE"

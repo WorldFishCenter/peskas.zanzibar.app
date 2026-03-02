@@ -12,6 +12,7 @@ import { districtSummaryRouter } from "./district-summary";
 import { gridSummaryRouter } from "./grid-summary";
 import { monthlySummaryRouter } from "./monthly-summary";
 import { taxaSummariesRouter } from "./taxa-summaries";
+import { gaul2BoundariesRouter } from "./gaul2-boundaries";
 
 // Export all routers for easier imports
 export {
@@ -29,4 +30,5 @@ export {
   gridSummaryRouter,
   monthlySummaryRouter,
   taxaSummariesRouter,
+  gaul2BoundariesRouter,
 }; 
