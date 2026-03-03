@@ -233,7 +233,7 @@ const kenyaConfig: CountryConfig = {
   },
   // Kenya Map viewport tuned for coast region (centered on Mombasa/Malindi axis)
   mapViewState: {
-    longitude: 40.12,
+    longitude: 38.12,
     latitude: -3.60,
     zoom: 7.1,
     minZoom: 5.5,
@@ -243,8 +243,8 @@ const kenyaConfig: CountryConfig = {
   },
   // Grid map view focused on southern coast (centered for Nyali/Diani zone)
   gridMapViewState: {
-    longitude: 39.68,
-    latitude: -4.32,
+    longitude: 39.0,
+    latitude: -3.9,
     zoom: 7,
     pitch: 42,
     bearing: 7,
@@ -333,17 +333,17 @@ const mozambiqueConfig: CountryConfig = {
     'Xai-Xai':      '#8cdaec',  // Light sky blue
   },
   mapViewState: {
-    longitude: 37.61,
+    longitude: 32.61,
     latitude: -19.09,
-    zoom: 5.3,
+    zoom: 5,
     minZoom: 5,
     maxZoom: 14,
     pitch: 45,
   },
   gridMapViewState: {
-    longitude: 37.61,
+    longitude: 32.61,
     latitude: -19.09,
-    zoom: 5.3,
+    zoom: 5,
     pitch: 45,
     bearing: 0,
   },
@@ -373,4 +373,4 @@ const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
  * Defaults to 'TZ' (Zanzibar) when COUNTRY_CODE is unset or unknown.
  */
 export const activeCountry: CountryConfig =
-  COUNTRY_REGISTRY[process.env.COUNTRY_CODE ?? 'KE'] ?? kenyaConfig;
+  COUNTRY_REGISTRY[process.env.COUNTRY_CODE ?? 'TZ'] ?? zanzibarConfig;
