@@ -1,5 +1,4 @@
 "use client";
-import WidgetCard from "@components/cards/widget-card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
@@ -7,8 +6,7 @@ import { useMemo } from "react";
 import { useAtom } from 'jotai';
 import { selectedTimeRangeAtom } from '@/app/components/time-range-selector';
 import { selectedMetricAtom } from '@/app/components/filter-selector';
-import type { MetricKey } from '@/app/shared/file/dashboard/charts/types';
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
+import { hoveredDistrictAtom } from './atoms';
 import { DISTRICT_COLORS } from "./charts/utils";
 import { formatDashboardNumber, getAggregatedDistrictValue, computeDateRange } from "./utils";
 
@@ -18,7 +16,7 @@ const FALLBACK_COLORS = [
 ];
 
 // List of metrics to show in tooltip
-const METRICS = [
+export const METRICS = [
   { key: "mean_cpue", labelKey: "metric-mean_cpue-title", unitKey: "metric-mean_cpue-unit", descKey: "metric-mean_cpue-desc" },
   { key: "mean_rpue", labelKey: "metric-mean_rpue-title", unitKey: "metric-mean_rpue-unit", descKey: "metric-mean_rpue-desc" },
   { key: "n_fishers", labelKey: "metric-n_fishers-title", unitKey: "metric-n_fishers-unit", descKey: "metric-n_fishers-desc" },
@@ -60,7 +58,8 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
   const { t } = useTranslation("common");
   const [range] = useAtom(selectedTimeRangeAtom);
   const { start, end } = useMemo(() => computeDateRange(range), [range]);
-  const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
+  const [selectedMetric] = useAtom(selectedMetricAtom);
+  const [hoveredDistrict, setHoveredDistrict] = useAtom(hoveredDistrictAtom);
   const metricConfig = METRICS.find(m => m.key === selectedMetric) || METRICS[0];
   // Fetch summary for all districts (using the same API as DistrictMetricsTable)
   const { data = [], isLoading, error } = api.districtSummary.getDistrictsSummaryByDateRange.useQuery({ startDate: start, endDate: end });
@@ -73,9 +72,9 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
         value: getAggregatedDistrictValue(row, selectedMetric),
         ...row,
       }));
-    
+
     const filtered = mapped.filter((d: any) => d.value !== null && !isNaN(d.value));
-    
+
     return filtered
       .sort((a: any, b: any) => b.value - a.value)
       .map((d: any, idx: number) => ({ ...d, rank: idx + 1 }));
@@ -83,58 +82,37 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
 
   if (isLoading) {
     return (
-      <WidgetCard title={t("text-district-summary") || "District Summary"} className={`h-full flex flex-col${className ? ` ${className}` : ''}` }>
+      <div className={`h-full w-full flex flex-col${className ? ` ${className}` : ''}`}>
         <div className="h-80 flex items-center justify-center animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
         </div>
-      </WidgetCard>
+      </div>
     );
   }
 
   if (error || !data) {
     return (
-      <WidgetCard title={t("text-district-summary") || "District Summary"} className={`h-full flex flex-col${className ? ` ${className}` : ''}` }>
-        <div className="flex flex-col items-center justify-center h-64">
+      <div className={`h-full w-full flex flex-col${className ? ` ${className}` : ''}`}>
+        <div className="flex flex-col items-center justify-center h-full min-h-[256px]">
           <p className="text-gray-500">{t('text-no-data-available')}</p>
         </div>
-      </WidgetCard>
+      </div>
     );
   }
 
   if (chartData.length === 0) {
     return (
-      <WidgetCard title={t("text-district-summary") || "District Summary"} className={`h-full flex flex-col${className ? ` ${className}` : ''}` }>
-        <div className="flex flex-col items-center justify-center h-64">
+      <div className={`h-full w-full flex flex-col${className ? ` ${className}` : ''}`}>
+        <div className="flex flex-col items-center justify-center h-full min-h-[256px]">
           <p className="text-gray-500">{t('text-no-data-available-for-districts')}</p>
         </div>
-      </WidgetCard>
+      </div>
     );
   }
 
   return (
-    <WidgetCard
-      title={
-        <div className="flex flex-row items-center gap-3">
-          <span className="font-semibold text-gray-900 dark:text-gray-700">
-            {t("text-district-summary")}
-          </span>
-          <div className="min-w-fit">
-            <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricKey)}>
-              <SelectTrigger className="w-full max-w-[180px] sm:max-w-[240px] md:max-w-[300px]">
-                <SelectValue>{t(METRICS.find(m => m.key === selectedMetric)?.labelKey || "")}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {METRICS.map(m => (
-                  <SelectItem key={m.key} value={m.key}>{t(m.labelKey)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      }
-      className={`border border-muted bg-gray-0 p-5 dark:bg-gray-50 rounded-lg h-full flex flex-col${className ? ` ${className}` : ''}`}
-    >
+    <div className={`flex flex-col h-full w-full${className ? ` ${className}` : ''}`}>
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 30 }}>
@@ -165,9 +143,9 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
               tickLine={{ stroke: '#cbd5e1', className: 'dark:stroke-gray-700' }}
             />
             <Tooltip content={<DistrictTooltip allData={data} selectedMetric={selectedMetric} lang={lang} />} wrapperStyle={{ background: 'transparent' }} />
-            <Bar 
-              dataKey="value" 
-              radius={[0, 4, 4, 0]} 
+            <Bar
+              dataKey="value"
+              radius={[0, 4, 4, 0]}
               isAnimationActive={true}
               animationDuration={1000}
               animationEasing="ease-out"
@@ -175,14 +153,26 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
               {chartData.map((entry, index) => {
                 const districtName = entry.name;
                 const color = DISTRICT_COLORS[districtName] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-                return <Cell key={`cell-${index}`} fill={color} />;
+                const isHovered = hoveredDistrict === districtName;
+                const isAnyHovered = !!hoveredDistrict;
+                const fillOpacity = isAnyHovered && !isHovered ? 0.3 : 1;
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={color}
+                    fillOpacity={fillOpacity}
+                    onMouseEnter={() => setHoveredDistrict(districtName)}
+                    onMouseLeave={() => setHoveredDistrict(null)}
+                    style={{ cursor: 'pointer', transition: 'fill-opacity 0.2s' }}
+                  />
+                );
               })}
               {/* Show value at end of bar */}
-              <LabelList dataKey="value" position="right" formatter={(value: number) => formatDashboardNumber(value, selectedMetric, lang)} style={{ fontSize: 12, fill: '#222', filter: 'invert(1) brightness(2)'}} className="dark:fill-white" />
+              <LabelList dataKey="value" position="right" formatter={(value: number) => formatDashboardNumber(value, selectedMetric, lang)} style={{ fontSize: 12, fill: '#222', filter: 'invert(1) brightness(2)' }} className="dark:fill-white" />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </WidgetCard>
+    </div>
   );
 } 

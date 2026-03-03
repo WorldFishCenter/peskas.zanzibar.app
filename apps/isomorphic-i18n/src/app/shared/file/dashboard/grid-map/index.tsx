@@ -17,6 +17,7 @@ import { useTranslation } from '@/app/i18n/client';
 import { useAtom } from 'jotai';
 import { selectedMetricAtom } from '@/app/components/filter-selector';
 import { selectedTimeRangeAtom } from '@/app/components/time-range-selector';
+import { hoveredDistrictAtom } from '../atoms';
 import { activeCountry } from '@/config/countryConfig';
 import { formatDashboardNumber, computeDateRange } from '../utils';
 import type { Theme, TimeBreak, DataPoint, GridMapProps, ChoroplethLegend } from './types';
@@ -50,9 +51,10 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
     [data]
   );
 
-  // Choropleth: shared metric + time range atoms
+  // Choropleth: shared metric + time range + hover atoms
   const [selectedMetric] = useAtom(selectedMetricAtom);
   const [range] = useAtom(selectedTimeRangeAtom);
+  const [hoveredDistrict, setHoveredDistrict] = useAtom(hoveredDistrictAtom);
   const { start, end } = useMemo(() => computeDateRange(range), [range]);
 
   const { data: boundariesData } = api.gaul2Boundaries.getByCountry.useQuery({
@@ -139,8 +141,8 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
             <div style="padding: 8px">
               <div><strong>${name}</strong></div>
               ${val != null
-                ? `<div>${t(labelKey)}: ${formatDashboardNumber(val, selectedMetric, lang)}</div>`
-                : '<div>No data</div>'}
+              ? `<div>${t(labelKey)}: ${formatDashboardNumber(val, selectedMetric, lang)}</div>`
+              : '<div>No data</div>'}
             </div>
           `,
           style: {
@@ -197,21 +199,51 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
       pickable: true,
       stroked: true,
       filled: true,
+      onHover: (info) => {
+        if (info.object && info.object.properties?.gaul2_name) {
+          setHoveredDistrict(info.object.properties.gaul2_name);
+        } else {
+          setHoveredDistrict(null);
+        }
+      },
       getFillColor: (f: any) => {
         const name = f.properties?.gaul2_name as string | undefined;
         const val = name != null ? metricByDistrict.get(name) : undefined;
-        if (val == null) return [200, 200, 200, 120] as [number, number, number, number];
-        return interpolateChoroplethColor(val, minVal, maxVal);
+
+        let baseColor: [number, number, number, number] = [200, 200, 200, 120];
+        if (val != null) {
+          baseColor = interpolateChoroplethColor(val, minVal, maxVal);
+        }
+
+        const isHovered = hoveredDistrict === name;
+        const isAnyHovered = !!hoveredDistrict;
+
+        if (isAnyHovered && !isHovered) {
+          return [baseColor[0], baseColor[1], baseColor[2], 80] as [number, number, number, number];
+        } else if (isHovered) {
+          return [baseColor[0], baseColor[1], baseColor[2], 255] as [number, number, number, number];
+        }
+
+        return baseColor;
       },
-      getLineColor: [255, 255, 255, 200] as [number, number, number, number],
-      getLineWidth: 1,
+      getLineColor: (f: any) => {
+        const name = f.properties?.gaul2_name as string | undefined;
+        const isHovered = hoveredDistrict === name;
+        return isHovered ? [255, 255, 255, 255] : [255, 255, 255, 200];
+      },
+      getLineWidth: (f: any) => {
+        const name = f.properties?.gaul2_name as string | undefined;
+        return hoveredDistrict === name ? 3 : 1;
+      },
       lineWidthUnits: 'pixels' as const,
       parameters: { depthTest: false },
       updateTriggers: {
-        getFillColor: [metricByDistrict, minVal, maxVal],
+        getFillColor: [metricByDistrict, minVal, maxVal, hoveredDistrict],
+        getLineColor: [hoveredDistrict],
+        getLineWidth: [hoveredDistrict],
       },
     });
-  }, [boundariesData, metricByDistrict, minVal, maxVal]);
+  }, [boundariesData, metricByDistrict, minVal, maxVal, hoveredDistrict, setHoveredDistrict]);
 
   const layers = useMemo(
     () =>
