@@ -13,7 +13,7 @@ export default function FileDashboard({ lang }: { lang?: string }) {
           <DistrictSummaryBar />
         </div>
         <div className="md:col-span-8 h-64 xs:h-72 sm:h-80 md:h-[400px] lg:h-[500px] xl:h-[700px] overflow-hidden">
-          <GridMap />
+          <GridMap lang={lang} />
         </div>
       </div>
       <div className="mt-4 md:mt-6">

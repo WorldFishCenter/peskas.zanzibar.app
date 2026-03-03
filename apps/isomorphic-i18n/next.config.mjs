@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_MAPBOX_TOKEN: process.env.VITE_MAPBOX_TOKEN ?? '',
+  },
   images: {
     remotePatterns: [
       {

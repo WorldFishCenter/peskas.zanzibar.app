@@ -31,6 +31,8 @@ export interface MapViewState {
 export interface CountryConfig {
   /** Internal identifier matching COUNTRY_CODE env var, e.g. 'TZ' */
   countryCode: string;
+  /** ISO 3166-1 alpha-3 code used to filter wio_gaul2 boundaries, e.g. 'TZA' */
+  iso3Code: string;
   /** Human-readable country/region name used in page titles, e.g. 'Zanzibar' */
   countryName: string;
   /** Browser tab title */
@@ -80,6 +82,7 @@ export interface CountryConfig {
 
 const zanzibarConfig: CountryConfig = {
   countryCode: 'TZ',
+  iso3Code: 'TZA',
   countryName: 'Zanzibar',
   siteTitle: 'PESKAS | Zanzibar Fisheries',
   siteDescription: 'Peskas | Zanzibar Fisheries Dashboard',
@@ -158,6 +161,7 @@ const zanzibarConfig: CountryConfig = {
 
 const kenyaConfig: CountryConfig = {
   countryCode: 'KE',
+  iso3Code: 'KEN',
   countryName: 'Kenya',
   siteTitle: 'PESKAS | Kenya Fisheries',
   siteDescription: 'Peskas | Kenya Fisheries Dashboard',
@@ -227,20 +231,23 @@ const kenyaConfig: CountryConfig = {
     'Nyali':        '#A1C181',  // Palette supplement/Moss green
     'Garsen':       '#FDBCB4',  // Palette supplement/Pink peach
   },
+  // Kenya Map viewport tuned for coast region (centered on Mombasa/Malindi axis)
   mapViewState: {
-    longitude: 40.20,
-    latitude: -3.01,
-    zoom: 8,
-    minZoom: 5,
-    maxZoom: 15,
-    pitch: 40.5,
+    longitude: 38.12,
+    latitude: -3.60,
+    zoom: 7.1,
+    minZoom: 5.5,
+    maxZoom: 14.5,
+    pitch: 39,
+    bearing: 1,
   },
+  // Grid map view focused on southern coast (centered for Nyali/Diani zone)
   gridMapViewState: {
-    longitude: 39.19,
-    latitude: -6.16,
-    zoom: 8,
-    pitch: 45,
-    bearing: 10,
+    longitude: 39.0,
+    latitude: -3.9,
+    zoom: 7,
+    pitch: 42,
+    bearing: 7,
   },
   defaultSelectedDistricts: ['Malindi', 'Kinango', 'Lamu'],
   features: {
@@ -258,6 +265,7 @@ const kenyaConfig: CountryConfig = {
 
 const mozambiqueConfig: CountryConfig = {
   countryCode: 'MZ',
+  iso3Code: 'MOZ',
   countryName: 'Mozambique',
   siteTitle: 'PESKAS | Mozambique Fisheries',
   siteDescription: 'Peskas | Mozambique Fisheries Dashboard',
@@ -325,17 +333,17 @@ const mozambiqueConfig: CountryConfig = {
     'Xai-Xai':      '#8cdaec',  // Light sky blue
   },
   mapViewState: {
-    longitude: 37.61,
+    longitude: 32.61,
     latitude: -19.09,
-    zoom: 5.3,
+    zoom: 5,
     minZoom: 5,
     maxZoom: 14,
     pitch: 45,
   },
   gridMapViewState: {
-    longitude: 37.61,
+    longitude: 32.61,
     latitude: -19.09,
-    zoom: 5.3,
+    zoom: 5,
     pitch: 45,
     bearing: 0,
   },

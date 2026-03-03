@@ -1,7 +1,8 @@
 "use client";
 
-import { ActionIcon, Checkbox, Input, Popover } from "rizzui";
+import { Checkbox, Input, Popover } from "rizzui";
 import { TbFilterCog } from "react-icons/tb";
+import { PiCaretDownBold } from "react-icons/pi";
 import { ChangeEvent, useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react"
 import type { DefaultSession } from 'next-auth';
@@ -85,10 +86,25 @@ export const FilterSelector = () => {
   const [fuse, setFuse] = useState<Fuse<string>>();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDistricts, setSelectedDistricts] = useAtom(districtsAtom);
+  const [viewMode] = useAtom(viewModeAtom);
   const prevValidDistrictsRef = useRef<string[]>([]);
 
   // Use official district list from countryConfig (single source of truth for UI)
   const validDistricts = useMemo(() => [...activeCountry.districts].sort((a, b) => a.localeCompare(b)), []);
+
+  // Build region-grouped structure from districtToRegion
+  const groupedDistricts = useMemo((): DropdownTypes[] => {
+    const regions = activeCountry.features.regionBreakdown?.regions
+      ?? (Array.from(new Set(Object.values(activeCountry.districtToRegion))).sort() as [string, ...string[]]);
+    return regions
+      .map(region => ({
+        sectionName: region,
+        units: validDistricts
+          .filter(d => activeCountry.districtToRegion[d] === region)
+          .map(d => ({ value: d })),
+      }))
+      .filter(group => group.units.length > 0);
+  }, [validDistricts]);
 
   useEffect(() => {
     // Only update if the validDistricts array has actually changed
@@ -97,8 +113,8 @@ export const FilterSelector = () => {
       setFuse(new Fuse(validDistricts, { includeScore: true, threshold: 0.3 }));
       prevValidDistrictsRef.current = validDistricts;
     }
-  }, [validDistricts]); // Only depend on validDistricts
-  
+  }, [validDistricts]);
+
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fuse) return;
     setSearchFilter(e.target.value);
@@ -116,17 +132,25 @@ export const FilterSelector = () => {
   return (
     <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
       <Popover.Trigger>
-        <ActionIcon
-          variant="text"
-          className="relative flex items-center justify-center h-[34px] w-[34px] bg-gray-0 dark:bg-gray-50 border border-muted rounded-lg text-gray-500 dark:text-gray-400 md:h-9 md:w-9"
+        <button
+          className={cn(
+            "relative flex items-center gap-1.5 px-2 py-1.5 xs:px-3 xs:py-2 sm:px-4 text-sm font-medium rounded-lg transition-all",
+            "border border-blue-200/80 dark:border-blue-600/50",
+            "bg-blue-50/50 dark:bg-blue-800/20 text-gray-800 dark:text-gray-700",
+            "hover:bg-blue-100/70 dark:hover:bg-blue-700/25 hover:border-blue-300 dark:hover:border-blue-500/60",
+            "focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600",
+            isOpen && "ring-2 ring-blue-300 dark:ring-blue-600 bg-blue-50 dark:bg-blue-800/30"
+          )}
         >
-          <TbFilterCog className="h-5 w-5 md:h-6 md:w-6" />
+          <TbFilterCog className="h-4 w-4 flex-shrink-0 text-blue-500 dark:text-blue-400" />
+          <span className="hidden sm:inline">{t('text-districts') || 'Districts'}</span>
           {selectedCount > 0 && selectedCount < totalCount && (
-            <span className="absolute -top-1 -right-1 bg-gray-200 dark:bg-gray-300 text-gray-900 dark:text-gray-700 text-xs font-semibold rounded-full h-4 w-4 flex items-center justify-center border border-white dark:border-gray-50">
+            <span className="inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-xs font-semibold rounded-full bg-blue-200/80 dark:bg-blue-700/60 text-blue-800 dark:text-blue-200">
               {selectedCount}
             </span>
           )}
-        </ActionIcon>
+          <PiCaretDownBold className={cn("h-3 w-3 flex-shrink-0 transition-transform", isOpen && "rotate-180")} />
+        </button>
       </Popover.Trigger>
       <Popover.Content className="w-[280px] sm:w-[350px] bg-gray-0 dark:bg-gray-50 border border-muted rounded-lg p-4">
         <div className="mb-2">
@@ -148,28 +172,26 @@ export const FilterSelector = () => {
             )}
           </div>
         </div>
-        <div className="space-y-2">
-          <SimpleBar className="max-h-[300px] md:max-h-[600px]">
-            {filteredList.map((district) => (
-              <div key={district} className="flex items-center justify-between pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
-                <div className="flex-grow">
-                  <Checkbox
-                    key={district}
-                    label={<span className="text-gray-900 dark:text-gray-700">{district}</span>}
-                    checked={selectedDistricts.includes(district)}
-                    onChange={() => {
-                      if (selectedDistricts.includes(district)) {
-                        setSelectedDistricts(selectedDistricts.filter((d) => d !== district));
-                      } else {
-                        setSelectedDistricts([...selectedDistricts, district]);
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </SimpleBar>
-        </div>
+        <SimpleBar className="max-h-[300px] md:max-h-[600px]">
+          {searchFilter
+            ? filteredList.map((district) => (
+                <FilterGroup
+                  key={district}
+                  districtSection={district}
+                  searchFilter={searchFilter}
+                  viewMode={viewMode}
+                />
+              ))
+            : groupedDistricts.map((group) => (
+                <FilterGroup
+                  key={group.sectionName}
+                  districtSection={group}
+                  searchFilter=""
+                  viewMode={viewMode}
+                />
+              ))
+          }
+        </SimpleBar>
       </Popover.Content>
     </Popover>
   );
@@ -179,193 +201,88 @@ const FilterGroup = ({
   districtSection,
   searchFilter,
   viewMode,
-  referenceDistrict
 }: {
   districtSection: DropdownTypes | string;
   searchFilter: string;
   viewMode?: 'district' | 'region';
-  referenceDistrict?: string | null;
 }) => {
   const [districts, setDistricts] = useAtom(districtsAtom);
-  const { data: session } = useSession();
-  const { isAdmin, userPreferences, setUserPreferences } = useUserPermissions();
-  const { t } = useTranslation("common");
+  const { isAdmin } = useUserPermissions();
 
   const handleDistrictSelect = (unit: string) => {
-    // For region view in admin mode, ensure only one district is selected per region
     if (isAdmin && viewMode === 'region' && typeof districtSection !== 'string') {
       const section = districtSection as DropdownTypes;
-      
-      // Remove all other districts from this region
-      const filteredDistricts = districts.filter(district => {
-        // Check if this district is from a different region
-        if (section.units.some(u => u.value === district)) {
-          return false; // Remove districts from this region
-        }
-        return true; // Keep districts from other regions
-      });
-      
-      // Add the newly selected district
+      const filteredDistricts = districts.filter(
+        district => !section.units.some(u => u.value === district)
+      );
       setDistricts([...filteredDistricts, unit]);
       return;
     }
-    
-    // Standard multi-select behavior for other cases
     if (districts.includes(unit)) {
-      setDistricts(districts.filter((filter) => filter !== unit));
+      setDistricts(districts.filter((d) => d !== unit));
     } else {
       setDistricts([...districts, unit]);
-    }
-  };
-  
-  const handleReferenceSelect = (unit: string) => {
-    if (isAdmin) {
-      // Toggle reference district
-      const newSelectedRegion = referenceDistrict === unit ? undefined : unit;
-      setUserPreferences({ ...userPreferences, selectedRegion: newSelectedRegion });
-      
-      // Also select the district if it's not already selected
-      if (referenceDistrict !== unit && !districts.includes(unit)) {
-        // For region view, we need to handle region selection differently
-        if (viewMode === 'region' && typeof districtSection !== 'string') {
-          const section = districtSection as DropdownTypes;
-          
-          // Remove all other districts from this region
-          const filteredDistricts = districts.filter(district => {
-            if (section.units.some(u => u.value === district)) {
-              return false; // Remove districts from this region
-            }
-            return true; // Keep districts from other regions
-          });
-          
-          // Add the newly selected district
-          setDistricts([...filteredDistricts, unit]);
-        } else {
-          // Standard selection for district view
-          setDistricts([...districts, unit]);
-        }
-      }
     }
   };
 
   if (typeof districtSection === "string" && searchFilter) {
     const unit = districtSection as string;
-    const isReferenceDistrict = referenceDistrict === unit;
-
     return (
-      <div className="flex items-center justify-between pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
-        <div className="flex-grow">
-          <Checkbox
-            key={unit}
-            label={<span className="text-gray-900 dark:text-gray-700">{unit}</span>}
-            checked={districts.includes(unit)}
-            onChange={() => handleDistrictSelect(unit)}
-          />
-        </div>
-        {isAdmin && (
-          <button
-            className={cn(
-              "ml-4 text-lg flex-shrink-0 w-6 h-6 flex items-center justify-center", 
-              isReferenceDistrict ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
-            )}
-            onClick={() => handleReferenceSelect(unit)}
-            title="Set as reference"
-          >
-            ★
-          </button>
-        )}
+      <div className="flex items-center pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
+        <Checkbox
+          key={unit}
+          label={<span className="text-gray-900 dark:text-gray-700">{unit}</span>}
+          checked={districts.includes(unit)}
+          onChange={() => handleDistrictSelect(unit)}
+        />
       </div>
     );
   } else {
     const section = districtSection as DropdownTypes;
-    
-    // In region view, we only check if any district from this region is selected
-    const isRegionSelected = isAdmin && viewMode === 'region' 
+
+    const isRegionSelected = isAdmin && viewMode === 'region'
       ? section.units.some(unit => districts.includes(unit.value))
       : section.units.every(unit => districts.includes(unit.value));
 
     const handleSectionSelect = () => {
-      // For region view in admin mode, select only one district per region
       if (isAdmin && viewMode === 'region') {
         if (isRegionSelected) {
-          // Remove all districts from this region
-          setDistricts(districts.filter(district => !section.units.some(unit => unit.value === district)));
+          setDistricts(districts.filter(d => !section.units.some(u => u.value === d)));
         } else {
-          // Add the first district from this region, remove any others
-          const filteredDistricts = districts.filter(district => !section.units.some(unit => unit.value === district));
-          setDistricts([...filteredDistricts, section.units[0].value]);
+          const filtered = districts.filter(d => !section.units.some(u => u.value === d));
+          setDistricts([...filtered, section.units[0].value]);
         }
         return;
       }
-      
-      // Standard behavior for other cases
       if (isRegionSelected) {
-        setDistricts(
-          districts.filter(
-            (filter) =>
-              !section.units.flatMap((unit) => unit.value).includes(filter)
-          )
-        );
+        setDistricts(districts.filter(d => !section.units.map(u => u.value).includes(d)));
       } else {
-        setDistricts([
-          ...districts,
-          ...section.units.map((unit) => unit.value),
-        ]);
+        setDistricts([...districts, ...section.units.map(u => u.value)]);
       }
     };
 
-    // Check if this section has the reference district
-    const hasReferenceDistrict = referenceDistrict && section.units.some(unit => unit.value === referenceDistrict);
-
     return (
-      <div className="border-b border-gray-100 last:border-0 pb-2 mb-2 last:mb-0">
+      <div className="border-b border-gray-100 dark:border-gray-200/10 last:border-0 pb-2 mb-2 last:mb-0">
         <div className="flex items-center mb-1">
           <Checkbox
-            label={
-              <span className={cn(
-                "font-medium",
-                hasReferenceDistrict ? "text-yellow-600" : ""
-              )}>
-                {section.sectionName}
-                {hasReferenceDistrict && <span className="ml-1 text-yellow-500">★</span>}
-              </span>
-            }
+            label={<span className="font-medium text-gray-900 dark:text-gray-700">{section.sectionName}</span>}
             checked={isRegionSelected}
             onChange={handleSectionSelect}
           />
         </div>
         <div className="mt-1 ml-6 space-y-1">
           {section.units.map((unit) => {
-            // In region view for admin, only one district can be selected per region
-            const disabled = isAdmin && viewMode === 'region' && isRegionSelected && 
+            const disabled = isAdmin && viewMode === 'region' && isRegionSelected &&
               !districts.includes(unit.value);
-            
-            // Check if this is the reference district
-            const isReferenceDistrict = referenceDistrict === unit.value;
-            
             return (
-              <div key={unit.value} className="flex items-center justify-between pr-2 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
-                <div className="flex-grow">
-                  <Checkbox
-                    label={<span className="text-gray-900 dark:text-gray-700">{unit.value}</span>}
-                    checked={districts.includes(unit.value)}
-                    onChange={() => handleDistrictSelect(unit.value)}
-                    disabled={disabled}
-                    className={disabled ? "opacity-50" : ""}
-                  />
-                </div>
-                {isAdmin && !disabled && (
-                  <button
-                    className={cn(
-                      "ml-4 text-lg flex-shrink-0 w-6 h-6 flex items-center justify-center", 
-                      isReferenceDistrict ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500"
-                    )}
-                    onClick={() => handleReferenceSelect(unit.value)}
-                    title="Set as reference"
-                  >
-                    ★
-                  </button>
-                )}
+              <div key={unit.value} className="flex items-center pr-2 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-100/80 rounded-lg">
+                <Checkbox
+                  label={<span className="text-gray-900 dark:text-gray-700">{unit.value}</span>}
+                  checked={districts.includes(unit.value)}
+                  onChange={() => handleDistrictSelect(unit.value)}
+                  disabled={disabled}
+                  className={disabled ? "opacity-50" : ""}
+                />
               </div>
             );
           })}

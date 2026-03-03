@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema/*": "./src/schema/*.ts",
-    "./constants/gaul2-districts": "./src/constants/gaul2-districts.ts"
+    "./constants/gaul2-districts": "./src/constants/gaul2-districts.ts",
+    "./portal-db": "./src/portal-db.ts"
   },
   "scripts": {
     "format": "prettier . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",

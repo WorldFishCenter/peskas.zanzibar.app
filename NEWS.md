@@ -1,3 +1,46 @@
+# peskas.zanzibar.v2 1.2.0
+
+## New Features
+
+- **GAUL2 choropleth map**: Homepage map now overlays administrative district boundaries
+  colour-coded by the currently selected metric (CPUE, RPUE, catch tonnage, estimated
+  revenue, or submission count). Boundaries are fetched from a separate portal MongoDB
+  database (`wio_gaul2` collection) via a new `MONGODB_URI_COASTS` environment variable.
+  Colour scale uses a 6-stop sequential Blues palette linearly interpolated across the
+  district value range; districts with no data render in grey. The choropleth reacts in
+  real-time to both the metric dropdown and the time range selector.
+
+- **Choropleth tooltip**: Hovering a district polygon on the homepage map shows the
+  district name and the selected metric value, formatted with the active locale.
+
+- **Choropleth legend**: The map info panel displays the metric label and a colour ramp
+  with min/max values when boundary data is loaded.
+
+## Improvements
+
+- **Shared metric state**: `district-summary-bar.tsx` metric selection is now driven by
+  the shared `selectedMetricAtom` (Jotai) instead of local `useState`. The bar chart
+  and the choropleth map always reflect the same metric selection.
+
+- **Shared date range utility**: Extracted `computeDateRange()` into `dashboard/utils.ts`.
+  Both the district summary bar and the choropleth map use it, eliminating duplicated
+  inline date computation.
+
+- **Multi-country boundaries**: `countryConfig.ts` extended with an `iso3Code` field
+  (`'TZA'` / `'KEN'` / `'MOZ'`). The choropleth queries boundaries for the active
+  country automatically — no code change needed when switching deployments.
+
+- **New tRPC router**: `gaul2Boundaries.getByCountry` — queries `wio_gaul2` across all
+  known field name variants (alpha-2 and alpha-3 ISO codes, `iso3_code` / `country` /
+  nested `properties.*` fields) with a JS-filter fallback for non-standard documents.
+  Returns a standard GeoJSON `FeatureCollection`.
+
+- **Isolated portal DB connection**: `packages/nosql/src/portal-db.ts` manages a
+  separate Mongoose connection (`mongoose.createConnection()`) for the portal database,
+  fully isolated from the main fisheries DB connection.
+
+---
+
 # peskas.zanzibar.v2 1.1.0
 
 ## Improvements
