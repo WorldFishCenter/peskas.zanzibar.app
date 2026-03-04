@@ -12,6 +12,7 @@ import {
   XAxis,
   ResponsiveContainer,
   LabelList,
+  Tooltip,
 } from 'recharts';
 import { activeCountry } from "@/config/countryConfig";
 import { CURRENCY_CODE, LOCALE } from "@/config/constants";
@@ -141,8 +142,29 @@ function MetricBarCard({
 
   const lastDataPoint = last3Months[last3Months.length - 1];
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 p-3 rounded-lg shadow-xl">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">{label}</p>
+          <div className="flex flex-col gap-1.5 mt-1">
+            {payload.map((entry: any, index: number) => (
+              <div key={index} className="flex items-center gap-2 text-sm">
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+                <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">
+                  {entry.name}: {formatValue(entry.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible">
+    <div className="border border-muted bg-gray-0 p-4 sm:p-6 dark:bg-gray-50 dark:border-gray-700 rounded-xl min-w-[180px] max-w-full sm:min-w-[260px] sm:max-w-[320px] flex flex-col overflow-visible transition-all duration-300 hover:shadow-xl hover:border-gray-300 dark:hover:border-gray-500 hover:-translate-y-1 cursor-default">
       <div className="mb-2" style={{ minHeight: 48 }}>
         {/* 1st row: Metric name (unit) */}
         <Text className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-700">
@@ -178,14 +200,18 @@ function MetricBarCard({
                 tickLine={false}
                 className="dark:fill-gray-300"
               />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: 'rgba(100, 116, 139, 0.08)' }}
+              />
               {regionBreakdown
                 ? regionBreakdown.regions.map((region) => (
-                    <Bar key={region} dataKey={region} fill={regionBreakdown.colors[region]} radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}>
+                    <Bar key={region} dataKey={region} fill={regionBreakdown.colors[region]} radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
                       <LabelList dataKey={region} position="top" formatter={formatValue} fill={regionBreakdown.colors[region]} style={{ fontSize: 11, fontWeight: 600 }} />
                     </Bar>
                   ))
                 : (
-                    <Bar dataKey="total" fill="#64748b" radius={[2, 2, 0, 0]} barSize={18} minPointSize={6}>
+                    <Bar dataKey="total" fill="#64748b" radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
                       <LabelList dataKey="total" position="top" formatter={formatValue} fill="#64748b" style={{ fontSize: 11, fontWeight: 600 }} />
                     </Bar>
                   )
@@ -265,7 +291,7 @@ export default function MetricCards({ className, lang }: FileStatsType) {
   return (
     <div
       className={cn(
-        'relative flex w-auto items-center overflow-hidden',
+        'relative flex w-auto items-center min-h-[224px]',
         className
       )}
     >
@@ -274,14 +300,14 @@ export default function MetricCards({ className, lang }: FileStatsType) {
         variant="text"
         ref={sliderPrevBtn}
         onClick={() => scrollToTheLeft()}
-        className="!absolute -left-1 top-0 z-10 !h-full w-12 !justify-start rounded-none bg-gradient-to-r from-gray-0 via-gray-0/70 to-transparent px-0 ps-1 text-gray-500 hover:text-gray-900 3xl:hidden dark:from-gray-50 dark:via-gray-50/70"
+        className="!absolute -left-2 top-1/2 -translate-y-1/2 z-10 !h-10 !w-10 !justify-center rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50 hover:scale-110 transition-transform 3xl:hidden flex items-center p-0 hover:bg-white dark:hover:bg-gray-800"
       >
         <PiCaretLeftBold className="h-5 w-5" />
       </Button>
-      <div className="w-full overflow-hidden">
+      <div className="w-full overflow-hidden -mx-2 px-2">
         <div
           ref={sliderEl}
-          className="custom-scrollbar-x grid grid-flow-col gap-4 overflow-x-auto scroll-smooth"
+          className="custom-scrollbar-x grid grid-flow-col gap-5 overflow-x-auto scroll-smooth py-2 px-1"
         >
           <FileStatGrid className={className} lang={lang} />
         </div>
@@ -291,7 +317,7 @@ export default function MetricCards({ className, lang }: FileStatsType) {
         variant="text"
         ref={sliderNextBtn}
         onClick={() => scrollToTheRight()}
-        className="!absolute right-0 top-0 z-10 !h-full w-12 !justify-end rounded-none bg-gradient-to-l from-gray-0 via-gray-0/70 to-transparent px-0 text-gray-500 hover:text-gray-900 3xl:hidden dark:from-gray-50 dark:via-gray-50/70"
+        className="!absolute -right-2 top-1/2 -translate-y-1/2 z-10 !h-10 !w-10 !justify-center rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-50 hover:scale-110 transition-transform 3xl:hidden flex items-center p-0 hover:bg-white dark:hover:bg-gray-800"
       >
         <PiCaretRightBold className="h-5 w-5" />
       </Button>
