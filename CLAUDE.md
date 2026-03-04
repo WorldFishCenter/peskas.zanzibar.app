@@ -28,8 +28,8 @@ This is a Turborepo monorepo with multiple Next.js applications. Use these comma
 ## Architecture Overview
 
 ### Monorepo Structure
-- **apps/isomorphic/** - Main dashboard application (Peskas Zanzibar fisheries dashboard)
-- **apps/isomorphic-i18n/** - Internationalized version
+- **apps/isomorphic/** - Generic file-management template (not the fisheries dashboard)
+- **apps/isomorphic-i18n/** - Multi-country fisheries dashboard (Peskas — active app)
 - **apps/isomorphic-starter/** - Minimal starter template
 - **packages/api/** - tRPC API layer with routers for fisheries data
 - **packages/nosql/** - MongoDB schemas and migrations for fisheries data

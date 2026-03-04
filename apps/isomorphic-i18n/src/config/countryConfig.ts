@@ -370,7 +370,7 @@ const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
 /**
  * The active country configuration for this deployment.
  * Resolved once at module load from the COUNTRY_CODE env var.
- * Defaults to 'TZ' (Zanzibar) when COUNTRY_CODE is unset or unknown.
+ * Defaults to 'TZ' (Zanzibar) when NEXT_PUBLIC_COUNTRY_CODE is unset or unknown.
  */
 export const activeCountry: CountryConfig =
-  COUNTRY_REGISTRY[process.env.COUNTRY_CODE ?? 'TZ'] ?? zanzibarConfig;
+  COUNTRY_REGISTRY[process.env.NEXT_PUBLIC_COUNTRY_CODE ?? 'TZ'] ?? zanzibarConfig;

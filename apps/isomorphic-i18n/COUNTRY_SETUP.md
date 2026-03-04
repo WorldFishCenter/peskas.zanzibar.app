@@ -126,12 +126,12 @@ Strings to check: `metric-mean_rpue-unit`, `metric-mean_price_kg-unit` (currency
 ## Step 4 — Deployment env vars
 
 ```
-COUNTRY_CODE=KE
+NEXT_PUBLIC_COUNTRY_CODE=KE
 MONGODB_URI=<your-kenya-cluster-connection-string>
 ```
 
-`COUNTRY_CODE` is read **once at build time** to select the config entry. A redeploy is required
-when changing it.
+`NEXT_PUBLIC_COUNTRY_CODE` is inlined into the client bundle at build time (Next.js `NEXT_PUBLIC_*`
+convention). A redeploy is required when changing it.
 
 ---
 
@@ -143,5 +143,5 @@ when changing it.
 - [ ] Region names identical in `districtToRegion` (countryConfig) and `GAUL2_TO_REGION` (nosql)
 - [ ] `regionBreakdown.regions` values match the region names used in `districtToRegion`
 - [ ] Locale files added for each language
-- [ ] `COUNTRY_CODE` and `MONGODB_URI` set in the deployment environment
+- [ ] `NEXT_PUBLIC_COUNTRY_CODE` and `MONGODB_URI` set in the deployment environment
 - [ ] `npx tsc --noEmit` passes in both `apps/isomorphic-i18n/` and `packages/api/`
