@@ -1,4 +1,5 @@
 // Utility functions for dashboard visualizations
+import { LOCALE } from "@/config/constants";
 
 // YlGnBu-8 palette
 export const YLGNBU_8 = [
@@ -30,7 +31,7 @@ export function formatNumber(val: number | null) {
   return Number(val).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-export function formatDashboardNumber(value: any, metric?: string, lang: string = 'en') {
+export function formatDashboardNumber(value: any, metric?: string, lang: string = LOCALE) {
   if (value === null || value === undefined || isNaN(value)) return '-';
   if (metric === 'estimated_revenue') {
     const millions = value / 1_000_000;

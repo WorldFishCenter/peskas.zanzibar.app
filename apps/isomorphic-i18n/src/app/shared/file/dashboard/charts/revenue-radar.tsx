@@ -69,7 +69,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
                   isHighest ? 'text-green-600 dark:text-green-400' :
                   isLowest ? 'text-red-600 dark:text-red-400' : ''
                 }`}>
-                  {formatDashboardNumber(entry.value, selectedMetric, 'en')}
+                  {formatDashboardNumber(entry.value, selectedMetric)}
                 </span>
               </div>
             );
@@ -182,7 +182,7 @@ export default function RevenueRadar({
             <PolarGrid />
             <PolarAngleAxis dataKey="month" />
             <PolarRadiusAxis 
-              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, 'en')}
+              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric)}
             />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}

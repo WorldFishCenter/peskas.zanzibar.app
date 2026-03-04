@@ -9,7 +9,7 @@ import { useTranslation } from "@/app/i18n/client";
 import { api } from "@/trpc/react";
 import { districtsAtom } from "@/app/components/filter-selector";
 import { selectedTimeRangeAtom } from "@/app/components/time-range-selector";
-import { CURRENCY_CODE } from "@/config/constants";
+import { CURRENCY_CODE, LOCALE } from "@/config/constants";
 import { useTheme } from "next-themes";
 import cn from "@utils/class-names";
 
@@ -38,7 +38,7 @@ const capitalizeGearType = (gear: string) =>
     .join(" ");
 
 const formatValue = (value: number) =>
-  value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  value.toLocaleString(LOCALE, { maximumFractionDigits: 2 });
 
 interface SeriesPoint {
   x: string;

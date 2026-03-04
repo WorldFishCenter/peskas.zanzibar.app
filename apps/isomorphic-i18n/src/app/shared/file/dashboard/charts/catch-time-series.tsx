@@ -26,6 +26,7 @@ import {
   formatChartTitle 
 } from "./chart-styles";
 import cn from "@utils/class-names";
+import { LOCALE } from "@/config/constants";
 
 // Custom tooltip component for modern styling
 const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
@@ -40,7 +41,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
     return (
       <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
         <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">
-          {new Date(label).toLocaleDateString('en-US', { 
+          {new Date(label).toLocaleDateString(LOCALE, { 
             year: 'numeric', 
             month: 'long'
           })}
@@ -196,7 +197,7 @@ export default function CatchTimeSeries({
               {...CHART_STYLES.axis}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                return date.toLocaleDateString(LOCALE, { month: 'short', year: '2-digit' });
               }}
               interval="preserveStartEnd"
               minTickGap={30}
