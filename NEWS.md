@@ -1,4 +1,27 @@
-# peskas.zanzibar.v2 1.2.0
+# peskas.dashboard 1.3.0
+
+## Infrastructure
+
+- **Multi-country deployment**: Each country (TZ, KE, MZ) deploys as a separate Vercel project
+  from the same repository, with `NEXT_PUBLIC_COUNTRY_CODE` and `MONGODB_URI` as the only
+  per-project env vars. `MONGODB_URI_COASTS` is shared across all deployments.
+
+- **Fixed `NEXT_PUBLIC_COUNTRY_CODE`**: Renamed env var from `COUNTRY_CODE` to
+  `NEXT_PUBLIC_COUNTRY_CODE`. The previous name was `undefined` in all client components
+  (Next.js only exposes `NEXT_PUBLIC_*` vars to the browser bundle), causing the app to
+  always fall back to Zanzibar regardless of which country was configured.
+
+- **`gaul2-districts.ts` registry pattern**: Refactored `packages/nosql/src/constants/gaul2-districts.ts`
+  to use the same three-country registry pattern as `countryConfig.ts`. Previously only Zanzibar
+  data was exported; Kenya and Mozambique were commented out, breaking the district-summary
+  API router for those countries.
+
+- **Project renamed**: Project renamed from `peskas.zanzibar.v2` to `peskas.dashboard` to
+  reflect its multi-country scope.
+
+---
+
+# peskas.dashboard 1.2.0
 
 ## New Features
 
@@ -41,7 +64,7 @@
 
 ---
 
-# peskas.zanzibar.v2 1.1.0
+# peskas.dashboard 1.1.0
 
 ## Improvements
 
@@ -66,7 +89,7 @@
 
 ---
 
-# peskas.zanzibar.v2 1.0.0
+# peskas.dashboard 1.0.0
 
 ## Major Changes
 
@@ -98,7 +121,7 @@
 
 ---
 
-# peskas.zanzibar.v2 0.1.0
+# peskas.dashboard 0.1.0
 
 ## New Features
 
