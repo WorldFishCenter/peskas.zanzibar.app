@@ -1,46 +1,35 @@
-# Isomorphic - React.js Next.js Admin Dashboard
+# Peskas Dashboard
 
-This monorepo is powered by [Turborepo](https://turbo.build/), a tool that optimizes build times for monorepo projects. Turborepo leverages your existing package.json scripts and dependencies, making it easy to set up and use.
+Multi-country fisheries monitoring dashboard for the [Peskas](https://peskas.org) platform. It gives fisheries managers and researchers a live view of small-scale coastal fisheries — catch volumes, revenue, fishing effort, and gear composition — broken down by district and updated regularly from field data.
 
-## Getting Started
+Each country deployment runs from this single codebase, configured via environment variables. No code forks required when adding a new country.
 
-System Requirements:
+Currently deployed for: **Zanzibar**, **Kenya**, **Mozambique**.
 
-- [Node.js 18.17](https://nodejs.org/en) or later.
-- [Turborepo 2.0.1](https://turbo.build/repo/docs/getting-started/installation)
-- [pnpm - package manager 9.1.4](https://pnpm.io/installation#using-npm) (recommended). We used this version. But you can change it as you want. Learn more about [Turborepo packageManager](https://turbo.build/repo/docs/getting-started/support-policy)
+## What the dashboard shows
 
-**Tuborepo**: For quick install just run the following command it will install turbo in your system globally.
+- **Catch & revenue trends** over time, filterable by district and date range
+- **District-level summaries** with regional breakdowns and an interactive map
+- **Gear composition** — what fishing methods are used and how they compare
+- **CPUE / RPUE** (catch and revenue per unit effort) as efficiency indicators
+- **District filter** — focus on one area or compare across the whole country
 
-```bash
-npm install -g turbo
-```
-
-## Starting development server
-
-To start the development server locally run the following commands
+## Development
 
 ```bash
 pnpm install
-
-pnpm run dev
-
+pnpm run i18n:dev    # starts the dashboard at localhost:3001
 ```
 
-To build locally and view the local build run the following commands.
-
-```bash
-pnpm run build
-
-pnpm run start
-
+To switch country locally, edit `apps/isomorphic-i18n/.env`:
 ```
+NEXT_PUBLIC_COUNTRY_CODE=KE   # TZ | KE | MZ
+MONGODB_URI=<country-cluster-uri>
+```
+Then restart the dev server.
 
-**You can find more commands in the project root `package.json` file.**
-To learn more about these commands checkout our [**Documentation**](https://isomorphic-doc.vercel.app/getting-started/installation)
+## Deployment
 
-In your monorepo's root directory, there is a `turbo.json` file. This file allows you to configure custom tasks, set global dependencies, set environment variables, and more. [**Learn More about Turborepo**](https://turbo.build/repo/docs/handbook)
+Each country is a separate Vercel project pointing to this repo. Only two environment variables differ between deployments: `NEXT_PUBLIC_COUNTRY_CODE` and `MONGODB_URI`. Everything else — the code, the features, the UI — is identical.
 
-Happy coding! 🚀
-
-# Attempt deploy
+See [`apps/isomorphic-i18n/COUNTRY_SETUP.md`](apps/isomorphic-i18n/COUNTRY_SETUP.md) for how to add a new country.
