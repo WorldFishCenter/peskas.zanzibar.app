@@ -9,6 +9,7 @@ import { selectedMetricAtom } from '@/app/components/filter-selector';
 import { hoveredDistrictAtom } from './atoms';
 import { DISTRICT_COLORS } from "./charts/utils";
 import { formatDashboardNumber, getAggregatedDistrictValue, computeDateRange } from "./utils";
+import { CURRENCY_CODE } from "@/config/constants";
 
 // Fallback colors for any districts not in the predefined mapping
 const FALLBACK_COLORS = [
@@ -44,7 +45,7 @@ function DistrictTooltip({ active, payload, allData, selectedMetric, lang }: any
               {districtData[m.key] !== null && districtData[m.key] !== undefined && !isNaN(districtData[m.key])
                 ? formatDashboardNumber(districtData[m.key], m.key, lang)
                 : "-"}
-              {t(m.unitKey) ? ` ${t(m.unitKey)}` : ''}
+              {t(m.unitKey, { currency: CURRENCY_CODE }) ? ` ${t(m.unitKey, { currency: CURRENCY_CODE })}` : ''}
             </span>
           </div>
         ))}
@@ -122,7 +123,7 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
               tick={{ fontSize: 12, fill: "#64748b" }}
               tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, lang)}
               label={{
-                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey) ? ` (${t(metricConfig.unitKey)})` : ''} ${['n_submissions', 'estimated_catch_tn', 'estimated_revenue'].includes(selectedMetric) ? '(Aggregated)' : '(Average)'}`,
+                value: `${t(metricConfig.labelKey)}${t(metricConfig.unitKey, { currency: CURRENCY_CODE }) ? ` (${t(metricConfig.unitKey, { currency: CURRENCY_CODE })})` : ''} (${['n_submissions', 'estimated_catch_tn', 'estimated_revenue'].includes(selectedMetric) ? t('text-aggregated') : t('text-average')})`,
                 position: 'insideBottom',
                 offset: -5,
                 style: { fontSize: 13, fill: '#64748b', fontWeight: 500, textAnchor: 'middle' }

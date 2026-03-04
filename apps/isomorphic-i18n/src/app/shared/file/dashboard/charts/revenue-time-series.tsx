@@ -20,6 +20,7 @@ import { Title } from "rizzui";
 import { useTranslation } from "@/app/i18n/client";
 import { DISTRICT_COLORS } from "../charts/utils";
 import { formatDashboardNumber } from "../utils";
+import { LOCALE } from "@/config/constants";
 import { 
   CHART_STYLES, 
   SHARED_METRIC_CONFIG, 
@@ -40,7 +41,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
     return (
       <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
         <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">
-          {new Date(label).toLocaleDateString('en-US', { 
+          {new Date(label).toLocaleDateString(LOCALE, { 
             year: 'numeric', 
             month: 'long'
           })}
@@ -69,7 +70,7 @@ const CustomTooltip = ({ active, payload, label, selectedMetric }: any) => {
                   isHighest ? 'text-green-600 dark:text-green-400' :
                   isLowest ? 'text-red-600 dark:text-red-400' : ''
                 }`}>
-                  {formatDashboardNumber(entry.value, selectedMetric, 'en')}
+                  {formatDashboardNumber(entry.value, selectedMetric)}
                 </span>
               </div>
             );
@@ -188,7 +189,7 @@ export default function RevenueTimeSeries({
               {...CHART_STYLES.axis}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                return date.toLocaleDateString(LOCALE, { month: 'short', year: '2-digit' });
               }}
               interval="preserveStartEnd"
               minTickGap={30}
@@ -196,7 +197,7 @@ export default function RevenueTimeSeries({
             <YAxis
               {...CHART_STYLES.axis}
               domain={[0, (dataMax: number) => parseFloat((dataMax * 1.1).toFixed(2))]}
-              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric, 'en')}
+              tickFormatter={(value) => formatDashboardNumber(value, selectedMetric)}
             />
             <Tooltip 
               content={<CustomTooltip selectedMetric={selectedMetric} />}

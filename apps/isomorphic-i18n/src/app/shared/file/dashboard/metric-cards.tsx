@@ -14,6 +14,7 @@ import {
   LabelList,
 } from 'recharts';
 import { activeCountry } from "@/config/countryConfig";
+import { CURRENCY_CODE, LOCALE } from "@/config/constants";
 
 type FileStatsType = {
   className?: string;
@@ -133,7 +134,7 @@ function MetricBarCard({
       return millions.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 }) + 'M';
     }
     if (Math.abs(value) >= 1_000_000) {
-      return new Intl.NumberFormat(lang || 'en', { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(value);
+      return new Intl.NumberFormat(lang || LOCALE, { notation: 'compact', maximumFractionDigits: 1, minimumFractionDigits: 0 }).format(value);
     }
     return Number(value).toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
   };
@@ -145,7 +146,7 @@ function MetricBarCard({
       <div className="mb-2" style={{ minHeight: 48 }}>
         {/* 1st row: Metric name (unit) */}
         <Text className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-700">
-          {t(config.titleKey)}{t(config.unitKey) ? ` (${t(config.unitKey)})` : ''}
+          {t(config.titleKey)}{t(config.unitKey, { currency: CURRENCY_CODE }) ? ` (${t(config.unitKey, { currency: CURRENCY_CODE })})` : ''}
         </Text>
         {/* 2nd row: Metric description */}
         <Text className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t(config.descKey)}</Text>
