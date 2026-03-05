@@ -27,7 +27,7 @@ export default function HeaderMenuRight({ lang }: { lang?: string }) {
         <ActionIcon
           aria-label="Notification"
           variant="text"
-          className="relative h-[34px] w-[34px] shadow backdrop-blur-md dark:bg-gray-100 md:h-9 md:w-9"
+          className="relative h-[34px] w-[34px] shadow-sm backdrop-blur-md bg-gray-0/50 hover:bg-gray-0/90 border border-gray-200/50 hover:shadow-md transition-all duration-300 md:h-9 md:w-9 rounded-full"
         >
           <RingBellSolidIcon className="h-[18px] w-auto" />
           <Badge
@@ -41,7 +41,7 @@ export default function HeaderMenuRight({ lang }: { lang?: string }) {
           <ActionIcon
             aria-label="Messages"
             variant="text"
-            className="relative h-[34px] w-[34px] shadow backdrop-blur-md dark:bg-gray-100 md:h-9 md:w-9"
+            className="relative h-[34px] w-[34px] shadow-sm backdrop-blur-md bg-gray-0/50 hover:bg-gray-0/90 border border-gray-200/50 hover:shadow-md transition-all duration-300 md:h-9 md:w-9 rounded-full"
           >
             <ChatSolidIcon className="h-[18px] w-auto" />
             <Badge

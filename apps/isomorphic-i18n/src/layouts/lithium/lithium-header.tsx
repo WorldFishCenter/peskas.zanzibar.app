@@ -57,7 +57,7 @@ type CustomSession = {
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  
+
   return (
     <ActionIcon
       aria-label="Toggle theme"
@@ -99,11 +99,11 @@ function CompactLanguageSwitcher() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     const handleLanguageChange = (event: CustomEvent) => {
       setCurrentLang(event.detail.language);
     };
-    
+
     window.addEventListener('i18n-language-changed', handleLanguageChange as EventListener);
     return () => {
       window.removeEventListener('i18n-language-changed', handleLanguageChange as EventListener);
@@ -112,7 +112,7 @@ function CompactLanguageSwitcher() {
 
   const handleLanguageChange = (newLang: string) => {
     if (newLang === currentLang) return;
-    
+
     changeAppLanguage(newLang);
     setCurrentLang(newLang);
     setIsOpen(false);
@@ -176,19 +176,19 @@ function MobileFiltersMenu({ lang }: { lang?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { t } = useTranslation(lang || 'en');
-  
+
   // Detect homepage and special pages
   const isHomepage = pathname === '/' || (pathname && /^\/[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(pathname));
   const isCatchCompositionPage = pathname?.includes('/catch_composition');
-  
+
   // Don't show the mobile filters menu on homepage
   if (isHomepage) return null;
 
   return (
     <div className="flex items-center lg:hidden ml-2 xs:ml-3 sm:ml-4">
-      <Popover 
-        isOpen={isOpen} 
-        setIsOpen={setIsOpen} 
+      <Popover
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
         placement="bottom-end"
       >
         <Popover.Trigger>
@@ -205,7 +205,7 @@ function MobileFiltersMenu({ lang }: { lang?: string }) {
             <div className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-3">
               {t('text-additional-filters') || 'Additional Filters'}
             </div>
-            
+
             {/* Metric Selector for mobile */}
             {!isCatchCompositionPage && (
               <div className="sm:hidden">
@@ -215,7 +215,7 @@ function MobileFiltersMenu({ lang }: { lang?: string }) {
                 <MetricSelectorDropdown />
               </div>
             )}
-            
+
             {/* District Filter for mobile */}
             <div className="lg:hidden">
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -235,36 +235,36 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
   const pathname = pathnameRaw || '';
   const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
   const { t } = useTranslation(lang || 'en');
-  
+
   // Detect homepage (with or without language prefix)
   const isHomepage = pathname === '/' || /^\/[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(pathname);
-  
+
   // Detect catch composition page
   const isCatchCompositionPage = pathname?.includes('/catch_composition');
 
   return (
     <div className="ms-auto flex shrink-0 items-center gap-1 text-gray-700 dark:text-gray-300 xs:gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
       {/* Mobile-first approach: Show essential controls first */}
-      
+
       {/* Time Range - Always visible but compact on mobile */}
       <div className="flex-shrink-0">
         <TimeRangeSelector />
       </div>
-      
+
       {/* Metric Selector - Hide on homepage and catch_composition, show from sm up */}
       {!isHomepage && !isCatchCompositionPage && (
         <div className="hidden sm:flex flex-shrink-0">
           <MetricSelectorDropdown />
         </div>
       )}
-      
+
       {/* District Filter - Show from md up for non-homepage */}
       {!isHomepage && (
         <div className="hidden lg:flex flex-shrink-0">
           <FilterSelector />
         </div>
       )}
-      
+
       {/* Separator between filter controls and utility controls */}
       <div className="h-5 w-px bg-gray-200 dark:bg-gray-700 flex-shrink-0 mx-0.5" />
 
@@ -272,12 +272,12 @@ function HeaderMenuRight({ lang }: { lang?: string }) {
       <div className="flex-shrink-0">
         <CompactLanguageSwitcher />
       </div>
-      
+
       {/* Theme Toggle - Always visible */}
       <div className="flex-shrink-0">
         <ThemeToggle />
       </div>
-      
+
       {/* Profile Menu - Always visible */}
       <div className="flex-shrink-0">
         <ProfileMenu
@@ -295,7 +295,7 @@ export default function Header({ lang }: { lang?: string }) {
   const colorMode = (theme === 'dark' ? 'dark' : 'light') as 'light' | 'dark';
   return (
     <StickyHeader
-      className={"z-[990] justify-between 2xl:py-5 2xl:pl-6 3xl:px-8"}
+      className={"z-[990] justify-between py-2 2xl:py-2.5 2xl:pl-6 3xl:px-8"}
     >
       <div className="hidden items-center gap-3 xl:flex">
         <LanguageLink
@@ -304,7 +304,7 @@ export default function Header({ lang }: { lang?: string }) {
           className="me-4 hidden w-[200px] shrink-0 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 lg:me-5 xl:block"
         >
           <div className="flex items-center gap-3">
-            <Logo className="max-w-[200px] h-12" colorMode={colorMode} />
+            <Logo className="max-w-[200px] h-9" colorMode={colorMode} />
             <Image
               src={activeCountry.flagIconSrc ?? "/zanzibar-flag.svg"}
               alt={`${activeCountry.countryName} flag`}
@@ -329,7 +329,7 @@ export default function Header({ lang }: { lang?: string }) {
           >
             <Logo iconOnly={true} className="h-5 xs:h-7 sm:h-9 md:h-10 w-auto" colorMode={colorMode} />
           </LanguageLink>
-          
+
           {/* Mobile-only additional filters */}
           <MobileFiltersMenu lang={lang} />
         </div>

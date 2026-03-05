@@ -10,10 +10,10 @@ import SearchWidget from "@/app/shared/search/search";
 
 export default function Header({ lang }: { lang?: string }) {
   return (
-    <StickyHeader className="z-[990] 2xl:py-5 3xl:px-8 4xl:px-10">
+    <StickyHeader className="z-[990] py-2 2xl:py-2.5 3xl:px-8 4xl:px-10">
       <div className="flex w-full max-w-2xl items-center">
         <HamburgerButton
-          view={<CarbonDrawerSidebar className="static w-full 2xl:w-full" lang={lang}/>}
+          view={<CarbonDrawerSidebar className="static w-full 2xl:w-full" lang={lang} />}
         />
         <Link
           href={"/"}
@@ -26,7 +26,7 @@ export default function Header({ lang }: { lang?: string }) {
         <SearchWidget />
       </div>
 
-      <HeaderMenuRight lang={lang}/>
+      <HeaderMenuRight lang={lang} />
     </StickyHeader>
   );
 }

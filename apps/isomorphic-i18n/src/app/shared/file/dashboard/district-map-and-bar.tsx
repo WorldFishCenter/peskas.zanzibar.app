@@ -7,8 +7,7 @@ import { useAtom } from "jotai";
 import { selectedMetricAtom } from "@/app/components/filter-selector";
 import type { MetricKey } from "@/app/shared/file/dashboard/charts/types";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
-import { METRICS } from "./district-summary-bar";
-import DistrictSummaryBar from "./district-summary-bar";
+import DistrictSummaryBar, { METRICS } from "./district-summary-bar";
 import GridMap from "./grid-map";
 
 export default function DistrictMapAndBar({ lang = 'en', className }: { lang?: string, className?: string }) {
@@ -36,7 +35,7 @@ export default function DistrictMapAndBar({ lang = 'en', className }: { lang?: s
                     </div>
                 </div>
             }
-            className={`border border-muted bg-gray-0 p-3 sm:p-5 dark:bg-gray-50 rounded-lg h-full flex flex-col w-full overflow-hidden${className ? ` ${className}` : ''}`}
+            className={`border border-muted bg-gray-0 p-3 sm:p-5 dark:bg-gray-50 dark:border-gray-700 rounded-xl h-full flex flex-col w-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-gray-300 dark:hover:border-gray-500${className ? ` ${className}` : ''}`}
         >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-0 flex-1 min-h-0 relative -mx-3 sm:-mx-5 -mb-3 sm:-mb-5 mt-2 rounded-b-lg overflow-hidden border-t border-muted">
                 {/* Left side: Bar Chart */}

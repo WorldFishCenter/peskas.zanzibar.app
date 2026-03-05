@@ -73,10 +73,14 @@ function getTooltip({ object }: PickingInfo) {
 Longitude: ${Number.isFinite(lng) ? lng.toFixed(6) : ""}
 N. Surveys: ${count}`,
     style: {
-      color: "#fff",
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
-      padding: "1rem",
-      borderRadius: "4px",
+      color: "#f8fafc",
+      backgroundColor: "rgba(30, 41, 59, 0.95)", // dark slate with transparency
+      fontFamily: "inherit",
+      fontSize: "0.875rem",
+      padding: "0.75rem",
+      borderRadius: "0.5rem",
+      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      border: "1px solid rgba(71, 85, 105, 0.4)",
       marginTop: "0",
     },
   };
@@ -97,7 +101,7 @@ export default function DeckMap() {
       latitude: d.lat,
     }));
     setData(points);
-  }, [ mapData ]);
+  }, [mapData]);
 
   const layers = [
     new HexagonLayer<DataPoint>({
@@ -136,7 +140,7 @@ export default function DeckMap() {
       </DeckGL>
       <div
         className={cn(
-          "absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg w-72 h-[calc(100%-10%)] transition-[height,width] duration-200 overflow-hidden",
+          "absolute top-4 right-4 bg-gray-0/95 backdrop-blur-md border border-gray-200 p-4 rounded-xl shadow-xl w-72 h-[calc(100%-10%)] transition-[height,width] duration-300 overflow-hidden text-gray-900",
           { "h-14 w-[57px] ": !open }
         )}
         onMouseEnter={() => setOpen(true)}

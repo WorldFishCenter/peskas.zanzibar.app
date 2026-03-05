@@ -34,11 +34,11 @@ const formatNumber = (value: number, unit: string = "cm") => {
 
 // Create tooltip HTML without using hooks (hooks can't be used in ApexCharts custom functions)
 const createLengthTooltipHTML = (speciesStats: any[], t: any) => {
-  return function({ seriesIndex, dataPointIndex, w }: any) {
+  return function ({ seriesIndex, dataPointIndex, w }: any) {
     try {
       const species = speciesStats[dataPointIndex];
       if (!species || typeof dataPointIndex !== 'number') return '';
-      
+
       // Create a mock "payload" structure to match Recharts pattern
       const mockPayload = [
         { name: t('text-mean'), value: species.mean, color: '#4F46E5' },
@@ -47,7 +47,7 @@ const createLengthTooltipHTML = (speciesStats: any[], t: any) => {
         { name: t('text-q3'), value: species.q3, color: '#EF4444' },
         { name: t('text-range'), value: species.max - species.min, color: '#8B5CF6' }
       ].filter(item => item.value && item.value > 0);
-      
+
       return `
         <div class="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[200px] text-gray-900 dark:text-gray-700">
           <div class="font-semibold text-gray-900 dark:text-gray-700 mb-2">${species.name || t('text-unknown')}</div>
@@ -95,8 +95,8 @@ interface LengthDistributionBarProps {
   className?: string;
 }
 
-export default function LengthDistributionBar({ 
-  className 
+export default function LengthDistributionBar({
+  className
 }: LengthDistributionBarProps) {
   const { t } = useTranslation("common");
   const { theme } = useTheme();
@@ -107,10 +107,10 @@ export default function LengthDistributionBar({
   const [isSpeciesSelectorOpen, setIsSpeciesSelectorOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  
+
   // Convert time range to months
   const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
-  
+
   // Get all species with length data
   const { data: speciesData, isLoading: isSpeciesLoading, error: speciesError } = api.taxaSummaries.getDistrictTaxaSummaries.useQuery(
     {
@@ -128,7 +128,7 @@ export default function LengthDistributionBar({
   // Get available species for selection
   const availableSpecies = useMemo(() => {
     if (!speciesData) return [];
-    
+
     // Filter species that have mean_length data and a valid taxon code
     const speciesMap = new Map();
     speciesData.forEach(item => {
@@ -165,7 +165,7 @@ export default function LengthDistributionBar({
     setIsCustomSelection(false);
     setSearchQuery("");
     setIsSpeciesSelectorOpen(false);
-    
+
     if (count === 'all') {
       const allSpecies = availableSpecies.map(s => s.catch_taxon);
       setSelectedSpecies(allSpecies);
@@ -184,8 +184,8 @@ export default function LengthDistributionBar({
 
   // Handle individual species toggle
   const handleSpeciesToggle = (speciesName: string) => {
-    setSelectedSpecies(prev => 
-      prev.includes(speciesName) 
+    setSelectedSpecies(prev =>
+      prev.includes(speciesName)
         ? prev.filter(s => s !== speciesName)
         : [...prev, speciesName].slice(0, 15) // Limit to 15 species for performance
     );
@@ -203,8 +203,8 @@ export default function LengthDistributionBar({
   // Prepare ApexCharts boxplot data
   const { chartData, chartOptions } = useMemo(() => {
     if (!speciesData || selectedSpecies.length === 0) {
-      return { 
-        chartData: [], 
+      return {
+        chartData: [],
         chartOptions: {
           chart: { type: 'boxPlot' as const, height: '100%', toolbar: { show: false } },
           xaxis: { type: 'category' as const },
@@ -212,10 +212,10 @@ export default function LengthDistributionBar({
         }
       };
     }
-    
+
     // Create length distribution data showing variation across districts
     const speciesMap = new Map();
-    
+
     speciesData.forEach(item => {
       const typedItem = item as any;
       if (selectedSpecies.includes(typedItem.catch_taxon) && typedItem.mean_length && typedItem.mean_length > 0) {
@@ -235,7 +235,7 @@ export default function LengthDistributionBar({
         if (typedItem.n_individuals) species.total_individuals += typedItem.n_individuals;
       }
     });
-    
+
     // Calculate statistics for each species and prepare ApexCharts data
     const speciesStats = Array.from(speciesMap.values())
       .filter(species => species.lengths.length > 0)
@@ -244,16 +244,16 @@ export default function LengthDistributionBar({
         const mean = sortedLengths.reduce((sum: number, len: number) => sum + len, 0) / sortedLengths.length;
         const min = sortedLengths[0];
         const max = sortedLengths[sortedLengths.length - 1];
-        
+
         // Calculate quartiles
         const q1Index = Math.floor(sortedLengths.length * 0.25);
         const q3Index = Math.floor(sortedLengths.length * 0.75);
         const medianIndex = Math.floor(sortedLengths.length * 0.5);
-        
+
         const q1 = sortedLengths[q1Index] || min;
         const q3 = sortedLengths[q3Index] || max;
         const median = sortedLengths[medianIndex] || mean;
-        
+
         return {
           name: species.name,
           mean: Number(mean.toFixed(1)),
@@ -269,7 +269,7 @@ export default function LengthDistributionBar({
         };
       })
       .sort((a, b) => b.total_catch - a.total_catch);
-    
+
     // Prepare ApexCharts boxplot series data
     const chartData = [{
       name: t('text-length-distribution'),
@@ -278,8 +278,8 @@ export default function LengthDistributionBar({
         y: [species.min, species.q1, species.median, species.q3, species.max]
       }))
     }];
-    
-    
+
+
     // ApexCharts options with dynamic theming
     const chartOptions = {
       chart: {
@@ -424,15 +424,15 @@ export default function LengthDistributionBar({
         }
       }]
     };
-    
+
     return { chartData, chartOptions };
   }, [speciesData, selectedSpecies, theme, t]);
 
 
   if (isSpeciesLoading) {
     return (
-      <WidgetCard 
-        title={t("text-length-distribution") || "Length Distribution"} 
+      <WidgetCard
+        title={t("text-length-distribution") || "Length Distribution"}
         className={className}
       >
         <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex items-center justify-center animate-pulse">
@@ -444,11 +444,11 @@ export default function LengthDistributionBar({
       </WidgetCard>
     );
   }
-  
+
   if (speciesError || !speciesData) {
     return (
-      <WidgetCard 
-        title={t("text-length-distribution") || "Length Distribution"} 
+      <WidgetCard
+        title={t("text-length-distribution") || "Length Distribution"}
         className={className}
       >
         <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
@@ -460,8 +460,8 @@ export default function LengthDistributionBar({
 
   if (availableSpecies.length === 0) {
     return (
-      <WidgetCard 
-        title={t("text-length-distribution") || "Length Distribution"} 
+      <WidgetCard
+        title={t("text-length-distribution") || "Length Distribution"}
         className={className}
       >
         <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
@@ -473,8 +473,8 @@ export default function LengthDistributionBar({
 
   if (chartData.length === 0) {
     return (
-      <WidgetCard 
-        title={t("text-length-distribution") || "Length Distribution"} 
+      <WidgetCard
+        title={t("text-length-distribution") || "Length Distribution"}
         className={className}
       >
         <div className="h-80 md:h-96 lg:h-[28rem] xl:h-[32rem] flex flex-col items-center justify-center">
@@ -492,13 +492,13 @@ export default function LengthDistributionBar({
             <span className="font-semibold text-gray-900 dark:text-gray-700">
               {t("text-length-distribution") || "Length Distribution"}
             </span>
-            
+
             {/* Info Icon */}
             <div className="relative group">
               <button className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                 <PiInfo className="h-4 w-4" />
               </button>
-              
+
               {/* Hover Tooltip */}
               <div className="absolute left-0 top-6 w-80 p-4 bg-gray-0/90 dark:bg-gray-50/90 backdrop-blur-sm rounded-lg shadow-lg border border-muted/70 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform translate-y-2 group-hover:translate-y-0">
                 <div className="space-y-3">
@@ -529,11 +529,11 @@ export default function LengthDistributionBar({
               </div>
             </div>
           </div>
-          
+
           {/* Natural Species Selection */}
-          <Popover 
-            isOpen={isSpeciesSelectorOpen} 
-            setIsOpen={setIsSpeciesSelectorOpen} 
+          <Popover
+            isOpen={isSpeciesSelectorOpen}
+            setIsOpen={setIsSpeciesSelectorOpen}
             placement="bottom-end"
           >
             <Popover.Trigger>
@@ -541,7 +541,7 @@ export default function LengthDistributionBar({
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-muted bg-gray-0 dark:bg-gray-50 text-gray-900 dark:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-100/80 focus:ring-2 focus:ring-blue-200 min-w-[160px] justify-between"
               >
                 <span>
-                  {isCustomSelection 
+                  {isCustomSelection
                     ? `${selectedSpecies.length} ${t('text-species-selected')}`
                     : t('text-top-species', { count: selectedSpecies.length })
                   }
@@ -554,7 +554,7 @@ export default function LengthDistributionBar({
               {!isCustomSelection && (
                 <div className="p-2">
                   <div className="mb-3">
-                    <div className="text-xs font-semibold text-gray-900 dark:text-gray-200 px-2 py-1 mb-1">
+                    <div className="text-xs font-semibold text-gray-900 px-2 py-1 mb-1">
                       {t('text-quick-selection')}
                     </div>
                     <div className="space-y-0.5">
@@ -575,7 +575,7 @@ export default function LengthDistributionBar({
                           "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
                           selectedSpecies.length === 5
                             ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         {t('text-top-5')}
@@ -586,7 +586,7 @@ export default function LengthDistributionBar({
                           "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
                           selectedSpecies.length === 8
                             ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         {t('text-top-8')}
@@ -597,7 +597,7 @@ export default function LengthDistributionBar({
                           "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
                           selectedSpecies.length === 10
                             ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         {t('text-top-10')}
@@ -608,7 +608,7 @@ export default function LengthDistributionBar({
                           "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
                           selectedSpecies.length === availableSpecies.length
                             ? "bg-blue-50 dark:bg-blue-800 text-blue-900 dark:text-blue-200"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         {t('text-all')}
@@ -632,7 +632,7 @@ export default function LengthDistributionBar({
                 <>
                   <div className="p-2">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="text-xs font-semibold text-gray-900 dark:text-gray-200 px-2 py-1">
+                      <div className="text-xs font-semibold text-gray-900 px-2 py-1">
                         {t('text-choose-species', { selected: selectedSpecies.length })}
                       </div>
                       <button
@@ -660,7 +660,7 @@ export default function LengthDistributionBar({
                         </button>
                       )}
                     </div>
-                    
+
                     {/* Quick Actions */}
                     <div className="flex gap-2 mt-2">
                       <button
@@ -706,7 +706,7 @@ export default function LengthDistributionBar({
                               className="h-4 w-4 text-blue-600 bg-gray-0 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-500 dark:text-blue-400 dark:focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
+                              <div className="text-sm font-medium text-gray-900 truncate">
                                 {species.catch_taxon}
                               </div>
                               {species.scientific_name && (

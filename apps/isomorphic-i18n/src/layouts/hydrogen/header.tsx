@@ -13,7 +13,7 @@ export default function Header({ lang }: { lang?: string }) {
   const { t } = useTranslation(lang!, "common");
 
   return (
-    <StickyHeader className="z-[990] 2xl:py-5 3xl:px-8  4xl:px-10">
+    <StickyHeader className="z-[990] py-2 2xl:py-2.5 3xl:px-8 4xl:px-10">
       <div className="flex w-full max-w-2xl items-center">
         <HamburgerButton
           view={<Sidebar className="static w-full 2xl:w-full" lang={lang} />}

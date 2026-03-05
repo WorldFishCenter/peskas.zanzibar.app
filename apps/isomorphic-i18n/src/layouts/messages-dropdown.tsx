@@ -43,7 +43,7 @@ function MessagesList({
           {messagesData.map((item) => (
             <div
               key={item.name + item.id}
-              className="group grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-md px-2 py-2.5 pe-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-50"
+              className="group grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-md px-2 py-2.5 pe-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
             >
               <div className={cn('relative', item.avatar.length > 1 && 'me-1')}>
                 <Avatar
@@ -51,7 +51,7 @@ function MessagesList({
                   name={item.name}
                   className={cn(
                     item.avatar.length > 1 &&
-                      'relative -end-1 -top-0.5 !h-9 !w-9'
+                    'relative -end-1 -top-0.5 !h-9 !w-9'
                   )}
                 />
                 {item.avatar.length > 1 && (
@@ -64,7 +64,7 @@ function MessagesList({
               </div>
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center">
                 <div className="w-full">
-                  <Text className="mb-0.5 w-11/12 truncate text-sm font-semibold text-gray-900 dark:text-gray-700">
+                  <Text className="mb-0.5 w-11/12 truncate text-sm font-semibold text-gray-900">
                     {item.name}
                   </Text>
                   <div className="flex">
@@ -85,8 +85,8 @@ function MessagesList({
                       className="scale-90"
                     />
                   ) : (
-                    <span className="inline-block rounded-full bg-gray-100 p-0.5 dark:bg-gray-50">
-                      <PiCheck className="h-auto w-[9px]" />
+                    <span className="inline-block rounded-full bg-gray-100 p-0.5 dark:bg-gray-700">
+                      <PiCheck className="h-auto w-[9px] dark:fill-gray-300" />
                     </span>
                   )}
                 </div>
@@ -114,7 +114,7 @@ export default function MessagesDropdown({
       placement={isMobile ? 'bottom' : 'bottom-end'}
     >
       <Popover.Trigger>{children}</Popover.Trigger>
-      <Popover.Content className="z-[9999] pb-6 pe-6 ps-0 pt-5 dark:bg-gray-100 [&>svg]:hidden [&>svg]:dark:fill-gray-100 sm:[&>svg]:inline-flex">
+      <Popover.Content className="z-[9999] pb-6 pe-6 ps-0 pt-5 rounded-xl shadow-xl border border-gray-200 bg-gray-0/95 backdrop-blur-md [&>svg]:hidden [&>svg]:dark:fill-gray-100 sm:[&>svg]:inline-flex">
         <MessagesList setIsOpen={setIsOpen} />
       </Popover.Content>
     </Popover>

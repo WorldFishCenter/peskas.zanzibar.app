@@ -145,15 +145,23 @@ function MetricBarCard({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 p-3 rounded-lg shadow-xl">
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">{label}</p>
-          <div className="flex flex-col gap-1.5 mt-1">
+        <div className="px-3 py-2 bg-gray-0/95 backdrop-blur-sm shadow-xl rounded-lg border border-gray-200">
+          <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">
+            {label}
+          </p>
+          <div className="flex flex-col gap-1">
             {payload.map((entry: any, index: number) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
-                <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">
-                  {entry.name}: {formatValue(entry.value)}
-                </span>
+              <div key={index} className="flex items-center justify-between gap-4 text-xs">
+                <span className="text-gray-500 whitespace-nowrap">{entry.name}:</span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-gray-900 font-medium whitespace-nowrap">
+                    {formatValue(entry.value)}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -206,15 +214,15 @@ function MetricBarCard({
               />
               {regionBreakdown
                 ? regionBreakdown.regions.map((region) => (
-                    <Bar key={region} dataKey={region} fill={regionBreakdown.colors[region]} radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
-                      <LabelList dataKey={region} position="top" formatter={formatValue} fill={regionBreakdown.colors[region]} style={{ fontSize: 11, fontWeight: 600 }} />
-                    </Bar>
-                  ))
+                  <Bar key={region} dataKey={region} fill={regionBreakdown.colors[region]} radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
+                    <LabelList dataKey={region} position="top" formatter={formatValue} fill={regionBreakdown.colors[region]} style={{ fontSize: 11, fontWeight: 600 }} />
+                  </Bar>
+                ))
                 : (
-                    <Bar dataKey="total" fill="#64748b" radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
-                      <LabelList dataKey="total" position="top" formatter={formatValue} fill="#64748b" style={{ fontSize: 11, fontWeight: 600 }} />
-                    </Bar>
-                  )
+                  <Bar dataKey="total" fill="#64748b" radius={[4, 4, 0, 0]} barSize={18} minPointSize={6}>
+                    <LabelList dataKey="total" position="top" formatter={formatValue} fill="#64748b" style={{ fontSize: 11, fontWeight: 600 }} />
+                  </Bar>
+                )
               }
             </BarChart>
           </ResponsiveContainer>
@@ -227,7 +235,7 @@ function MetricBarCard({
 export function FileStatGrid({ className, lang }: { className?: string; lang?: string }) {
   const resolvedLang = lang ?? 'en';
   const { t } = useTranslation(resolvedLang, 'common');
-  
+
   // Fetch monthly region summary data for last 3 months
   const { data: monthlyData, isLoading, error } = api.districtSummary.getMonthlyRegionSummary.useQuery(
     { months: 3 },
@@ -260,7 +268,7 @@ export function FileStatGrid({ className, lang }: { className?: string; lang?: s
   }
 
   // Only show the metrics that have data
-  const metricsToShow = Object.entries(METRIC_CONFIG).filter(([metric]) => 
+  const metricsToShow = Object.entries(METRIC_CONFIG).filter(([metric]) =>
     monthlyData[metric] && monthlyData[metric].data && monthlyData[metric].data.length > 0
   );
 

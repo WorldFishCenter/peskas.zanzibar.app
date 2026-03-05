@@ -56,7 +56,7 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
   }, [data, sorter]);
 
   const { t } = useTranslation("common");
-  
+
   // Define units for each metric
   const metricUnits: Record<string, string> = {
     n_submissions: t('text-unit-submissions'),
@@ -124,8 +124,10 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
         const bg = getPaletteColor(val, min, max);
         const color = getTextColor(bg);
         return (
-          <div style={{ background: bg, color, borderRadius: 4, padding: '0.25em 0.5em', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-            {formatDashboardNumber(val, key, lang)}
+          <div className="flex justify-center">
+            <div className="px-2 py-1 rounded-md font-medium min-w-[3rem] inline-block shadow-sm" style={{ background: bg, color, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+              {formatDashboardNumber(val, key, lang)}
+            </div>
           </div>
         );
       }
@@ -137,13 +139,13 @@ function DistrictMetricsTable({ lang = 'en' }: { lang?: string }) {
         <span className="font-semibold text-gray-700">{t('text-district-metrics')}</span>
         {/* Time range selector moved to header */}
       </div>
-      <div className="overflow-x-auto">
-        {isLoading && <div className="py-4 text-center text-gray-500">Loading...</div>}
+      <div className="overflow-x-auto bg-gray-0 dark:bg-gray-50 border border-muted dark:border-gray-700 shadow-sm rounded-xl">
+        {isLoading && <div className="py-8 text-center text-gray-500 animate-pulse font-medium">Loading data...</div>}
         <Table
           columns={columns}
           data={sortedData}
           variant="elegant"
-          className="min-w-[600px]"
+          className="min-w-[600px] w-full"
           rowKey="gaul_2_name"
         />
       </div>

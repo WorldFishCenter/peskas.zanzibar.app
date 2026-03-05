@@ -35,13 +35,13 @@ function DistrictTooltip({ active, payload, allData, selectedMetric, lang }: any
   const districtData = allData.find((d: any) => d.gaul_2_name === name);
   if (!districtData) return null;
   return (
-    <div className="bg-gray-0 dark:bg-gray-50 p-3 rounded shadow-lg border border-muted min-w-[180px] text-gray-900 dark:text-gray-700">
-      <div className="font-semibold text-gray-900 dark:text-gray-700 mb-1">{name}</div>
+    <div className="bg-gray-0/95 backdrop-blur-sm p-3 rounded-lg shadow-xl border border-gray-200 min-w-[180px] text-gray-900">
+      <div className="font-semibold mb-2 text-sm uppercase tracking-wider text-gray-500">{name}</div>
       <div className="space-y-1">
         {METRICS.map(m => (
-          <div key={m.key} className={`flex justify-between text-xs${m.key === selectedMetric ? ' font-bold' : ''}`}>
-            <span className="text-gray-500 dark:text-gray-400">{t(m.labelKey)}:</span>
-            <span className="font-medium text-gray-900 dark:text-gray-700">
+          <div key={m.key} className={`flex justify-between items-center text-xs gap-3 ${m.key === selectedMetric ? ' font-bold' : ''}`}>
+            <span className="text-gray-600">{t(m.labelKey)}:</span>
+            <span className="font-medium text-gray-900">
               {districtData[m.key] !== null && districtData[m.key] !== undefined && !isNaN(districtData[m.key])
                 ? formatDashboardNumber(districtData[m.key], m.key, lang)
                 : "-"}
@@ -146,7 +146,7 @@ export default function DistrictSummaryBar({ className, lang: propLang }: { clas
             <Tooltip content={<DistrictTooltip allData={data} selectedMetric={selectedMetric} lang={lang} />} wrapperStyle={{ background: 'transparent' }} />
             <Bar
               dataKey="value"
-              radius={[0, 4, 4, 0]}
+              radius={[0, 6, 6, 0]}
               isAnimationActive={true}
               animationDuration={1000}
               animationEasing="ease-out"
