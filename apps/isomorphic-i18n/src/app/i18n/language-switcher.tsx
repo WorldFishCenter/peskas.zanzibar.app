@@ -2,30 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { SWFlag } from "@components/icons/language/SWFlag";
-import { USFlag } from "@components/icons/language/USFlag";
+import { UKFlag } from "@components/icons/language/UKFlag";
+import { MZFlag } from "@components/icons/language/MZFlag";
 import cn from '@utils/class-names';
 import { useTranslation } from "./client";
 import { getClientLanguage, setClientLanguage } from './language-link';
+import { languages } from './settings';
 
-// Define language options with their icons
-const languageOptions = [
-  {
-    id: 1,
-    name: "EN",
-    value: "en",
-    icon: <USFlag />,
-  },
-  {
-    id: 2,
-    name: "SW",
-    value: "sw",
-    icon: <SWFlag />,
-  },
+// All possible language options — filtered by active country at runtime
+export const allLanguageOptions = [
+  { id: 1, name: "EN", value: "en", icon: <UKFlag /> },
+  { id: 2, name: "SW", value: "sw", icon: <SWFlag /> },
+  { id: 3, name: "PT", value: "pt", icon: <MZFlag /> },
 ];
+const languageOptions = allLanguageOptions.filter(opt => languages.includes(opt.value));
+
+// Pre-built regex for URL language prefix manipulation
+const langPattern = languages.join('|');
+const langPrefixRegex = new RegExp(`^/(${langPattern})(?=/|$)`);
 
 // Global function to change language throughout the app
 export function changeAppLanguage(newLang: string): void {
-  if (!['en', 'sw'].includes(newLang)) return;
+  if (!languages.includes(newLang)) return;
   
   // Save current scroll position
   const scrollPosition = window.scrollY || document.documentElement.scrollTop;
@@ -75,14 +73,13 @@ export function changeAppLanguage(newLang: string): void {
     window.scrollTo(0, scrollPosition);
   });
 
-  // --- NEW: Update the URL to include the new language prefix ---
+  // Update the URL to include the new language prefix
   const currentPath = window.location.pathname;
-  const langRegex = /^\/(en|sw)(?=\/|$)/;
   let newPath;
 
-  if (langRegex.test(currentPath)) {
+  if (langPrefixRegex.test(currentPath)) {
     // Replace existing language prefix
-    newPath = currentPath.replace(langRegex, `/${newLang}`);
+    newPath = currentPath.replace(langPrefixRegex, `/${newLang}`);
   } else {
     // Add language prefix if not present
     newPath = `/${newLang}${currentPath.startsWith('/') ? '' : '/'}${currentPath}`;

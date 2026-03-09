@@ -2,16 +2,16 @@
 
 import { useEffect } from 'react';
 import { useTranslation } from './client';
+import { languages } from './settings';
 import Script from 'next/script';
 
-/**
- * Simple inline script that runs before React hydration
- * to set the language from localStorage
- */
+// Build the inline script using the languages array so it stays in sync with settings
+const validLangsJson = JSON.stringify(languages);
 const earlyInitScript = `
   try {
+    var validLangs = ${validLangsJson};
     var storedLang = localStorage.getItem('selectedLanguage') || localStorage.getItem('i18nextLng');
-    if (storedLang && ['en', 'sw'].includes(storedLang)) {
+    if (storedLang && validLangs.includes(storedLang)) {
       document.documentElement.lang = storedLang;
     }
   } catch (e) {
@@ -20,45 +20,37 @@ const earlyInitScript = `
 `;
 
 export default function LanguageInitializer({ lang }: { lang?: string }) {
-  const { i18n } = useTranslation(lang || 'en');
+  const { i18n } = useTranslation(lang || languages[0]);
 
-  // Apply language on component mount and when changes occur
   useEffect(() => {
-    // Priority order for language detection:
-    // 1. URL lang parameter (from Next.js)
-    // 2. localStorage selectedLanguage
-    // 3. localStorage i18nextLng
-    // 4. Default to 'en'
-    
     const urlLang = lang;
-    const storedLang = typeof window !== 'undefined' ? 
-      localStorage.getItem('selectedLanguage') || localStorage.getItem('i18nextLng') : 
+    const storedLang = typeof window !== 'undefined' ?
+      localStorage.getItem('selectedLanguage') || localStorage.getItem('i18nextLng') :
       null;
-    
-    // Determine which language to use (only accept valid languages)
-    const targetLang = (urlLang && ['en', 'sw'].includes(urlLang)) ? 
-      urlLang : 
-      (storedLang && ['en', 'sw'].includes(storedLang)) ? 
-        storedLang : 
-        'en';
-    
-    // Store in localStorage for persistence
+
+    // URL lang param is the source of truth (comes from Next.js routing)
+    // Fall back to localStorage, then to the configured fallback language
+    const targetLang = (urlLang && languages.includes(urlLang)) ?
+      urlLang :
+      (storedLang && languages.includes(storedLang)) ?
+        storedLang :
+        languages[0];
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedLanguage', targetLang);
       localStorage.setItem('i18nextLng', targetLang);
+      localStorage.setItem('peskas-language', targetLang);
       document.documentElement.lang = targetLang;
     }
-    
-    // Change language if needed
+
     if (i18n.language !== targetLang) {
       i18n.changeLanguage(targetLang);
     }
   }, [lang, i18n]);
 
-  // Render the initialization script
   return (
     <>
       <Script id="language-early-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: earlyInitScript }} />
     </>
   );
-} 
+}

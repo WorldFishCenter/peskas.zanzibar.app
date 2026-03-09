@@ -38,9 +38,8 @@ export { default as LanguageLink } from './language-link';
 export { default as LanguageInitializer } from './language-initializer';
 
 // Export utils
-export { 
-  setDocumentLanguage, 
-  getDocumentLanguage, 
+export {
+  setDocumentLanguage,
+  getDocumentLanguage,
   fixUrlLanguage,
-  languageInitScript 
 } from './utils';

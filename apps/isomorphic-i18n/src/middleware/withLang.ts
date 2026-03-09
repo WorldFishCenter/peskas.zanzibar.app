@@ -27,11 +27,9 @@ const withLang: MiddlewareFactory = (next: NextMiddleware) => {
       let newPath;
       if (nonLangIndex !== -1) {
         // Use the latest language in the path + remaining segments
-        const latestLang = pathParts[pathParts.length - 1] === 'sw' || 
-                           pathParts[pathParts.length - 1] === 'en' ? 
-                           pathParts[pathParts.length - 1] : 
-                           pathParts[0];
-                           
+        const lastPart = pathParts[pathParts.length - 1];
+        const latestLang = languages.includes(lastPart) ? lastPart : pathParts[0];
+
         newPath = `/${latestLang}/${pathParts.slice(nonLangIndex).join('/')}`;
       } else {
         // If all segments are languages, use the last one
@@ -48,6 +46,14 @@ const withLang: MiddlewareFactory = (next: NextMiddleware) => {
     if (!languages.some((local) => pathname.startsWith(`/${local}`))) {
       // Use stored language or default
       return NextResponse.redirect(new URL(`/${lang}${pathname}${search}`, request.url));
+    }
+
+    // Sync cookie with the language detected from the URL
+    const urlLang = languages.find((l) => pathname.startsWith(`/${l}`));
+    if (urlLang && urlLang !== lang) {
+      const response = NextResponse.next();
+      response.cookies.set(cookieName, urlLang);
+      return response;
     }
 
     return res;

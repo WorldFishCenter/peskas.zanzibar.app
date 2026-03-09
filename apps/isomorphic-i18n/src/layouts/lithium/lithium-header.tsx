@@ -34,9 +34,7 @@ import { useAtom } from 'jotai';
 import { METRIC_OPTIONS } from '@/app/shared/file/dashboard/charts/types';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { changeAppLanguage } from '@/app/i18n/language-switcher';
-import { USFlag } from "@components/icons/language/USFlag";
-import { SWFlag } from "@components/icons/language/SWFlag";
+import { changeAppLanguage, allLanguageOptions } from '@/app/i18n/language-switcher';
 import { useTranslation } from "@/app/i18n/client";
 import Image from "next/image";
 import { activeCountry } from "@/config/countryConfig";
@@ -120,10 +118,9 @@ function CompactLanguageSwitcher() {
 
   if (!mounted) return null;
 
-  const languages = [
-    { code: 'en', name: 'EN', icon: <USFlag className="w-4 h-3" /> },
-    { code: 'sw', name: 'SW', icon: <SWFlag className="w-4 h-3" /> }
-  ];
+  const languages = allLanguageOptions
+    .filter(opt => activeCountry.languages.includes(opt.value))
+    .map(opt => ({ code: opt.value, name: opt.name, icon: opt.icon }));
 
   const currentLanguage = languages.find(lang => lang.code === currentLang) || languages[0];
 

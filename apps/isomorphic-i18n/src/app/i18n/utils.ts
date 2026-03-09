@@ -1,4 +1,5 @@
 // Utility functions for language handling
+import { languages } from './settings';
 
 /**
  * Sets the language in localStorage and document attributes
@@ -41,7 +42,7 @@ export function getDocumentLanguage(): string {
   // Find the first valid language from all sources
   const possibleLangs = [savedLang, dataLang, urlLang, htmlLang, storedLang];
   for (const lang of possibleLangs) {
-    if (lang && ['en', 'sw'].includes(lang)) {
+    if (lang && languages.includes(lang)) {
       return lang;
     }
   }
@@ -60,12 +61,13 @@ export function fixUrlLanguage(url: string, lang: string): string {
   if (!url) return url;
   
   // Only allow valid language codes
-  if (!['en', 'sw'].includes(lang)) {
-    lang = 'en'; // Default to English for safety
+  if (!languages.includes(lang)) {
+    lang = languages[0]; // Default to fallback language for safety
   }
-  
+
   // Check if URL already has a language prefix - only match exact language codes
-  const langRegex = /^\/(en|sw)(?:\/|$)/;
+  const langPattern = languages.join('|');
+  const langRegex = new RegExp(`^/(${langPattern})(?:/|$)`);
   const hasLangPrefix = langRegex.test(url);
   
   if (hasLangPrefix) {
@@ -77,44 +79,3 @@ export function fixUrlLanguage(url: string, lang: string): string {
   }
 }
 
-/**
- * Script to add to the page head to set language attributes before page load
- * Prevents flash of wrong language
- */
-export const languageInitScript = `
-  (function() {
-    try {
-      var savedLang = localStorage.getItem('peskas-language');
-      var i18nLang = localStorage.getItem('i18nextLng');
-      var lang = savedLang || i18nLang || 'en';
-      
-      // Only allow valid language codes
-      if (!['en', 'sw'].includes(lang)) {
-        lang = 'en'; // Default to English for safety
-      }
-      
-      // Set attributes immediately
-      document.documentElement.setAttribute('data-language', lang);
-      document.documentElement.setAttribute('data-language-ready', 'true');
-      document.documentElement.lang = lang;
-      
-      // Check if URL needs fixing
-      var path = window.location.pathname;
-      var langRegex = /^\\/(en|sw)(?:\\/|$)/;
-      var hasLangPrefix = langRegex.test(path);
-      var urlLang = hasLangPrefix ? path.split('/')[1] : null;
-      
-      // Only modify URL if the language prefix is different from the saved language
-      // and both are valid language codes
-      if (urlLang && urlLang !== lang && ['en', 'sw'].includes(urlLang) && ['en', 'sw'].includes(lang)) {
-        // Fix URL if needed - without page reload
-        var newPath = path.replace(langRegex, '/' + lang + '/').replace(/\\/+/g, '/');
-        if (newPath !== path) {
-          window.history.replaceState({}, '', newPath);
-        }
-      }
-    } catch (e) {
-      console.error('Language init script error:', e);
-    }
-  })();
-`; 

@@ -4,6 +4,11 @@ import NextLink, { LinkProps as NextLinkProps } from 'next/link';
 import { ReactNode, forwardRef, ComponentProps, useEffect, useState } from 'react';
 import { languages } from '../i18n/settings';
 
+// Pre-built regex for URL language prefix manipulation
+const _langPattern = languages.join('|');
+const langMultiPrefixRegex = new RegExp(`^/(${_langPattern})/((${_langPattern})/)+`);
+const langSinglePrefixRegex = new RegExp(`^/(${_langPattern})(?:/|$)`);
+
 // Global variable to store client-side language state
 let clientSideLanguage: string | null = null;
 
@@ -21,7 +26,7 @@ export function getClientLanguage(): string {
                             localStorage.getItem('i18nextLng') || 
                             localStorage.getItem('peskas-language');
     
-    if (fromLocalStorage && ['en', 'sw'].includes(fromLocalStorage)) {
+    if (fromLocalStorage && languages.includes(fromLocalStorage)) {
       // Cache the value for future use
       clientSideLanguage = fromLocalStorage;
       return fromLocalStorage;
@@ -32,7 +37,7 @@ export function getClientLanguage(): string {
                               sessionStorage.getItem('i18nextLng') || 
                               sessionStorage.getItem('peskas-language');
     
-    if (fromSessionStorage && ['en', 'sw'].includes(fromSessionStorage)) {
+    if (fromSessionStorage && languages.includes(fromSessionStorage)) {
       // Cache the value and also update localStorage
       clientSideLanguage = fromSessionStorage;
       localStorage.setItem('i18nextLng', fromSessionStorage);
@@ -43,26 +48,26 @@ export function getClientLanguage(): string {
 
     // Try HTML attributes
     const fromHTML = document.documentElement.lang;
-    if (fromHTML && ['en', 'sw'].includes(fromHTML)) {
+    if (fromHTML && languages.includes(fromHTML)) {
       clientSideLanguage = fromHTML;
       return fromHTML;
     }
     
     // Try data attribute as another fallback
     const fromDataAttr = document.documentElement.getAttribute('data-language');
-    if (fromDataAttr && ['en', 'sw'].includes(fromDataAttr)) {
+    if (fromDataAttr && languages.includes(fromDataAttr)) {
       clientSideLanguage = fromDataAttr;
       return fromDataAttr;
     }
   }
 
-  // Default to English if nothing found
-  return 'en';
+  // Default to fallback language if nothing found
+  return languages[0];
 }
 
 // Function to set the client language
 export function setClientLanguage(lang: string): void {
-  if (['en', 'sw'].includes(lang)) {
+  if (languages.includes(lang)) {
     clientSideLanguage = lang;
   }
 }
@@ -127,12 +132,11 @@ const LanguageLink = forwardRef<HTMLAnchorElement, LinkProps>(
       let cleanHref = rawHref;
       
       // Remove multiple language prefixes like /en/en/en/en/path or /en/sw/en/path
-      const langPrefixPattern = /^\/(en|sw)\/((en|sw)\/)+/;
-      if (langPrefixPattern.test(cleanHref)) {
+      if (langMultiPrefixRegex.test(cleanHref)) {
         // Extract the path after all language prefixes
         const pathParts = cleanHref.split('/').filter(Boolean);
-        const nonLangIndex = pathParts.findIndex((part: string) => !['en', 'sw'].includes(part));
-        
+        const nonLangIndex = pathParts.findIndex((part: string) => !languages.includes(part));
+
         if (nonLangIndex !== -1) {
           // Rebuild path without language prefixes
           cleanHref = '/' + pathParts.slice(nonLangIndex).join('/');
@@ -142,7 +146,7 @@ const LanguageLink = forwardRef<HTMLAnchorElement, LinkProps>(
         }
       } else {
         // Handle simple case with just one language prefix
-        cleanHref = cleanHref.replace(/^\/(en|sw)(?:\/|$)/, '/');
+        cleanHref = cleanHref.replace(langSinglePrefixRegex, '/');
       }
       
       // If doesn't start with slash, add it

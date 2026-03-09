@@ -89,7 +89,7 @@ const zanzibarConfig: CountryConfig = {
   flagIconSrc: '/zanzibar-flag.svg',
   currencyCode: 'TZS',
   locale: 'sw-TZ',
-  languages: ['en', 'sw'],
+  languages: ['sw', 'en'],
   districts: [
     'Chake Chake',
     'Kaskazini A',
@@ -168,7 +168,7 @@ const kenyaConfig: CountryConfig = {
   flagIconSrc: '/kenya-flag.svg',
   currencyCode: 'KES',
   locale: 'sw-KE',
-  languages: ['en', 'sw'],
+  languages: ['sw', 'en'],
   districts: [
     "Changamwe",
     "Jomvu",
@@ -271,8 +271,8 @@ const mozambiqueConfig: CountryConfig = {
   siteDescription: 'Peskas | Mozambique Fisheries Dashboard',
   flagIconSrc: '/mozambique-flag.svg',
   currencyCode: 'MZN',
-  locale: 'sw-KE',
-  languages: ['en', 'sw'],
+  locale: 'pt-MZ',
+  languages: ['pt', 'en', 'sw'],
   districts: [
     "Angoche",
     "Beira",

@@ -7,7 +7,7 @@ import {
 } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import resourcesToBackend from "i18next-resources-to-backend";
-import { getOptions } from "@/app/i18n/settings";
+import { getOptions, languages, fallbackLng } from "@/app/i18n/settings";
 import { useEffect } from "react";
 
 const runsOnServerSide = typeof window === "undefined";
@@ -48,9 +48,9 @@ export function useTranslation(lang: string, ns?: string, options?: object) {
       
       // Determine which language to use (URL or localStorage)
       // Priority: URL language parameter > localStorage > current i18n language
-      const targetLang = (lang && ['en', 'sw'].includes(lang)) ? 
-        lang : (storedLang && ['en', 'sw'].includes(storedLang)) ? 
-          storedLang : i18n.resolvedLanguage || 'en';
+      const targetLang = (lang && languages.includes(lang)) ?
+        lang : (storedLang && languages.includes(storedLang)) ?
+          storedLang : i18n.resolvedLanguage || fallbackLng;
       
       if (i18n.resolvedLanguage !== targetLang) {
         i18n.changeLanguage(targetLang);

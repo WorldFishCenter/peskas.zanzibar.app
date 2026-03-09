@@ -43,11 +43,6 @@ export default function LanguageHandler({ lang }: { lang?: string }) {
       try {
         const savedLang = getDocumentLanguage();
         
-        // Validate we have a correct language
-        if (!['en', 'sw'].includes(savedLang)) {
-          return; // Skip invalid languages
-        }
-        
         // Fix URL if it doesn't match saved language
         if (pathname) {
           // Skip special routes
