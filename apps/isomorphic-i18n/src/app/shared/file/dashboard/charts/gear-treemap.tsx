@@ -105,7 +105,7 @@ export default function GearTreemap({ metric, className }: GearTreemapProps) {
 
   const options: ApexOptions = useMemo(() => {
     const unit =
-      metric === "cpue" ? "kg/fisher/day" : `${CURRENCY_CODE}/fisher/day`;
+      metric === "cpue" ? "kg/fisher/hour" : `${CURRENCY_CODE}/fisher/hour`;
     const surface = isDark ? "#1b2434" : "#ffffff";
     const border = isDark ? "#2d3748" : "#e5e7eb";
     const textMuted = isDark ? "#9ca3af" : "#6b7280";

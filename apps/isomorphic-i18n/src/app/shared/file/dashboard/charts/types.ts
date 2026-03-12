@@ -67,7 +67,7 @@ export const METRIC_OPTIONS: MetricOption[] = [
   {
     value: "mean_cpue",
     label: "Catch Rate",
-    unit: "kg/fisher/day",
+    unit: "kg/fisher/hour",
     category: "catch",
   },
   {
@@ -79,7 +79,7 @@ export const METRIC_OPTIONS: MetricOption[] = [
   {
     value: "mean_rpue",
     label: "Fisher Revenue",
-    unit: `${CURRENCY_CODE}/fisher/day`,
+    unit: `${CURRENCY_CODE}/fisher/hour`,
     category: "revenue",
   },
   {

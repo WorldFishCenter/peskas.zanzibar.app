@@ -25,7 +25,7 @@ export default function MetricSelectorDropdown() {
     {
       value: "mean_cpue",
       label: "Catch Rate",
-      unit: "kg/fisher/day",
+      unit: "kg/fisher/hour",
       category: "catch",
     },
     {
@@ -41,7 +41,7 @@ export default function MetricSelectorDropdown() {
     {
       value: "mean_rpue",
       label: "Fisher Revenue",
-      unit: `${CURRENCY_CODE}/fisher/day`,
+      unit: `${CURRENCY_CODE}/fisher/hour`,
       category: "revenue",
     },
     {

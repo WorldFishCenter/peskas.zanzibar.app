@@ -114,12 +114,12 @@ export const SHARED_METRIC_CONFIG = {
   mean_cpue: {
     labelKey: "text-metrics-catch-rate",
     color: "#75ABBC",
-    unit: "kg/fisher/day"
+    unit: "kg/fisher/hour"
   },
   mean_rpue: {
     labelKey: "text-metrics-fisher-revenue", 
     color: "#4A90E2",
-    unit: `${CURRENCY_CODE}/fisher/day`
+    unit: `${CURRENCY_CODE}/fisher/hour`
   },
   mean_price_kg: {
     labelKey: "metric-mean_price_kg-title",
