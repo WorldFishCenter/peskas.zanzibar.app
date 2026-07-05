@@ -16,21 +16,24 @@ export const monthlySummaryRouter = createTRPCRouter({
     .input(z.object({
       districts: z.array(z.string().nullable()).transform(arr => arr.filter((d): d is string => d !== null)),
       metrics: z.array(z.string()),
-      months: z.number().default(12)
+      months: z.number().optional(),
     }))
     .query(async ({ input }) => {
       const { districts, metrics, months } = input;
 
-      // Calculate date range
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setMonth(endDate.getMonth() - months);
-
-      const data = await MonthlySummaryDistrictModel.find({
+      const query: Record<string, unknown> = {
         gaul_2_name: { $in: districts },
         metric: { $in: metrics },
-        date: { $gte: startDate, $lte: endDate }
-      }).sort({ date: 1 }).lean();
+      };
+
+      if (months) {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(endDate.getMonth() - months);
+        query.date = { $gte: startDate, $lte: endDate };
+      }
+
+      const data = await MonthlySummaryDistrictModel.find(query).sort({ date: 1 }).lean();
 
       // Group by date and metric (keys are gaul_2_name)
       const grouped: Record<string, Record<string, Record<string, number>>> = data.reduce((acc, item) => {

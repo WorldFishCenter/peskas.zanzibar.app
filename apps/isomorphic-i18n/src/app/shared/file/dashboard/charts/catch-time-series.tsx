@@ -106,8 +106,8 @@ export default function CatchTimeSeries({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
-  // Convert time range to months
-  const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
+  const months =
+    typeof selectedTimeRange === "number" ? selectedTimeRange : undefined;
   
   const { data, isLoading, error } = api.monthlySummary.timeSeries.useQuery(
     {

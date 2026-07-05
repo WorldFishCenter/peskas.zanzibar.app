@@ -98,8 +98,8 @@ export default function RevenueTimeSeries({
   const [selectedTimeRange] = useAtom(selectedTimeRangeAtom);
   const [hiddenDistricts, setHiddenDistricts] = useState<string[]>([]);
   
-  // Convert time range to months
-  const months = typeof selectedTimeRange === 'number' ? selectedTimeRange : 12;
+  const months =
+    typeof selectedTimeRange === "number" ? selectedTimeRange : undefined;
   
   const { data, isLoading, error } = api.monthlySummary.timeSeries.useQuery(
     {
