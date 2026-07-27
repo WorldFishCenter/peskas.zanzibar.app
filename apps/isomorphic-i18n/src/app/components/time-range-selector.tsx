@@ -6,6 +6,7 @@ import { PiCaretDownBold, PiClockCountdownDuotone } from "react-icons/pi";
 import { Popover } from "rizzui";
 import cn from "@utils/class-names";
 import { useTranslation } from "@/app/i18n/client";
+import { trackEvent } from "@/lib/analytics";
 
 // Global time range selector atom and options
 export const TIME_RANGES = [
@@ -29,6 +30,15 @@ export default function TimeRangeSelector() {
     { label: t("text-last-year") || "Last year", value: 12 },
     { label: t("text-all-time") || "All time", value: "all" },
   ];
+
+  const handleSelect = (value: string | number) => {
+    // Re-picking the current range is not a filter change.
+    if (value !== selectedTimeRange) {
+      trackEvent("filter_time_range_change", { time_range: String(value) });
+    }
+    setSelectedTimeRange(value);
+    setIsOpen(false);
+  };
 
   return (
     <Popover isOpen={isOpen} setIsOpen={setIsOpen} placement="bottom-end">
@@ -55,10 +65,7 @@ export default function TimeRangeSelector() {
         {translatedTimeRanges.map((option) => (
           <button
             key={option.value}
-            onClick={() => {
-              setSelectedTimeRange(option.value);
-              setIsOpen(false);
-            }}
+            onClick={() => handleSelect(option.value)}
             className={cn(
               "w-full px-2 py-1.5 text-left text-sm rounded transition-colors",
               selectedTimeRange === option.value

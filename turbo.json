@@ -13,6 +13,8 @@
         "VERCEL_URL",
         "VERCEL",
         "NEXT_PUBLIC_COUNTRY_CODE",
+        "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+        "NEXT_PUBLIC_GA_ROLLUP_ID",
         "VITE_MAPBOX_TOKEN"
       ]
     },
@@ -37,6 +39,8 @@
     "VERCEL_URL",
     "VERCEL",
     "NEXT_PUBLIC_COUNTRY_CODE",
+    "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+    "NEXT_PUBLIC_GA_ROLLUP_ID",
     "VITE_MAPBOX_TOKEN"
   ]
 }

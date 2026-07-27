@@ -9,10 +9,19 @@ import type { MetricKey } from "@/app/shared/file/dashboard/charts/types";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@ui/select";
 import DistrictSummaryBar, { METRICS } from "./district-summary-bar";
 import GridMap from "./grid-map";
+import { trackEvent } from "@/lib/analytics";
 
 export default function DistrictMapAndBar({ lang = 'en', className }: { lang?: string, className?: string }) {
     const { t } = useTranslation("common");
     const [selectedMetric, setSelectedMetric] = useAtom(selectedMetricAtom);
+
+    // Same atom as the header dropdown, tagged by source to show which control is used.
+    const handleMetricChange = (value: MetricKey) => {
+        if (value !== selectedMetric) {
+            trackEvent('filter_metric_change', { metric: value, source: 'district_widget' });
+        }
+        setSelectedMetric(value);
+    };
 
     return (
         <WidgetCard
@@ -22,7 +31,7 @@ export default function DistrictMapAndBar({ lang = 'en', className }: { lang?: s
                         {t("text-district-summary")}
                     </span>
                     <div className="min-w-fit">
-                        <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricKey)}>
+                        <Select value={selectedMetric} onValueChange={(v) => handleMetricChange(v as MetricKey)}>
                             <SelectTrigger className="w-full max-w-[180px] sm:max-w-[240px] md:max-w-[300px]">
                                 <SelectValue>{t(METRICS.find(m => m.key === selectedMetric)?.labelKey || "")}</SelectValue>
                             </SelectTrigger>
