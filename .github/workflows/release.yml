@@ -3,15 +3,21 @@ name: Release from NEWS.md
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Required to create the tag and release; the default GITHUB_TOKEN is read-only.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Full history and tags, so the tag-exists check below is meaningful.
+          fetch-depth: 0
 
       - name: Extract version and changelog from NEWS.md
         id: changelog
