@@ -29,6 +29,7 @@ import {
   getColorForValue,
 } from './colors';
 import { InfoPanel } from './info-panel';
+import { trackEvent } from '@/lib/analytics';
 
 const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
   const { theme: rawTheme = 'light' } = useTheme();
@@ -110,6 +111,16 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
   );
 
   const handleRangeToggle = useCallback((range: TimeBreak) => {
+    const wasSelected = selectedRanges.some(
+      (r) => r.min === range.min && r.max === range.max
+    );
+    // Deselecting the last remaining range is rejected below, so it is not a change.
+    if (!wasSelected || selectedRanges.length > 1) {
+      trackEvent('map_effort_range_toggle', {
+        effort_range: range.label,
+        enabled: !wasSelected,
+      });
+    }
     setSelectedRanges((current: TimeBreak[]) => {
       const isSelected = current.some(
         (r) => r.min === range.min && r.max === range.max
@@ -121,7 +132,7 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
       }
       return [...current, range];
     });
-  }, []);
+  }, [selectedRanges]);
 
   const getTooltip = useCallback(
     (info: {
@@ -277,7 +288,11 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
       {/* Single Icon Map Style Switcher, now theme-aware */}
       <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
         <button
-          onClick={() => setViewMode(viewMode === 'satellite' ? 'map' : 'satellite')}
+          onClick={() => {
+            const next = viewMode === 'satellite' ? 'map' : 'satellite';
+            trackEvent('map_basemap_change', { basemap: next });
+            setViewMode(next);
+          }}
           style={{
             background: theme === 'dark' ? 'rgba(30,41,59,0.85)' : 'rgba(255,255,255,0.85)',
             border: theme === 'dark' ? '1px solid #334155' : '1px solid #d1d5db',

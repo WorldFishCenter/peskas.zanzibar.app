@@ -8,6 +8,7 @@ import { CURRENCY_CODE } from '@/config/constants';
 import { selectedMetricAtom, selectedRevenueMetricAtom } from '@/app/components/filter-selector';
 import { useTranslation } from '@/app/i18n/client';
 import { usePathname } from 'next/navigation';
+import { trackEvent } from '@/lib/analytics';
 
 export default function MetricSelectorDropdown() {
   const { t } = useTranslation('common');
@@ -75,6 +76,16 @@ export default function MetricSelectorDropdown() {
   
   const selectedMetricOption = availableMetrics.find((m) => m.value === currentMetric);
 
+  const handleMetricSelect = (value: MetricKey) => {
+    // Re-picking the current metric is not a filter change. The route-driven resets
+    // in the effects below are deliberately not tracked.
+    if (value !== currentMetric) {
+      trackEvent('filter_metric_change', { metric: value, source: 'header' });
+    }
+    setCurrentMetric(value);
+    setIsMetricOpen(false);
+  };
+
   const getDisplayLabel = (option: any) => {
     switch (option.value) {
       case 'mean_effort': return t('text-metrics-effort');
@@ -137,7 +148,7 @@ export default function MetricSelectorDropdown() {
               {groupedMetrics.catch.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => { setCurrentMetric(option.value as MetricKey); setIsMetricOpen(false); }}
+                  onClick={() => handleMetricSelect(option.value as MetricKey)}
                   className={cn(
                     'w-full px-2 py-1.5 text-left text-sm rounded transition-colors flex flex-col items-start gap-0.5',
                     currentMetric === option.value
@@ -162,7 +173,7 @@ export default function MetricSelectorDropdown() {
               {groupedMetrics.revenue.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => { setCurrentMetric(option.value as MetricKey); setIsMetricOpen(false); }}
+                  onClick={() => handleMetricSelect(option.value as MetricKey)}
                   className={cn(
                     'w-full px-2 py-1.5 text-left text-sm rounded transition-colors flex flex-col items-start gap-0.5',
                     currentMetric === option.value

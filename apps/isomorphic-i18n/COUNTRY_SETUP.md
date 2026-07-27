@@ -128,10 +128,15 @@ Strings to check: `metric-mean_rpue-unit`, `metric-mean_price_kg-unit` (currency
 ```
 NEXT_PUBLIC_COUNTRY_CODE=KE
 MONGODB_URI=<your-kenya-cluster-connection-string>
+NEXT_PUBLIC_GA_MEASUREMENT_ID=<the-new-country-GA4-stream>
 ```
 
 `NEXT_PUBLIC_COUNTRY_CODE` is inlined into the client bundle at build time (Next.js `NEXT_PUBLIC_*`
 convention). A redeploy is required when changing it.
+
+Each country reports into its own GA4 data stream, so the new deployment needs its own
+`NEXT_PUBLIC_GA_MEASUREMENT_ID` plus a registered `peskas_country` custom dimension.
+See [ANALYTICS.md](./ANALYTICS.md) for the GA4 admin steps.
 
 ---
 
@@ -144,4 +149,5 @@ convention). A redeploy is required when changing it.
 - [ ] `regionBreakdown.regions` values match the region names used in `districtToRegion`
 - [ ] Locale files added for each language
 - [ ] `NEXT_PUBLIC_COUNTRY_CODE` and `MONGODB_URI` set in the deployment environment
+- [ ] GA4 stream created and `NEXT_PUBLIC_GA_MEASUREMENT_ID` set on Production (see ANALYTICS.md)
 - [ ] `npx tsc --noEmit` passes in both `apps/isomorphic-i18n/` and `packages/api/`

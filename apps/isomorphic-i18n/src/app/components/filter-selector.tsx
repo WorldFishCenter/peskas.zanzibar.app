@@ -22,6 +22,7 @@ import { useTranslation } from "@/app/i18n/client";
 import cn from "@utils/class-names";
 import { api } from "@/trpc/react";
 import { activeCountry } from "@/config/countryConfig";
+import { trackEvent } from "@/lib/analytics";
 
 type DropdownTypes = {
   sectionName: string;
@@ -165,7 +166,13 @@ export const FilterSelector = () => {
             {selectedCount > 0 && (
               <button
                 className="text-primary hover:text-primary-dark"
-                onClick={() => setSelectedDistricts([])}
+                onClick={() => {
+                  trackEvent("filter_district_change", {
+                    action: "clear",
+                    district_count: 0,
+                  });
+                  setSelectedDistricts([]);
+                }}
               >
                 Clear all
               </button>
@@ -215,14 +222,25 @@ const FilterGroup = ({
       const filteredDistricts = districts.filter(
         district => !section.units.some(u => u.value === district)
       );
-      setDistricts([...filteredDistricts, unit]);
+      const next = [...filteredDistricts, unit];
+      trackEvent("filter_district_change", {
+        action: "replace_in_region",
+        district: unit,
+        district_count: next.length,
+      });
+      setDistricts(next);
       return;
     }
-    if (districts.includes(unit)) {
-      setDistricts(districts.filter((d) => d !== unit));
-    } else {
-      setDistricts([...districts, unit]);
-    }
+    const isRemoving = districts.includes(unit);
+    const next = isRemoving
+      ? districts.filter((d) => d !== unit)
+      : [...districts, unit];
+    trackEvent("filter_district_change", {
+      action: isRemoving ? "remove" : "add",
+      district: unit,
+      district_count: next.length,
+    });
+    setDistricts(next);
   };
 
   if (typeof districtSection === "string" && searchFilter) {
@@ -245,19 +263,34 @@ const FilterGroup = ({
       : section.units.every(unit => districts.includes(unit.value));
 
     const handleSectionSelect = () => {
+      const trackRegion = (next: string[]) =>
+        trackEvent("filter_district_change", {
+          action: isRegionSelected ? "region_remove" : "region_add",
+          region: section.sectionName,
+          district_count: next.length,
+        });
+
       if (isAdmin && viewMode === 'region') {
         if (isRegionSelected) {
-          setDistricts(districts.filter(d => !section.units.some(u => u.value === d)));
+          const next = districts.filter(d => !section.units.some(u => u.value === d));
+          trackRegion(next);
+          setDistricts(next);
         } else {
           const filtered = districts.filter(d => !section.units.some(u => u.value === d));
-          setDistricts([...filtered, section.units[0].value]);
+          const next = [...filtered, section.units[0].value];
+          trackRegion(next);
+          setDistricts(next);
         }
         return;
       }
       if (isRegionSelected) {
-        setDistricts(districts.filter(d => !section.units.map(u => u.value).includes(d)));
+        const next = districts.filter(d => !section.units.map(u => u.value).includes(d));
+        trackRegion(next);
+        setDistricts(next);
       } else {
-        setDistricts([...districts, ...section.units.map(u => u.value)]);
+        const next = [...districts, ...section.units.map(u => u.value)];
+        trackRegion(next);
+        setDistricts(next);
       }
     };
 

@@ -16,13 +16,13 @@ jobs:
       - name: Extract version and changelog from NEWS.md
         id: changelog
         run: |
-          version=$(grep -m1 -oP '^# peskas\.zanzibar\.v2 \K[0-9]+\.[0-9]+\.[0-9]+' NEWS.md)
+          version=$(grep -m1 -oP '^# peskas\.dashboard \K[0-9]+\.[0-9]+\.[0-9]+' NEWS.md)
           echo "Extracted version: $version"
 
           # Extract changelog from first version block
           changelog=$(awk '
             BEGIN { print_mode=0 }
-            /^# peskas\.zanzibar\.v2 / {
+            /^# peskas\.dashboard / {
               if (print_mode == 1) exit
               if (print_mode == 0) { print_mode=1; next }
             }

@@ -1,3 +1,43 @@
+# peskas.dashboard 1.3.1
+
+## Analytics
+
+- **Per-country Google Analytics**: The GA4 measurement ID is now read from
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID` per deployment instead of being hardcoded, so each
+  country domain reports into its own GA4 property. An optional `NEXT_PUBLIC_GA_ROLLUP_ID`,
+  set to the same value on every deployment, mirrors events into a shared property for a
+  platform-wide view. Both are declared in `turbo.json` — without that, Turborepo could
+  reuse one country's cached build for another and ship the wrong measurement ID.
+
+- **Country dimension on every event**: `peskas_country` and `peskas_country_code` are
+  attached globally via `gtag('set')` before `gtag('config')`, so even a shared property can
+  be broken down by country. Both must be registered as event-scoped custom dimensions in
+  GA4, which does not backfill them.
+
+- **Fixed double-counted page views**: The analytics component re-fired `gtag('config')` on
+  every route change while GA4 enhanced measurement was already tracking History API
+  navigations, counting each client-side navigation twice. Page views are now left to
+  enhanced measurement alone. Historical page-view figures are inflated.
+
+- **Analytics component is now a Server Component**: Dropping the `usePathname()` /
+  `useSearchParams()` hooks also removed an unrelated problem — `useSearchParams()` in the
+  root layout with no `<Suspense>` boundary opted statically generated pages into
+  client-side rendering.
+
+- **Custom event tracking**: Five events cover the filter and map controls:
+  `filter_time_range_change`, `filter_metric_change`, `filter_district_change`,
+  `map_basemap_change`, and `map_effort_range_toggle`. They fire through a typed
+  `trackEvent()` helper in `src/lib/analytics.ts` that no-ops when no measurement ID is set.
+  Events are suppressed when a control is re-set to its current value, and nothing fires on
+  mount, hydration, or route-driven state resets.
+
+- **Analytics documentation**: New `apps/isomorphic-i18n/ANALYTICS.md` covers the GA4
+  account structure options, required admin setup, the event and parameter reference, and
+  verification steps. `COUNTRY_SETUP.md` now includes the analytics step when adding a
+  country.
+
+---
+
 # peskas.dashboard 1.3.0
 
 ## Infrastructure
