@@ -104,6 +104,15 @@ properties):
    parameter you want to report on: `peskas_country`, `peskas_country_code`, and the event
    parameters listed in the next section. GA4 only surfaces a custom parameter in reports
    once it is registered, and it does **not** backfill, so do this before you need the data.
+   `district_count` is numeric and belongs on the **Custom metrics** tab instead, with unit
+   **Standard**.
+
+GA4 offers no import, copy, or bulk-create action for custom definitions, so rather than
+repeating the list by hand in all four properties, run
+[`scripts/ga4-custom-definitions.gs`](./scripts/ga4-custom-definitions.gs) — an Apps Script
+that creates every definition through the Admin API. It is idempotent and defaults to a
+dry run. Dimension display names are restricted to letters, digits, spaces and underscores
+starting with a letter, and `parameterName` is immutable once created.
 
 Note the built-in `Country` dimension is geographic (derived from IP) and is not the same
 thing as `peskas_country`, which identifies the deployment. A user in Nairobi visiting the
