@@ -18,7 +18,10 @@ export default function DistrictMapAndBar({ lang = 'en', className }: { lang?: s
     // Same atom as the header dropdown, tagged by source to show which control is used.
     const handleMetricChange = (value: MetricKey) => {
         if (value !== selectedMetric) {
-            trackEvent('filter_metric_change', { metric: value, source: 'district_widget' });
+            trackEvent('filter_metric_change', {
+                metric: value,
+                control_source: 'district_widget',
+            });
         }
         setSelectedMetric(value);
     };

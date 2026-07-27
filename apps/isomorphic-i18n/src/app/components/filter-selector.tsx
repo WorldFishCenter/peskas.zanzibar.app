@@ -266,7 +266,7 @@ const FilterGroup = ({
       const trackRegion = (next: string[]) =>
         trackEvent("filter_district_change", {
           action: isRegionSelected ? "region_remove" : "region_add",
-          region: section.sectionName,
+          peskas_region: section.sectionName,
           district_count: next.length,
         });
 

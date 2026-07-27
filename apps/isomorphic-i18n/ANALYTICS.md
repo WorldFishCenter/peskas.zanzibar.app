@@ -119,14 +119,21 @@ loaded. Add new event names to the `AnalyticsEvent` union there so typos fail th
 | Event | Parameters | Fired when |
 |---|---|---|
 | `filter_time_range_change` | `time_range` (`"3"`, `"6"`, `"12"`, `"72"`, `"all"`) | Header time range option picked |
-| `filter_metric_change` | `metric`, `source` (`header` \| `district_widget`) | Metric picked in either control |
-| `filter_district_change` | `action`, `district`, `region`, `district_count` | District selection changed |
+| `filter_metric_change` | `metric`, `control_source` (`header` \| `district_widget`) | Metric picked in either control |
+| `filter_district_change` | `action`, `district`, `peskas_region`, `district_count` | District selection changed |
 | `map_basemap_change` | `basemap` (`satellite` \| `map`) | Basemap toggled on the grid map |
 | `map_effort_range_toggle` | `effort_range`, `enabled` | Effort band toggled in the map info panel |
 
 `filter_district_change.action` is one of `add`, `remove`, `clear`, `region_add`,
 `region_remove`, or `replace_in_region` (the admin region-view single-select path).
-`district` is absent on region and clear actions; `region` is only present on region actions.
+`district` is absent on region and clear actions; `peskas_region` is only present on region
+actions.
+
+Two parameter names avoid GA4 collisions deliberately. `control_source` is not `source`,
+because `source` belongs to GA4's reserved UTM attribution family (`campaign`, `content`,
+`medium`, `source`, `term`) and using it for custom data corrupts traffic-source reporting.
+`peskas_region` is not `region`, because GA4 has a built-in geographic Region dimension and
+ours means a fisheries region (Central / North / South).
 
 Two deliberate choices in how these fire:
 

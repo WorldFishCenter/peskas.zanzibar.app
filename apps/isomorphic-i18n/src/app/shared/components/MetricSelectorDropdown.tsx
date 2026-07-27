@@ -80,7 +80,10 @@ export default function MetricSelectorDropdown() {
     // Re-picking the current metric is not a filter change. The route-driven resets
     // in the effects below are deliberately not tracked.
     if (value !== currentMetric) {
-      trackEvent('filter_metric_change', { metric: value, source: 'header' });
+      trackEvent('filter_metric_change', {
+        metric: value,
+        control_source: 'header',
+      });
     }
     setCurrentMetric(value);
     setIsMetricOpen(false);
