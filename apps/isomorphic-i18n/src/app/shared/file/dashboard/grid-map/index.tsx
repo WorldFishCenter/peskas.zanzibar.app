@@ -279,8 +279,9 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
     [transformedData, selectedRanges, choroplethLayer]
   );
 
-  // Only two states: 'satellite' and 'map'
-  const [viewMode, setViewMode] = useState<'satellite' | 'map'>('satellite');
+  // Only two states: 'satellite' and 'map'. Defaults to the vector basemap:
+  // satellite is a raster style and bills per tile, so it stays opt-in.
+  const [viewMode, setViewMode] = useState<'satellite' | 'map'>('map');
   const iconColor = theme === 'dark' ? '#fff' : '#222';
 
   return (
