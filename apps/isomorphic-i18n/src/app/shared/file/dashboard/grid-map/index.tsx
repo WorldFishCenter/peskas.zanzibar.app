@@ -333,6 +333,10 @@ const GridMap = memo(function GridMap({ lang = 'en' }: GridMapProps) {
                 : MAP_STYLES.light
           }
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
+          // Mapbox GL v3 defaults to the globe projection, which curves the basemap
+          // at low zoom while deck.gl keeps rendering Web Mercator: the boundary and
+          // grid layers visibly detach from the basemap. Pin mercator so both agree.
+          projection={{ name: 'mercator' }}
           reuseMaps
           attributionControl={false}
           renderWorldCopies={false}
