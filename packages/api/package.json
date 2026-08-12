@@ -21,7 +21,7 @@
     "mongoose": "^8.24.3",
     "next": "15.5.23",
     "next-auth": "^4.24.15",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^9.0.5",
     "superjson": "2.2.1",
     "trpc-openapi": "^1.2.0",
     "zod": "^3.22.4"
