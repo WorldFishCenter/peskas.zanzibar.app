@@ -15,7 +15,9 @@
         "NEXT_PUBLIC_COUNTRY_CODE",
         "NEXT_PUBLIC_GA_MEASUREMENT_ID",
         "NEXT_PUBLIC_GA_ROLLUP_ID",
-        "VITE_MAPBOX_TOKEN"
+        "VITE_MAPBOX_TOKEN",
+        "EMAIL_SERVER",
+        "EMAIL_FROM"
       ]
     },
     "lint": {},
@@ -41,6 +43,8 @@
     "NEXT_PUBLIC_COUNTRY_CODE",
     "NEXT_PUBLIC_GA_MEASUREMENT_ID",
     "NEXT_PUBLIC_GA_ROLLUP_ID",
-    "VITE_MAPBOX_TOKEN"
+    "VITE_MAPBOX_TOKEN",
+    "EMAIL_SERVER",
+    "EMAIL_FROM"
   ]
 }
