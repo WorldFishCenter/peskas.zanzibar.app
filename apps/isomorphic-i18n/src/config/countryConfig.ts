@@ -277,6 +277,7 @@ const mozambiqueConfig: CountryConfig = {
     "Angoche",
     "Beira",
     "Bilene",
+    "Buzi",
     "Cidade De Maputo",
     "Ibo",
     "Ilha De Moçambique",
@@ -290,7 +291,8 @@ const mozambiqueConfig: CountryConfig = {
     "Pebane",
     "Pemba",
     "Quelimane",
-    "Xai-Xai"
+    "Xai-Xai",
+    "Zavala"
   ],
   districtToRegion: {
     Angoche: "North",
@@ -302,6 +304,7 @@ const mozambiqueConfig: CountryConfig = {
     Nacala: "North",
     Pemba: "North",
     Beira: "Central",
+    Buzi: "Central",
     Inhassoro: "Central",
     Namacurra: "Central",
     Pebane: "Central",
@@ -310,6 +313,7 @@ const mozambiqueConfig: CountryConfig = {
     "Cidade De Maputo": "South",
     Maxixe: "South",
     "Xai-Xai": "South",
+    Zavala: "South",
   },
   // Based on the ColorsWall palette (https://colorswall.com/palette/178887) + Blue-grey lighten-2
 
@@ -317,6 +321,7 @@ const mozambiqueConfig: CountryConfig = {
     'Angoche':      '#75ABBC',  // Blue-green
     'Beira':        '#F28F3B',  // Orange
     'Bilene':       '#9bddb1',  // Medium aquamarine
+    'Buzi':         '#90a4ae',  // Blue-grey lighten-2
     'Cidade De Maputo': '#F8C16C', // Light gold
     'Ibo':          '#FDBCB4',  // Pink peach
     'Ilha De Moçambique': '#9F82B2', // Lavender
@@ -331,6 +336,7 @@ const mozambiqueConfig: CountryConfig = {
     'Pemba':        '#3cb464',  // Semi dark green
     'Quelimane':    '#643c6a',  // Semi dark purple
     'Xai-Xai':      '#8cdaec',  // Light sky blue
+    'Zavala':       '#8c6d46',  // Palette supplement/Warm brown
   },
   mapViewState: {
     longitude: 32.61,
