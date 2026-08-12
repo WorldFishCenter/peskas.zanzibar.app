@@ -7,7 +7,6 @@ import { useScrollableSlider } from '@hooks/use-scrollable-slider';
 import { PiCaretLeftBold, PiCaretRightBold } from 'react-icons/pi';
 import { usePathname } from 'next/navigation';
 import { LAYOUT_OPTIONS } from '@/config/enums';
-import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
 import { useTranslation } from '@/app/i18n/client';
 import { useLayout } from '@/layouts/use-layout';
 
@@ -21,24 +20,8 @@ const menuItems = [
     value: '/forms/profile-settings/profile',
   },
   {
-    label: 'text-password',
-    value: '/forms/profile-settings/password',
-  },
-  {
-    label: 'text-team',
-    value: '/forms/profile-settings/team',
-  },
-  {
-    label: 'text-billing',
-    value: '/forms/profile-settings/billing',
-  },
-  {
     label: 'text-notifications',
     value: '/forms/profile-settings/notification',
-  },
-  {
-    label: 'text-integrations',
-    value: '/forms/profile-settings/integration',
   },
 ];
 
@@ -52,7 +35,6 @@ export default function ProfileSettingsNav({ lang }: { lang?: string }) {
     scrollToTheRight,
     scrollToTheLeft,
   } = useScrollableSlider();
-  const { expandedLeft } = useBerylliumSidebars();
   const { t } = useTranslation(lang!, 'common');
 
   return (
@@ -61,12 +43,7 @@ export default function ProfileSettingsNav({ lang }: { lang?: string }) {
         'sticky z-20 -mx-4 -mt-4 border-b border-muted bg-white px-4 py-0 font-medium text-gray-500 sm:-mt-2 md:-mx-5 md:px-5 lg:-mx-8 lg:mt-0 lg:px-8 xl:-mx-6 xl:px-6 2xl:top-20 3xl:-mx-[33px] 3xl:px-[33px] 4xl:-mx-10 4xl:px-10 dark:bg-gray-50',
         layout === LAYOUT_OPTIONS.LITHIUM
           ? 'top-[66px] sm:top-[70px] md:top-[73px] '
-          : layout === LAYOUT_OPTIONS.BERYLLIUM
-            ? 'top-[62px] sm:top-[72px] 2xl:top-[72px]'
-            : 'top-[62px] md:top-[71px]',
-        layout === LAYOUT_OPTIONS.BERYLLIUM &&
-          expandedLeft &&
-          'xl:-ms-1 xl:px-0 3xl:-ms-2 3xl:ps-0 4xl:-ms-2'
+          : 'top-[62px] md:top-[71px]'
       )}
     >
       <div className="relative flex items-center overflow-hidden">

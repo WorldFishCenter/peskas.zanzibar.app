@@ -2,8 +2,8 @@
 
 import { useAtom } from "jotai";
 import PageHeader from "@/app/shared/page-header";
-import CatchTimeSeries from "@/app/shared/file/dashboard/charts/catch-time-series";
-import CatchRadar from "@/app/shared/file/dashboard/charts/catch-radar";
+import MetricTimeSeries from "@/app/shared/file/dashboard/charts/metric-time-series";
+import MetricRadar from "@/app/shared/file/dashboard/charts/metric-radar";
 import CpueGearTreemap from "@/app/shared/file/dashboard/charts/cpue-gear-treemap";
 import { selectedMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
@@ -36,12 +36,12 @@ export default function CatchPage() {
         {/* Charts Section - responsive layout */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
           <div className="lg:col-span-8">
-            <CatchTimeSeries 
+            <MetricTimeSeries 
               selectedMetrics={[selectedMetric]}
             />
           </div>
           <div className="lg:col-span-4">
-            <CatchRadar 
+            <MetricRadar 
               selectedMetrics={[selectedMetric]}
             />
           </div>

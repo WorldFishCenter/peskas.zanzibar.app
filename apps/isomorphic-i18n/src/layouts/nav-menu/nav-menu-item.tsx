@@ -55,38 +55,39 @@ export function NavMenuItemWrapper(props: NavMenuItemWrapperProps) {
       content: { component: null, props: null },
     };
 
+    if (!React.isValidElement(child) || !child.props) {
+      return;
+    }
+
+    const childProps = child.props as {
+      children?: React.ReactNode | React.ReactNode[];
+    };
+    const nestedChildren = childProps.children;
+
     if (
-      React.isValidElement(child) &&
-      child.props &&
-      child.props.children &&
-      child.props.children.length
+      Array.isArray(nestedChildren) &&
+      nestedChildren.length
     ) {
-      child?.props?.children?.map((item: React.ReactNode) => {
+      nestedChildren.map((item: React.ReactNode) => {
         if (React.isValidElement(item)) {
           if (item.type === NavMenuTrigger) {
             itemObj.trigger.component = item;
-            itemObj.trigger.props = item.props;
+            itemObj.trigger.props = item.props as ItemRef['trigger']['props'];
           } else if (item.type === NavMenuContent) {
             itemObj.content.component = item;
-            itemObj.content.props = item.props;
+            itemObj.content.props = item.props as ItemRef['content']['props'];
           }
         }
       });
       items.current[idx] = itemObj;
-    } else if (
-      React.isValidElement(child) &&
-      child.props &&
-      // @ts-ignore
-      child.props.children
-    ) {
-      // @ts-ignore
-      const item = child.props.children;
+    } else if (nestedChildren && React.isValidElement(nestedChildren)) {
+      const item = nestedChildren;
       if (item.type === NavMenuTrigger) {
         itemObj.trigger.component = item;
-        itemObj.trigger.props = item.props;
+        itemObj.trigger.props = item.props as ItemRef['trigger']['props'];
       } else if (item.type === NavMenuContent) {
         itemObj.content.component = item;
-        itemObj.content.props = item.props;
+        itemObj.content.props = item.props as ItemRef['content']['props'];
       }
       items.current[idx] = itemObj;
     }

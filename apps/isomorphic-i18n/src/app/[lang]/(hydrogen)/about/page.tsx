@@ -1,4 +1,5 @@
 "use client";
+import { use } from "react";
 
 import { Title, Text } from 'rizzui';
 import { useTranslation } from '@/app/i18n/client';
@@ -36,11 +37,17 @@ function SectionBlock({
   );
 }
 
-export default function AboutPage({
-  params: { lang = 'en' },
-}: {
-  params: { lang?: string };
-}) {
+export default function AboutPage(
+  props: {
+    params: Promise<{ lang?: string }>;
+  }
+) {
+  const params = use(props.params);
+
+  const {
+    lang = 'en'
+  } = params;
+
   const { t } = useTranslation(lang, 'common');
   const header = pageHeader(t);
 

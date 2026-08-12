@@ -1,7 +1,9 @@
-import ReactQuill, { type ReactQuillProps } from 'react-quill';
+import ReactQuill from 'react-quill-new';
 import { FieldError } from 'rizzui';
 import cn from '../utils/class-names';
-import 'react-quill/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.snow.css';
+
+type ReactQuillProps = React.ComponentProps<typeof ReactQuill>;
 
 interface QuillEditorProps extends ReactQuillProps {
   error?: string;
@@ -24,40 +26,20 @@ export default function QuillEditor({
 }: QuillEditorProps) {
   const quillModules = {
     toolbar: [
-      // [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-      ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+      ['bold', 'italic', 'underline', 'strike'],
       ['blockquote', 'code-block'],
 
       [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-      [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+      [{ script: 'sub' }, { script: 'super' }],
+      [{ indent: '-1' }, { indent: '+1' }],
 
-      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+      [{ color: [] }, { background: [] }],
       [{ font: [] }],
       [{ align: [] }],
 
       ['clean'],
     ],
   };
-
-  // const quillFormats = [
-  //   'header',
-  //   'bold',
-  //   'italic',
-  //   'underline',
-  //   'strike',
-  //   'list',
-  //   'bullet',
-  //   'blockquote',
-  //   'code-block',
-  //   'script',
-  //   'indent',
-  //   'color',
-  //   'background',
-  //   'font',
-  //   'align',
-  // ];
 
   return (
     <div className={cn(className)}>
@@ -66,7 +48,6 @@ export default function QuillEditor({
       )}
       <ReactQuill
         modules={quillModules}
-        // formats={quillFormats}
         className={cn(
           'react-quill',
           toolbarPosition === 'bottom' && 'react-quill-toolbar-bottom relative',

@@ -19,15 +19,24 @@ const pageHeader = {
   ],
 };
 
-export default function ProfileSettingsLayout({
-  children,
-  params: { lang },
-}: {
-  children: React.ReactNode;
-  params: {
-    lang: string;
-  };
-}) {
+export default async function ProfileSettingsLayout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
+  const {
+    children
+  } = props;
+
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />

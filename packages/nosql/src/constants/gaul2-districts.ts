@@ -95,6 +95,7 @@ const MZ_DISTRICT_NAMES = [
   'Angoche',
   'Beira',
   'Bilene',
+  'Buzi',
   'Cidade De Maputo',
   'Ibo',
   'Ilha De Moçambique',
@@ -109,6 +110,7 @@ const MZ_DISTRICT_NAMES = [
   'Pemba',
   'Quelimane',
   'Xai-Xai',
+  'Zavala',
 ] as const;
 
 const MZ_TO_REGION: Record<string, string> = {
@@ -121,6 +123,7 @@ const MZ_TO_REGION: Record<string, string> = {
   'Nacala':              'North',
   'Pemba':               'North',
   'Beira':               'Central',
+  'Buzi':                'Central',
   'Inhassoro':           'Central',
   'Namacurra':           'Central',
   'Pebane':              'Central',
@@ -129,6 +132,7 @@ const MZ_TO_REGION: Record<string, string> = {
   'Cidade De Maputo':    'South',
   'Maxixe':              'South',
   'Xai-Xai':             'South',
+  'Zavala':              'South',
 };
 
 // ---------------------------------------------------------------------------

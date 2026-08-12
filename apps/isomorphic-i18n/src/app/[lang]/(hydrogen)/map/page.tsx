@@ -11,11 +11,17 @@ const pageHeader = {
   ],
 };
 
-export default function NewPage({
-  params: { lang },
-}: {
-  params: { lang?: string };
-}) {
+export default async function NewPage(
+  props: {
+    params: Promise<{ lang?: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return (
     <div className="flex flex-col h-screen">
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />

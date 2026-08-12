@@ -1,7 +1,7 @@
 import { Dispatch, MutableRefObject } from 'react';
 import { InitialState } from './nav-menu-types';
 
-export function navMenuReducer(prev: InitialState, next: InitialState) {
+export function navMenuReducer(prev: InitialState, next: Partial<InitialState>) {
   return { ...prev, ...next };
 }
 

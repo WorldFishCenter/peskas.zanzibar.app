@@ -7,21 +7,16 @@ import handlebars from "handlebars";
 import nodemailer, { createTestAccount } from "nodemailer";
 
 export enum Templates {
-  inviteProvider = "inviteProvider",
   resetPassword = "resetPassword",
 }
 
 export const DefaultSubject: Partial<Record<Templates, string>> = {
-  [Templates.inviteProvider]: "Please sign up for Rheumote Control",
   [Templates.resetPassword]: "Reset your password",
 };
 
 export const DefaultTo: Partial<Record<Templates, string | string[]>> = {};
 
-export enum UnsubGroup {}
-
 export interface TemplateType {
-  [Templates.inviteProvider]: z.infer<typeof InviteProviderMailSchema>;
   [Templates.resetPassword]: z.infer<typeof SendResetPasswordMailSchema>;
 }
 
@@ -38,10 +33,6 @@ type TemplateMessageParams<T extends Templates> =
 // const isDevelopment = process.env.NODE_ENV === "development"
 const isDevelopment = false
 
-const InviteProviderMailSchema = z.object({
-  signupLink: z.string().url(),
-});
-
 const SendResetPasswordMailSchema = z.object({
   resetLink: z.string().url(),
 });
@@ -51,7 +42,6 @@ export class MailService {
   transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo> | null =
     null;
   templates = Templates;
-  adminDestinations: string[] = "declan@mountaindev.com".split(",");
   fileContentDict: Record<string, string> = {};
 
   constructor() {
@@ -71,42 +61,31 @@ export class MailService {
   }
 
   /**
-   * Prepare a template to store in the class so that it doesn't get opened over and over again when sending mail
+   * Read a template off disk once and memoise it, so sending a batch does not
+   * reopen the same file for every message.
+   *
+   * This resolves against the app's cwd. It only works when run from the Next.js
+   * app; a standalone script would need ../../apps/isomorphic-i18n/src/templates.
    */
-  public async prepTemplate<T extends Templates>(name: T) {
-    // This only works when we run it from apps/nextjs. If script runs then it fails
-    // In that case it needs to be ../../apps/nextjs/src/templates
+  public async prepTemplate<T extends Templates>(name: T): Promise<string> {
+    const cached = this.fileContentDict[name];
+    if (cached) return cached;
+
     const templateDirectory = path.join(process.cwd(), "src/templates");
-    let fileContent = this.fileContentDict[name];
-    if (fileContent) {
-      
-    } else {
-      
-      fileContent = await fs.readFile(templateDirectory + `/${name}.hbs`, {
-        encoding: "utf8",
-      });
-      this.fileContentDict[name] = fileContent;
-    }
+    const fileContent = await fs.readFile(
+      path.join(templateDirectory, `${name}.hbs`),
+      { encoding: "utf8" },
+    );
+    this.fileContentDict[name] = fileContent;
+    return fileContent;
   }
 
   public async getTemplate<T extends Templates>(
     name: T,
     params: TemplateType[T],
   ): Promise<string> {
-    const templateDirectory = path.join(process.cwd(), "src/templates");
-    let fileContent = this.fileContentDict[name];
-    if (fileContent) {
-      
-    } else {
-      
-      fileContent = await fs.readFile(templateDirectory + `/${name}.hbs`, {
-        encoding: "utf8",
-      });
-      this.fileContentDict[name] = fileContent;
-    }
-    const template = handlebars.compile(fileContent);
-    const templateResult = template(params);
-    return templateResult;
+    const fileContent = await this.prepTemplate(name);
+    return handlebars.compile(fileContent)(params);
   }
 
   async sendTemplateMessages<T extends Templates>(

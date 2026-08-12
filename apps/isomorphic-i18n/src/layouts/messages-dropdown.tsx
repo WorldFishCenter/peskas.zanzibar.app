@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { RefObject, useState } from 'react';
+import { RefObject, useState, type ReactElement } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Title, Text, Popover, Avatar, Badge } from 'rizzui';
@@ -102,7 +102,7 @@ function MessagesList({
 export default function MessagesDropdown({
   children,
 }: {
-  children: JSX.Element & { ref?: RefObject<any> };
+  children: ReactElement & { ref?: RefObject<any> };
 }) {
   const isMobile = useMedia('(max-width: 480px)', false);
   const [isOpen, setIsOpen] = useState(false);

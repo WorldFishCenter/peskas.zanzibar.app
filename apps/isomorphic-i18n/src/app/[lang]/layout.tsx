@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import { Toaster } from "react-hot-toast";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
@@ -16,10 +15,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import LanguageInitializer from "../i18n/language-initializer";
 import GoogleAnalytics from "../_components/google-analytics";
 import ModalSwitcher from "@/app/_components/modal/modal-switcher";
-
-const NextProgress = dynamic(() => import("@components/next-progress"), {
-  ssr: false,
-});
+import NextProgressClient from "../_components/next-progress-client";
 
 export const metadata = {
   title: siteConfig.title,
@@ -30,13 +26,22 @@ export async function generateStaticParams() {
   return languages.map((lang) => ({ lang }));
 }
 
-export default async function RootLayout({
-  children,
-  params: { lang },
-}: {
-  children: React.ReactNode;
-  params: any;
-}) {
+export default async function RootLayout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<any>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
+  const {
+    children
+  } = props;
+
   const session = await getServerSession(authOptions);
   return (
     <html lang={lang} dir={dir(lang)} suppressHydrationWarning>
@@ -49,7 +54,7 @@ export default async function RootLayout({
           <TRPCReactProvider>
             <AuthProvider session={session}>
               <ThemeProvider>
-                <NextProgress />
+                <NextProgressClient />
                 <LanguageInitializer lang={lang} />
                 {children}
                 <Toaster />

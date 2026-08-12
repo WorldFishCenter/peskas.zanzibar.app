@@ -2,8 +2,8 @@
 
 import { useAtom } from "jotai";
 import PageHeader from "@/app/shared/page-header";
-import RevenueTimeSeries from "@/app/shared/file/dashboard/charts/revenue-time-series";
-import RevenueRadar from "@/app/shared/file/dashboard/charts/revenue-radar";
+import MetricTimeSeries from "@/app/shared/file/dashboard/charts/metric-time-series";
+import MetricRadar from "@/app/shared/file/dashboard/charts/metric-radar";
 import RpueGearTreemap from "@/app/shared/file/dashboard/charts/rpue-gear-treemap";
 import { selectedRevenueMetricAtom } from "@/app/components/filter-selector";
 import { useTranslation } from "@/app/i18n/client";
@@ -36,12 +36,12 @@ export default function RevenuePage() {
         {/* Charts Section - responsive layout */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
           <div className="lg:col-span-8">
-            <RevenueTimeSeries 
+            <MetricTimeSeries 
               selectedMetrics={[selectedMetric]}
             />
           </div>
           <div className="lg:col-span-4">
-            <RevenueRadar 
+            <MetricRadar 
               selectedMetrics={[selectedMetric]}
             />
           </div>

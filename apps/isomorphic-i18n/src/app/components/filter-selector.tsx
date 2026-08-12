@@ -11,7 +11,7 @@ import get from 'lodash/get';
 import values from 'lodash/values';
 import isEmpty from 'lodash/isEmpty';
 import { useAtom, atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
+import { atomWithStorage, RESET } from 'jotai/utils';
 import Fuse from "fuse.js";
 import { MetricKey } from "@/app/shared/file/dashboard/charts/types";
 
@@ -68,8 +68,38 @@ const sessObjectToDropdown = (session: DefaultSession & CustomSession) => {
 }
 
 export const dropdownAtom = atomWithStorage<DropdownTypes[]>('dropdown', [], undefined, { getOnInit: true });
+
 // Default district selection comes from countryConfig.defaultSelectedDistricts
-export const districtsAtom = atomWithStorage<string[]>('districts', activeCountry.defaultSelectedDistricts, undefined, { getOnInit: true });
+const districtsStorageAtom = atomWithStorage<string[]>('districts', activeCountry.defaultSelectedDistricts, undefined, { getOnInit: true });
+
+const KNOWN_DISTRICTS = new Set(activeCountry.districts);
+
+/**
+ * The selection is persisted in localStorage, but the district list is
+ * country-specific. Without this, a value stored while a different country was
+ * active survives forever: every chart then queries district names the current
+ * database has never heard of, the query succeeds with an empty result, and the
+ * charts render "no data" with no error anywhere to explain why.
+ *
+ * An empty array is left alone -- that is the user deliberately clearing the
+ * filter, not stale state.
+ */
+function reconcileDistricts(stored: string[]): string[] {
+  if (stored.length === 0) return stored;
+  const valid = stored.filter((d) => KNOWN_DISTRICTS.has(d));
+  return valid.length > 0 ? valid : activeCountry.defaultSelectedDistricts;
+}
+
+export const districtsAtom = atom(
+  (get) => reconcileDistricts(get(districtsStorageAtom)),
+  (
+    _get,
+    set,
+    update: string[] | ((prev: string[]) => string[]) | typeof RESET
+  ) => {
+    set(districtsStorageAtom, update);
+  }
+);
 export const viewModeAtom = atomWithStorage<'district' | 'region'>('viewMode', 'district', undefined, { getOnInit: true });
 
 // Global metric selector atom

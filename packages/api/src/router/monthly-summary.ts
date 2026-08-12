@@ -77,13 +77,20 @@ export const monthlySummaryRouter = createTRPCRouter({
       }
       const sortedMonthIndices = Array.from(monthsInRange).sort((a, b) => a - b);
 
-      // Group values by calendar month, accumulating across all years
+      // Group values by calendar month, accumulating across all years.
+      //
+      // Months with no measurement are skipped rather than counted as zero.
+      // Coercing a missing value to 0 pulls the cross-year average down as if
+      // the month had been surveyed and found empty, which is a different claim
+      // from "not surveyed" -- districts with partial coverage were reading far
+      // lower than their actual catch.
       const byMonth: Record<number, Record<string, number[]>> = {};
       for (const item of data) {
         if (item.metric !== metrics[0]) continue;
+        if (item.value === null || item.value === undefined) continue;
         const m = item.date.getMonth();
         if (!byMonth[m]) byMonth[m] = {};
-        (byMonth[m][item.gaul_2_name] ??= []).push(item.value ?? 0);
+        (byMonth[m][item.gaul_2_name] ??= []).push(item.value);
       }
 
       // Return one point per calendar month with cross-year averages

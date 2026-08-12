@@ -9,18 +9,16 @@ This is a Turborepo monorepo with multiple Next.js applications. Use these comma
 **Development:**
 - `pnpm install` - Install dependencies
 - `pnpm run dev` - Start all apps in development mode
-- `pnpm run iso:dev` - Run only the main isomorphic app
-- `pnpm run starter:dev` - Run only the starter app
-- `pnpm run i18n:dev` - Run only the i18n app
+- `pnpm run i18n:dev` - Run the dashboard (the only app)
 
 **Build & Production:**
 - `pnpm run build` - Build all apps
 - `pnpm run start` - Start all apps in production
-- `pnpm run iso:build` && `pnpm run iso:start` - Build and run main app only
+- `pnpm run i18n:build` && `pnpm run i18n:start` - Build and run the dashboard
 
 **Linting:**
 - `pnpm run lint` - Lint all apps
-- `pnpm run iso:lint` - Lint main app only
+- `pnpm run i18n:lint` - Lint the dashboard
 
 **Cleanup:**
 - `pnpm run clean` - Clean build artifacts and node_modules
@@ -28,9 +26,7 @@ This is a Turborepo monorepo with multiple Next.js applications. Use these comma
 ## Architecture Overview
 
 ### Monorepo Structure
-- **apps/isomorphic/** - Generic file-management template (not the fisheries dashboard)
-- **apps/isomorphic-i18n/** - Multi-country fisheries dashboard (Peskas — active app)
-- **apps/isomorphic-starter/** - Minimal starter template
+- **apps/isomorphic-i18n/** - Multi-country fisheries dashboard (Peskas). The only app; deployed as one Vercel project per country.
 - **packages/api/** - tRPC API layer with routers for fisheries data
 - **packages/nosql/** - MongoDB schemas and migrations for fisheries data
 - **packages/isomorphic-core/** - Shared UI components and utilities
@@ -48,11 +44,10 @@ This is a Turborepo monorepo with multiple Next.js applications. Use these comma
 - **UI Components:** Custom component library in isomorphic-core
 
 ### Key Application Features
-The main isomorphic app is a fisheries dashboard with:
-- Multiple dashboard layouts (Hydrogen, Carbon, Beryllium, etc.)
-- File management system with storage analytics
+The dashboard provides:
+- Two dashboard layouts (Lithium default, Hydrogen alternative), switchable from the settings drawer
 - Data visualization for fisheries statistics
-- Multi-language support (i18n version)
+- Multi-language support (en / sw / pt)
 - Authentication and user management
 - Export functionality for data
 
@@ -74,11 +69,11 @@ tRPC routers in packages/api:
 - `district-summary.ts` - District summary endpoints
 
 ### Layout System
-Multiple pre-built layout themes:
-- **Hydrogen** - Default dashboard layout
-- **Carbon** - Alternative sidebar layout
-- **Beryllium** - Fixed sidebar layout
-- **Helium/Lithium/Boron** - Additional layout variations
+- **Lithium** - Default layout (top nav). What users get unless they switch.
+- **Hydrogen** - Alternative layout (sidebar nav).
+
+Both carry the real Peskas nav. The four template layouts that shipped with the
+boilerplate (Carbon, Beryllium, Helium, Boron) were removed.
 
 Each layout includes header, sidebar, and responsive navigation components.
 
@@ -91,7 +86,7 @@ Required for build (defined in turbo.json):
 
 ## Claude Code Configuration
 
-This project uses a structured Claude Code setup for the main monorepo (apps/isomorphic, packages). Configuration lives at the repo root.
+This project uses a structured Claude Code setup for the monorepo (apps/isomorphic-i18n, packages). Configuration lives at the repo root.
 
 ### Quick Commands
 
@@ -116,8 +111,6 @@ This project uses a structured Claude Code setup for the main monorepo (apps/iso
 3. Review relevant skills in `.claude/skills/` for your task
 4. Use `/plan` for complex features
 5. Run `/code-review` before committing
-
-**Note:** The folder `tracks-explorer/` is a separate app (Vite, Express, Tabler). When working inside `tracks-explorer/`, use that app’s own `.claude/` and `CLAUDE.md`. This root setup applies to the main dashboard apps and shared packages.
 
 ## Critical Rules
 
@@ -176,7 +169,7 @@ Ask the user before proceeding if:
 ## Development Notes
 
 ### Working with the Main App
-- Main dashboard code is in `apps/isomorphic/src/app/(hydrogen)/`
+- Main dashboard code is in `apps/isomorphic-i18n/src/app/[lang]/(hydrogen)/`
 - Shared components are in `packages/isomorphic-core/src/components/`
 - API routes are in `packages/api/src/router/`
 - Database schemas are in `packages/nosql/src/schema/`

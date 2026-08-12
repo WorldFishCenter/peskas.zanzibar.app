@@ -3,39 +3,19 @@
 import { RadioGroup } from 'rizzui';
 import { LAYOUT_OPTIONS } from '@/config/enums';
 import HydrogenIcon from './hydrogen-icon';
-import HeliumIcon from './helium-icon';
 import LithiumIcon from './lithium-icon';
-import BerylliumIcon from './beryllium-icon';
-import BoronIcon from './boron-icon';
-import CarbonIcon from './carbon-icon';
 import { useLayout } from './use-layout';
 import DrawerBlock from './settings/drawer-block';
 import RadioBox from './settings/radio-box';
 
 const layoutOptions = [
   {
-    icon: HydrogenIcon,
-    value: LAYOUT_OPTIONS.HYDROGEN,
-  },
-  {
-    icon: HeliumIcon,
-    value: LAYOUT_OPTIONS.HELIUM,
-  },
-  {
     icon: LithiumIcon,
     value: LAYOUT_OPTIONS.LITHIUM,
   },
   {
-    icon: BerylliumIcon,
-    value: LAYOUT_OPTIONS.BERYLLIUM,
-  },
-  {
-    icon: BoronIcon,
-    value: LAYOUT_OPTIONS.BORON,
-  },
-  {
-    icon: CarbonIcon,
-    value: LAYOUT_OPTIONS.CARBON,
+    icon: HydrogenIcon,
+    value: LAYOUT_OPTIONS.HYDROGEN,
   },
 ];
 
