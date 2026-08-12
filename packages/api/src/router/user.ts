@@ -9,7 +9,10 @@ import type { TPermission } from "@repo/nosql/schema/auth";
 import { BmuModel, GroupModel, UserModel } from "@repo/nosql/schema/auth";
 
 import { MailService, Templates } from "../lib/mail";
+import { assertPermission } from "../lib/permissions";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+
+const USER_RESOURCE = "user";
 
 const EXCLUDED_BMUS = ["Ngomeni"];
 
@@ -167,24 +170,22 @@ export const userRouter = createTRPCRouter({
 
       return {
         ...user,
-        role: user?.groups[0].name,
+        // A user with no group would otherwise throw on [0].name
+        role: user?.groups?.[0]?.name,
       };
     }),
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      // Verify user has admin privileges
-      if (!ctx.session?.user?.email) {
-        throw new Error("Unauthorized");
-      }
-      
+      assertPermission(ctx.session, USER_RESOURCE, ["delete"]);
+
       // Find and delete the user
       const result = await UserModel.findByIdAndDelete(input.id);
-      
+
       if (!result) {
         throw new Error("User not found");
       }
-      
+
       return { success: true };
     }),
   allBmus: publicProcedure.query(async () => {
@@ -193,7 +194,11 @@ export const userRouter = createTRPCRouter({
   }),
   upsert: protectedProcedure
     .input(UpsertUserSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      assertPermission(ctx.session, USER_RESOURCE, [
+        input._id ? "update" : "create",
+      ]);
+
       const userGroup = await GroupModel.findOne({ name: input.role });
       const bmuGroups = await BmuModel.find({
         BMU: { $in: input.bmuNames.map((bmu) => bmu.label) },
@@ -207,16 +212,15 @@ export const userRouter = createTRPCRouter({
         {
           name: input.name,
           email: input.email,
-          password: input.password
-            ? await bcryptjs.hash(input.password, 12)
-            : undefined,
           status: input.status,
           groups: [userGroup?._id],
           bmus: bmuGroups.map((bmu) => bmu._id),
           userBmu: userBmu?._id,
           fisherId: input.fisherId,
-          ...(!isEmpty(input?.password) && {
-            password: bcryptjs.hashSync(input?.password ?? "", 10),
+          // Only touch the password when one was supplied, so an edit that
+          // leaves the field blank keeps the existing hash.
+          ...(!isEmpty(input.password) && {
+            password: await bcryptjs.hash(input.password ?? "", 12),
           }),
         },
         { new: true, upsert: true }
@@ -235,16 +239,22 @@ export const userRouter = createTRPCRouter({
 
       /**
        * TODO: Load lang dynamically
+       *
+       * The link must point back at the deployment that sent it -- each country
+       * runs its own domain off this codebase, so a hardcoded host would send
+       * users to someone else's dashboard.
        */
+      const baseUrl =
+        process.env.NEXTAUTH_URL ??
+        (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3001");
+
       const mail = new MailService();
       await mail.sendTemplateMessages(Templates.resetPassword, {
         to: user.email,
         subject: "Reset your password",
-        resetLink: `${
-          process.env.NODE_ENV === 'production'
-            ? 'https://peskas-next-umber.vercel.app'
-            : process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3001'
-        }/en/reset-password/${reset_token}`,
+        resetLink: `${baseUrl.replace(/\/$/, "")}/en/reset-password/${reset_token}`,
       });
     }),
   resetPassword: publicProcedure

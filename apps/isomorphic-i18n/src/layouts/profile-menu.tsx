@@ -10,7 +10,7 @@ import { PiUserCircle } from "react-icons/pi";
 import cn from "@utils/class-names";
 import { routes } from "@/config/routes";
 import { useTranslation } from "@/app/i18n/client";
-import { hasPermission } from '@/helpers/auth';
+import { hasPermission } from '@api/lib/permissions';
 import LanguageLink, { getClientLanguage } from "@/app/i18n/language-link";
 import { changeAppLanguage } from "@/app/i18n/language-switcher";
 

@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import PageHeader from "@/app/shared/page-header";
 import { routes } from "@/config/routes";
+import { metaObject } from "@/config/site.config";
 import ComingSoonPlaceholder from "@/app/shared/coming-soon-placeholder";
 
-export const metadata: Metadata = {
-  title: "Ask Data | Peskas Zanzibar",
+export const metadata = {
+  ...metaObject("Ask Data"),
 };
 
 const pageHeader = {

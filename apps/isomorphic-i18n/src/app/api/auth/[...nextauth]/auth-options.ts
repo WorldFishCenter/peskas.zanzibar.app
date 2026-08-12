@@ -107,9 +107,13 @@ export const authOptions: NextAuthOptions = {
             throw new UserNoPasswordError();
           }
 
-          const passwordsMatch = !user.password
-            ? false
-            : await bcryptjs.compare(password, user.password);
+          /**
+           * Deactivated accounts are rejected before the password is even
+           * considered, so a correct password cannot grant them a session.
+           */
+          if (user.status === "inactive") throw new UserInactiveError();
+
+          const passwordsMatch = await bcryptjs.compare(password, user.password);
 
           if (passwordsMatch) {
             /**
@@ -117,7 +121,7 @@ export const authOptions: NextAuthOptions = {
              * Otherwise 1 day only.
              */
             const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
-            
+
             // Ensure userBmu is properly serialized
             const serializedUserBmu = user.userBmu ? {
               _id: user.userBmu._id.toString(),
@@ -126,14 +130,12 @@ export const authOptions: NextAuthOptions = {
             } : undefined;
 
             return {
-              ...pick(user, ["id", "email", "groups", "bmus", "name", "fisherId"]),
+              ...pick(user, ["email", "groups", "bmus", "name", "fisherId"]),
+              id: user._id.toString(),
               userBmu: serializedUserBmu,
               maxAge,
             };
           }
-
-          const isInactive = user.status === "inactive";
-          if (isInactive) throw new UserInactiveError();
         }
         throw new InvalidPayloadError();
       },

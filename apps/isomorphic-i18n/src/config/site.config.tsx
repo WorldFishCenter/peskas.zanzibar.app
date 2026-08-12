@@ -20,8 +20,8 @@ export const siteConfig = {
   layout: LAYOUT_OPTIONS.LITHIUM,
   favicon: sailboatIcon,
   author: {
-    name: 'E-Global Labs LTD',
-    url: 'https://www.e-globallabs.com',
+    name: 'WorldFish',
+    url: 'https://worldfishcenter.org',
   },
   headerLinks: [],
 };
@@ -31,20 +31,16 @@ export const metaObject = (
   openGraph?: OpenGraph,
   description: string = siteConfig.description
 ): Metadata => {
+  const pageTitle = title ? `${title} - ${siteConfig.title}` : siteConfig.title;
+
   return {
-    title: title ? `${title} - Isomorphic Furyroad` : siteConfig.title,
+    title: pageTitle,
     description,
     openGraph: openGraph ?? {
-      title: title ? `${title} - Isomorphic Furyroad` : title,
+      title: pageTitle,
       description,
-      url: 'https://isomorphic-furyroad.vercel.app',
-      siteName: 'Isomorphic Furyroad', // https://developers.google.com/search/docs/appearance/site-names
-      images: {
-        url: 'https://s3.amazonaws.com/redqteam.com/isomorphic-furyroad/itemdep/isobanner.png',
-        width: 1200,
-        height: 630,
-      },
-      locale: 'en_US',
+      siteName: siteConfig.title, // https://developers.google.com/search/docs/appearance/site-names
+      locale: activeCountry.locale.replace('-', '_'),
       type: 'website',
     },
   };

@@ -4,7 +4,7 @@ import {
   generateUploader,
 } from "@uploadthing/react";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
-import type { OurFileRouter } from "../../../../apps/isomorphic/src/app/api/uploadthing/core";
+import type { OurFileRouter } from "../../../../apps/isomorphic-i18n/src/app/api/uploadthing/core";
 
 export const Uploader = generateUploader<OurFileRouter>();
 export const UploadButton = generateUploadButton<OurFileRouter>();

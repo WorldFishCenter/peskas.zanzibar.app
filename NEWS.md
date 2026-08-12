@@ -1,3 +1,125 @@
+# peskas.dashboard 1.4.0
+
+## Security
+
+- **User management endpoints were unauthenticated beyond "is logged in"**: `user.delete`
+  and `user.upsert` ran on `protectedProcedure` with no permission check — the delete
+  handler's only guard was that a session carried an email, under a comment claiming it
+  verified admin privileges. Any signed-in user could delete or modify any account,
+  including changing their own group. Both now call `assertPermission()`. Existing
+  administrators are unaffected: the "Manage users" menu entry was already gated on a
+  stricter check (all of create/read/update/delete), so anyone who could see the link
+  passes the narrower server-side checks.
+
+- **File uploads accepted anonymous requests**: `/api/uploadthing` shipped the template's
+  placeholder `const auth = (req) => ({ id: 'fakeId' })`, so both upload routes — including
+  one accepting 256 MB video — were open to the public internet against the deployment's
+  storage quota. The middleware now requires a NextAuth session.
+
+- **Deactivated accounts could still sign in**: the `status === "inactive"` check sat after
+  the successful-password `return` in the credentials provider, so it never ran for a valid
+  password. It only fired on a *wrong* password, where it also leaked account status to an
+  unauthenticated caller. The check now runs before the password is compared.
+
+- **Single permission implementation**: `hasPermission()` moved from
+  `apps/isomorphic-i18n/src/helpers/auth.ts` into `packages/api/src/lib/permissions.ts`, so
+  the tRPC procedures and the UI read the same function. Previously only the UI had one,
+  which is how the menu and the API came to disagree.
+
+## Bug Fixes
+
+- **Password reset emails linked to a different application**: the reset link hardcoded
+  `https://peskas-next-umber.vercel.app` whenever `NODE_ENV === 'production'`, sending every
+  country's users to an unrelated deployment. The base URL is now derived from
+  `NEXTAUTH_URL`, falling back to `VERCEL_URL`, so each deployment links to itself.
+
+- **Passwords were hashed twice**: `user.upsert` set `password` twice in one object literal —
+  a cost-12 hash that was immediately overwritten by a cost-10 `hashSync`. The cost-12 work
+  was computed and discarded, and the stored hash was the weaker one. Now hashed once at
+  cost 12, and only when a password was actually supplied.
+
+- **Social previews advertised the template**: `metaObject()` still returned
+  `"Isomorphic Furyroad"` as the OpenGraph title suffix and site name, pointed `url` at
+  `isomorphic-furyroad.vercel.app`, and served the template's banner from RedQ's S3 bucket.
+  It now derives everything from `activeCountry`, so each country's link previews carry its
+  own title, description, and locale.
+
+- **`user.byId` crashed for users with no group**: `user?.groups[0].name` threw a TypeError
+  once optional chaining short-circuited past the array index. Now `user?.groups?.[0]?.name`.
+
+- **Middleware matched locales that do not exist**: the matcher listed `de|es|ar|he|zh`
+  alongside the three real locales, routing requests for languages with no translation
+  files. Trimmed to `en|sw|pt`.
+
+- **`ask-data` page title hardcoded Zanzibar**: read `"Ask Data | Peskas Zanzibar"` on every
+  deployment; now goes through `metaObject()`.
+
+## Removed
+
+- **Two unused applications**: `apps/isomorphic` and `apps/isomorphic-starter` were template
+  variants with no deployment from this repository — confirmed against Vercel, where all
+  three live projects (`peskas-dashboard-{zanzibar,kenya,mozambique}`) build
+  `apps/isomorphic-i18n`. `apps/isomorphic` continues to exist in the separate `peskas-next`
+  repository, so nothing is lost.
+
+- **Cross-package imports reaching into a deleted app**: `packages/isomorphic-core` imported
+  *upward* into `apps/isomorphic` from three files via relative paths. Two of them were
+  reachable from the deployed app, so deleting the app without severing these first would
+  have broken the build. `utils/uploadthing.ts` now takes its `OurFileRouter` type from the
+  surviving app; `get-status-badge.tsx` and `product-classic-card.tsx` were themselves dead
+  and were removed.
+
+- **Four template layouts**: Carbon, Beryllium, Helium, and Boron still carried the
+  boilerplate's navigation (File Manager, Widgets, Newsletter) and were reachable through
+  the settings drawer, giving users a route into template pages. `LAYOUT_OPTIONS` is now
+  `HYDROGEN` and `LITHIUM` only. Note that Lithium — not Hydrogen — has always been the
+  default that users see, despite the route group being named `(hydrogen)`; a stale
+  `isomorphic-layout` value in `localStorage` now falls back to Lithium.
+
+- **Template routes**: `/groups/*` (five stubs rendering literal strings like "AIA"),
+  `/auth/sign-in-1..5` and `/auth/sign-up-1..5`, `/widgets/cards`, `/widgets/charts`,
+  `/forms/newsletter`, `/file` (an exact duplicate of the home page), and the
+  `profile-settings` sub-pages for team, billing, integration, and password.
+
+- **1,415 files, roughly 140,000 lines** in total, including 357 files that only became
+  unreachable once the above were gone. Source files under `apps/` and `packages/` dropped
+  from 754 to 320. Dead code was identified with an import-reachability walk from the real
+  Next.js entry points, checked against runtime `import()` references rather than static
+  imports alone — the icon set in `isomorphic-core`, for example, was kept alive solely by a
+  template gallery page loading `./icons/${fileName}` at runtime.
+
+- **`tsconfig.tsbuildinfo` untracked**: a 2.2 MB TypeScript build artifact was committed to
+  the repository. Added to `.gitignore`.
+
+## Improvements
+
+- **Catch and revenue charts share one implementation**: `catch-time-series` /
+  `revenue-time-series` and `catch-radar` / `revenue-radar` were near-identical copies that
+  had drifted apart — the catch charts had responsive mobile margins but formatted tooltip
+  values with a raw `toFixed(2)`, while the revenue charts ran values through
+  `formatDashboardNumber()` and formatted their axes but ignored mobile viewports. They are
+  now `metric-time-series` and `metric-radar`, parameterised by the metric the page passes
+  in, keeping the better behaviour from each. Shared loading, error, empty, tooltip, and
+  legend-toggle logic moved to `charts/chart-common.tsx`. The `/revenue` route bundle fell
+  from 5.97 kB to 649 B as a result.
+
+- **Mail service tidied**: removed the `inviteProvider` template — declared but with no
+  `.hbs` file, so any use would have thrown — along with its "Please sign up for Rheumote
+  Control" subject line and a hardcoded `declan@mountaindev.com` address, both leftovers
+  from an unrelated product. `prepTemplate()` and `getTemplate()` no longer duplicate the
+  same read-and-cache block. Deleted the unreferenced `resetPasswordAdmin.hbs`.
+
+- **Root layout and tRPC context**: the root layout imported five modules it never used
+  (its body is just `return children`). `createTRPCContext` computed `ip` as
+  `xForwardedFor ?? xRealIp` where the left operand had already been defaulted to
+  `"unknown"`, making the fallback unreachable; it also read an `x-global-filters` header
+  that was never used.
+
+- **Documentation**: `CLAUDE.md` updated to describe the single application, the two
+  remaining layouts, and the correct dashboard source path.
+
+---
+
 # peskas.dashboard 1.3.1
 
 ## Analytics
