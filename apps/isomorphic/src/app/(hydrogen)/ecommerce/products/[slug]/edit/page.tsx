@@ -9,7 +9,7 @@ import { Button } from 'rizzui';
 import { routes } from '@/config/routes';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 /**
@@ -17,7 +17,8 @@ type Props = {
  * @link: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function
  */
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // read route params
   const slug = params.slug;
 
@@ -41,11 +42,12 @@ const pageHeader = {
   ],
 };
 
-export default function EditProductPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function EditProductPage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>

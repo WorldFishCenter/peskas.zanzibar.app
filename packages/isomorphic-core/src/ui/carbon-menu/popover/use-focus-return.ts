@@ -11,7 +11,7 @@ export function useFocusReturn({
   opened,
   shouldReturnFocus = true,
 }: UseFocusReturn) {
-  const lastActiveElement = useRef<HTMLElement>();
+  const lastActiveElement = useRef<HTMLElement>(null);
   const returnFocus = () => {
     if (
       lastActiveElement.current &&

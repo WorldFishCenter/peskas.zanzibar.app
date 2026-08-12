@@ -7,7 +7,8 @@ export const metadata = {
   ...metaObject('Product Details'),
 };
 
-export default function ProductDetailsPage({ params }: any) {
+export default async function ProductDetailsPage(props: any) {
+  const params = await props.params;
   const pageHeader = {
     title: 'Shop',
     breadcrumb: [

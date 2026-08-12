@@ -45,7 +45,7 @@ export default function WorkSpaceSwitcher({
     <Select
       options={customOptions}
       value={value}
-      onChange={setValue}
+      onChange={(next) => setValue(next as SelectOption)}
       displayValue={(value: SelectOption) => renderDisplayValue(value)}
       getOptionDisplayValue={(option) => renderOptionDisplayValue(option)}
       selectClassName={cn(

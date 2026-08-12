@@ -20,11 +20,17 @@ const pageHeader = {
   ],
 };
 
-export default function AskDataPage({
-  params: { lang },
-}: {
-  params: { lang: string };
-}) {
+export default async function AskDataPage(
+  props: {
+    params: Promise<{ lang: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return (
     <>
       <PageHeader

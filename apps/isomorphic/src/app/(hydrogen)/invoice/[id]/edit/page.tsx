@@ -6,7 +6,7 @@ import { metaObject } from '@/config/site.config';
 import { Metadata } from 'next';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
@@ -14,7 +14,8 @@ type Props = {
  * @link: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function
  */
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // read route params
   const id = params.id;
 
@@ -68,7 +69,8 @@ const invoiceData = {
   ],
 };
 
-export default function InvoiceEditPage({ params }: any) {
+export default async function InvoiceEditPage(props: any) {
+  const params = await props.params;
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>

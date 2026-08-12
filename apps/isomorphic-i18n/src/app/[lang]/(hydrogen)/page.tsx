@@ -5,12 +5,18 @@ export const metadata = {
   ...metaObject(),
 };
 
-export default function FileDashboardPage({
-  params: { lang },
-}: {
-  params: {
-    lang: string;
-  };
-}) {
+export default async function FileDashboardPage(
+  props: {
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return <FileDashboard lang={lang} />;
 }

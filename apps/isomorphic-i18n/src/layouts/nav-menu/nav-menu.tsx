@@ -1,5 +1,5 @@
 'use client';
-import { Reducer, useReducer, useRef } from 'react';
+import { useReducer, useRef } from 'react';
 import {
   NavMenuProvider,
   initialState,
@@ -12,7 +12,6 @@ import {
 import { NavMenuContent } from '@/layouts/nav-menu/nav-menu-content';
 import type {
   NavMenuProps,
-  InitialState,
   ContentUiProps,
   ItemRef,
 } from '@/layouts/nav-menu/nav-menu-types';
@@ -28,10 +27,7 @@ export default function NavMenu(props: NavMenuProps) {
     children,
     floatingOffset = 10,
   } = props;
-  const [state, set] = useReducer<Reducer<InitialState, any>>(
-    navMenuReducer,
-    initialState
-  );
+  const [state, set] = useReducer(navMenuReducer, initialState);
   const contentRefs = useRef<(HTMLElement | null)[]>([]);
   const contentUiPropsRefs = useRef<(ContentUiProps | null)[]>([]);
   const items = useRef<(ItemRef | null)[]>([]);

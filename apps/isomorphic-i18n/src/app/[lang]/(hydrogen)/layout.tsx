@@ -1,4 +1,5 @@
 'use client';
+import { use } from "react";
 import { LAYOUT_OPTIONS } from '@/config/enums';
 import { useLayout } from '@/layouts/use-layout';
 import HydrogenLayout from '@/layouts/hydrogen/layout';
@@ -10,15 +11,24 @@ import LithiumLayout from '@/layouts/lithium/lithium-layout';
 import BoronLayout from '@/layouts/boron/boron-layout';
 import CarbonLayout from '@/layouts/carbon/carbon-layout';
 
-export default function DefaultLayout({
-  children,
-  params: { lang },
-}: {
-  children: React.ReactNode;
-  params: {
-    lang: string;
-  };
-}) {
+export default function DefaultLayout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = use(props.params);
+
+  const {
+    lang
+  } = params;
+
+  const {
+    children
+  } = props;
+
   const { layout } = useLayout();
   const isMounted = useIsMounted();
 

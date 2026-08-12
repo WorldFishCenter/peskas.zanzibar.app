@@ -5,12 +5,18 @@ export const metadata = {
   ...metaObject('Integration'),
 };
 
-export default function IntegrationSettingsFormPage({
-  params: { lang },
-}: {
-  params: {
-    lang: string;
-  };
-}) {
+export default async function IntegrationSettingsFormPage(
+  props: {
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return <IntegrationSettingsView />;
 }

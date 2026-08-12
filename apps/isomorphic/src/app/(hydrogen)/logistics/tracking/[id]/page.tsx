@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, use } from 'react';
 import { routes } from '@/config/routes';
 import PageHeader from '@/app/shared/page-header';
 import ShippingInfo from '@/app/shared/logistics/tracking/shipping-info';
@@ -8,7 +8,7 @@ import { metaObject } from '@/config/site.config';
 import { Metadata } from 'next';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
@@ -16,14 +16,16 @@ type Props = {
  * @link: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function
  */
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // read route params
   const id = params.id;
 
   return metaObject(`Edit ${id}`);
 }
 
-export default function TrackingPage({ params }: any) {
+export default function TrackingPage(props: any) {
+  const params = use(props.params);
   const pageHeader = useMemo(() => {
     return {
       title: 'Tracking',

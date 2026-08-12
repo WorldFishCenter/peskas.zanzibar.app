@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useState } from 'react';
+import { RefObject, useState, type ReactElement } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Popover, Title, Badge, Checkbox, Text } from 'rizzui';
@@ -82,7 +82,7 @@ function NotificationsList({
 export default function NotificationDropdown({
   children,
 }: {
-  children: JSX.Element & { ref?: RefObject<any> };
+  children: ReactElement & { ref?: RefObject<any> };
 }) {
   const isMobile = useMedia('(max-width: 480px)', false);
   const [isOpen, setIsOpen] = useState(false);

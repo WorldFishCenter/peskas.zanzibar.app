@@ -4,7 +4,8 @@ import PageHeader from '@/app/shared/page-header';
 import Link from 'next/link';
 import OrderView from '@/app/shared/ecommerce/order/order-view';
 
-export default function OrderDetailsPage({ params }: any) {
+export default async function OrderDetailsPage(props: any) {
+  const params = await props.params;
   const pageHeader = {
     title: `Order #${params.id}`,
     breadcrumb: [

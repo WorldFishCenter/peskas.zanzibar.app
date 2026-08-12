@@ -48,14 +48,14 @@ export const PopoverTrigger = React.forwardRef<
       }
     : {};
 
-  return cloneElement(children, {
+  return cloneElement(children as React.ReactElement<Record<string, unknown>>, {
     ...forwardedProps,
     ...accessibleProps,
     ...ctx.targetProps,
     className: cn(
       ctx.targetProps.className,
       forwardedProps.className,
-      children.props.className
+      (children.props as { className?: string }).className
     ),
     [refProp!]: targetRef,
     ...(!ctx.controlled ? { onClick: ctx.onToggle } : null),

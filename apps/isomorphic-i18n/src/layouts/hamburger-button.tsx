@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactElement } from 'react';
 import {
   DrawerPlacements,
   useDrawer,
@@ -8,7 +9,7 @@ import { ActionIcon } from 'rizzui';
 import cn from '@utils/class-names';
 
 interface Props {
-  view: JSX.Element;
+  view: ReactElement;
   placement?: DrawerPlacements;
   customSize?: string;
   className?: string;

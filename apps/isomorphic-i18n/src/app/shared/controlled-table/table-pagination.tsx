@@ -45,7 +45,7 @@ export default function TablePagination({
           {i18next ? t?.("table-text-row-per-page") : "Rows per page"}:{" "}
           <Select
             options={paginationLimitOptions}
-            onChange={setPageSize}
+            onChange={(value) => setPageSize(Number(value))}
             size="sm"
             variant="flat"
             value={pageSize}

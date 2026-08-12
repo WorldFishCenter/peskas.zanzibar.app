@@ -1,4 +1,4 @@
-import { cloneElement, forwardRef } from 'react';
+import { cloneElement, forwardRef, type ReactElement } from 'react';
 import Popover from '../popover/popover';
 import { isElement } from '../popover/popover-trigger';
 import { useMenuContext } from './menu-context';
@@ -20,8 +20,14 @@ export const MenuTrigger = forwardRef<HTMLElement, MenuTargetProps>(
       );
     }
 
+    const childProps = children.props as {
+      onClick?: (event?: Event) => void;
+      onMouseEnter?: (event?: Event) => void;
+      onMouseLeave?: (event?: Event) => void;
+    };
+
     const onClick = (event?: Event) => {
-      children.props.onClick?.(event);
+      childProps.onClick?.(event);
       if (ctx.trigger === 'click') {
         ctx.toggleDropdown();
       } else if (ctx.trigger === 'click-hover') {
@@ -33,14 +39,14 @@ export const MenuTrigger = forwardRef<HTMLElement, MenuTargetProps>(
     };
 
     const onMouseEnter = (event?: Event) => {
-      children.props.onMouseEnter?.(event);
+      childProps.onMouseEnter?.(event);
       if (ctx.trigger === 'hover' || ctx.trigger === 'click-hover') {
         ctx.openDropdown();
       }
     };
 
     const onMouseLeave = (event?: Event) => {
-      children.props.onMouseLeave?.(event);
+      childProps.onMouseLeave?.(event);
       if (ctx.trigger === 'hover') {
         ctx.closeDropdown();
       } else if (ctx.trigger === 'click-hover' && !ctx.openedViaClick) {
@@ -50,7 +56,7 @@ export const MenuTrigger = forwardRef<HTMLElement, MenuTargetProps>(
 
     return (
       <Popover.Trigger popupType="menu" refProp={refProp} ref={ref} {...props}>
-        {cloneElement(children, {
+        {cloneElement(children as ReactElement<Record<string, unknown>>, {
           onClick,
           onMouseEnter,
           onMouseLeave,

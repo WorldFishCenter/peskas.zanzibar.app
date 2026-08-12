@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { use } from "react";
 
 import { routes } from "@/config/routes";
 import { Button } from "rizzui";
@@ -27,13 +28,19 @@ const pageHeader = {
   ],
 };
 
-export default function ChartsPage({
-  params: { lang },
-}: {
-  params: {
-    lang: string;
-  };
-}) {
+export default function ChartsPage(
+  props: {
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = use(props.params);
+
+  const {
+    lang
+  } = params;
+
   const { t } = useTranslation(lang!, "common");
 
   return (

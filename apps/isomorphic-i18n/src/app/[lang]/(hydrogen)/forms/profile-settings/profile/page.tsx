@@ -5,12 +5,18 @@ export const metadata = {
   ...metaObject('Profile'),
 };
 
-export default function ProfileSettingsFormPage({
-  params: { lang },
-}: {
-  params: {
-    lang: string;
-  };
-}) {
+export default async function ProfileSettingsFormPage(
+  props: {
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return <ProfileSettingsView />;
 }

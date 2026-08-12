@@ -8,7 +8,7 @@ import CreateOrder from '@/app/shared/ecommerce/order/create-order';
 import { orderData } from '@/app/shared/ecommerce/order/order-form/form-utils';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
@@ -16,7 +16,8 @@ type Props = {
  * @link: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function
  */
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // read route params
   const id = params.id;
 
@@ -42,7 +43,8 @@ const pageHeader = {
   ],
 };
 
-export default function EditOrderPage({ params }: any) {
+export default async function EditOrderPage(props: any) {
+  const params = await props.params;
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>

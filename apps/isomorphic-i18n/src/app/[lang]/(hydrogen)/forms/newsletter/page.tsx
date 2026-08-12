@@ -27,13 +27,19 @@ const pageHeader = {
   ],
 };
 
-export default function NewsletterFormPage({
-  params: { lang },
-}: {
-  params: {
-    lang: string;
-  };
-}) {
+export default async function NewsletterFormPage(
+  props: {
+    params: Promise<{
+      lang: string;
+    }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   return (
     <>
       <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />

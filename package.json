@@ -36,7 +36,7 @@
   },
   "pnpm": {
     "overrides": {
-      "next": "14.2.35",
+      "next": "15.5.23",
       "sharp": "^0.35.3",
       "nanoid": "^3.3.18",
       "postcss": "^8.5.26",
@@ -67,7 +67,8 @@
       "js-cookie": "^3.0.8",
       "@babel/core": "^7.29.6",
       "@babel/runtime": "^7.29.6",
-      "qs": "^6.14.1"
+      "qs": "^6.14.1",
+      "@headlessui/react": "^2.2.10"
     }
   },
   "packageManager": "pnpm@9.1.4",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Disclosure } from "@headlessui/react";
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { Checkbox, CheckboxGroup, Collapse, Tooltip, Button } from "rizzui";
 import cn from "../utils/class-names";
 import { PiCaretDownBold, PiPlusBold } from "react-icons/pi";
@@ -200,17 +200,17 @@ function CollapsibleFilterOptions({
       <Disclosure>
         {({ open }) => (
           <>
-            <Disclosure.Panel className="space-y-3.5">
+            <DisclosurePanel className="space-y-3.5">
               {children}
-            </Disclosure.Panel>
+            </DisclosurePanel>
 
             {!open && (
-              <Disclosure.Button className="mt-3.5 w-full px-6 text-start font-medium text-primary focus:outline-none">
+              <DisclosureButton className="mt-3.5 w-full px-6 text-start font-medium text-primary focus:outline-none">
                 <span className="flex items-center">
                   <PiPlusBold className="me-1 h-3 w-3" />
                   {data.length - 5} more
                 </span>
-              </Disclosure.Button>
+              </DisclosureButton>
             )}
           </>
         )}

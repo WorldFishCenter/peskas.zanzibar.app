@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Disclosure } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import {
   Title,
   Input,
@@ -266,17 +266,17 @@ function CollapsibleFilterOptions({
       <Disclosure>
         {({ open }) => (
           <>
-            <Disclosure.Panel className="space-y-3.5">
+            <DisclosurePanel className="space-y-3.5">
               {children}
-            </Disclosure.Panel>
+            </DisclosurePanel>
 
             {!open && (
-              <Disclosure.Button className="mt-3.5 w-full px-6 text-start font-semibold focus:outline-none">
+              <DisclosureButton className="mt-3.5 w-full px-6 text-start font-semibold focus:outline-none">
                 <span className="flex items-center">
                   <PiPlusBold size={12} />
                   {data.length - 5} more
                 </span>
-              </Disclosure.Button>
+              </DisclosureButton>
             )}
           </>
         )}

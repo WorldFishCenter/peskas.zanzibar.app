@@ -33,7 +33,7 @@ export const MenuItem = forwardRef<
   ) => {
     const Component = as;
     const ctx = useMenuContext();
-    const itemRef = useRef<HTMLButtonElement>();
+    const itemRef = useRef<HTMLButtonElement>(null);
     const itemIndex = ctx.getItemIndex(itemRef.current!);
     const isProps: any = props;
 

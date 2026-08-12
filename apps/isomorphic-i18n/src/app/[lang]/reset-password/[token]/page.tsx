@@ -1,11 +1,18 @@
 import AuthWrapperFour from '@/app/shared/auth-layout/auth-wrapper-four';
 import ResetPasswordForm from './reset-password-form';
 
-export default function ForgotPassword({
-  params: { lang, token },
-}: {
-  params: { lang?: string, token: string };
-}) {
+export default async function ForgotPassword(
+  props: {
+    params: Promise<{ lang?: string, token: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    lang,
+    token
+  } = params;
+
   return (
     <AuthWrapperFour
       title={

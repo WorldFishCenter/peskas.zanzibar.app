@@ -5,7 +5,7 @@ import MessageList from '@/app/shared/support/inbox/message-list';
 import MessageDetails from '@/app/shared/support/inbox/message-details';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
@@ -13,7 +13,8 @@ type Props = {
  * @link: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#generatemetadata-function
  */
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // read route params
   const id = params.id;
 
